@@ -1,0 +1,125 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button color="success"></ion-menu-button>
+    </ion-buttons>
+
+    <ion-title>Mission Control</ion-title>
+
+    <ion-buttons slot="end">
+      <div class="weather-widget">
+        <div class="weather-info">
+          <span class="temp">{{ weather.temp }}°C</span>
+          <span class="wind"><ion-icon name="navigate-outline" class="wind-icon"></ion-icon> {{ weather.wind }}km/h</span>
+        </div>
+        <ion-icon [name]="weather.icon" color="warning" size="large"></ion-icon>
+      </div>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="home-content">
+  <div class="content-wrapper">
+    
+    <div class="page-header">
+      <h1 class="page-title">Inspections</h1>
+      
+      <ion-searchbar 
+        placeholder="Search missions..." 
+        [debounce]="250" 
+        (ionInput)="onSearch($event)"
+        class="custom-search">
+      </ion-searchbar>
+    </div>
+
+    <ion-grid class="mission-grid" *ngIf="filteredMissions().length > 0">
+      <ion-row>
+        <ion-col size="12" size-md="6" size-lg="4" *ngFor="let mission of filteredMissions()">
+          
+          <div class="mission-card glass-card" (click)="viewMissionStatus(mission, $event)">
+            <div class="status-indicator" [attr.data-status]="mission.status.toLowerCase()">
+              {{ mission.status }}
+            </div>
+
+            <div class="card-header">
+              <ion-icon name="map-outline" class="mission-icon"></ion-icon>
+              <div class="mission-title">
+                <h3>{{ mission.name }}</h3>
+                <p class="mission-date">{{ formatDate(mission.date) }}</p>
+              </div>
+            </div>
+
+            <div class="mission-stats">
+              <div class="stat-row">
+                <div class="stat">
+                  <ion-icon name="resize-outline"></ion-icon>
+                  <div class="stat-info">
+                    <span class="stat-label">Area</span>
+                    <span class="stat-value">{{ mission.areaSize }} ha</span>
+                  </div>
+                </div>
+                <div class="stat">
+                  <ion-icon name="time-outline"></ion-icon>
+                  <div class="stat-info">
+                    <span class="stat-label">Time</span>
+                    <span class="stat-value">{{ formatTime(mission.estimatedTime) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="stat-row">
+                <div class="stat">
+                  <ion-icon name="location-outline"></ion-icon>
+                  <div class="stat-info">
+                    <span class="stat-label">Waypoints</span>
+                    <span class="stat-value">{{ mission.waypointCount }}</span>
+                  </div>
+                </div>
+
+                <div class="stat">
+                  <ion-icon name="eye-outline"></ion-icon>
+                  <div class="stat-info">
+                    <span class="stat-label">GSD</span>
+                    <span class="stat-value">{{ mission.gsd }} cm/px</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-actions">
+              <button class="action-icon-btn delete" (click)="deleteMission(mission, $event)">
+                <ion-icon name="trash-outline"></ion-icon>
+              </button>
+            </div>
+          </div>
+
+        </ion-col>          
+      </ion-row>
+    </ion-grid>
+
+    <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+      <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+
+    <div class="empty-state" *ngIf="missions().length > 0 && filteredMissions().length === 0">
+      <ion-icon name="search-outline" size="large"></ion-icon>
+      <h2>No results found</h2>
+      <p>Try adjusting your search terms</p>
+    </div>
+
+    <div class="empty-state" *ngIf="missions().length === 0">
+      <div class="empty-icon">
+        <ion-icon name="cloud-upload-outline"></ion-icon>
+      </div>
+      <h2>No Missions Yet</h2>
+      <p>Create your first solar inspection mission to get started</p>
+    </div>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="createNewMission()" color="success">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+</ion-content>

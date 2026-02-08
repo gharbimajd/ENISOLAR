@@ -1,0 +1,16 @@
+{
+  "name": "ENISOLAR",
+  "short_name": "ENISOLAR",
+  "theme_color": "#3880ff",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "assets/icon/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    }
+  ]
+}
