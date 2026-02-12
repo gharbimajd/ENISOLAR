@@ -1,1 +1,197 @@
-:host{--c:#1c1c1ed9;--a:#2dd36f;--t:#ffffff99}.home-content{--background:linear-gradient(135deg,#0a0a0a,#1a1a1a)}.content-wrapper{padding:16px 16px 80px}ion-toolbar{--background:#0a0a0a;--color:#fff;padding-top:env(safe-area-inset-top)}ion-menu-button{--color:var(--a)}.page-title{font-size:28px;font-weight:800;margin:0 0 12px}.custom-search{--background:#ffffff14;--color:#fff;--icon-color:var(--a);--border-radius:12px;height:48px}.mission-card{background:var(--c);backdrop-filter:blur(10px);border:1px solid #ffffff1a;border-radius:18px;padding:16px;margin-bottom:16px;position:relative;box-shadow:0 4px 12px #00000033}.mission-card:active{transform:scale(.98)}.mission-card::before{content:'';position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#2dd36f,#1fb35f)}.status-indicator{position:absolute;top:14px;right:14px;padding:4px 10px;border-radius:8px;font-size:10px;font-weight:800}[data-status=draft]{background:#ff9f0a26;color:#ff9f0a}[data-status=ready]{background:#2dd36f26;color:#2dd36f}[data-status=flyable]{background:#0a84ff26;color:#0a84ff}.card-header{display:flex;gap:12px;margin-bottom:16px}.mission-icon{font-size:36px;color:var(--a)}.mission-title{flex:1}.mission-title h3{font-size:18px;font-weight:700;margin:0}.mission-date{font-size:12px;color:var(--t)}.mission-stats{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{display:flex;gap:8px;padding:10px;background:#2dd36f0d;border:1px solid #2dd36f1a;border-radius:10px}.stat ion-icon{font-size:18px;color:var(--a)}.stat-info{display:flex;flex-direction:column}.stat-label{font-size:9px;font-weight:600;color:var(--t)}.stat-value{font-size:13px;font-weight:700}.card-actions{display:flex;gap:10px;padding-top:12px;border-top:1px solid #ffffff14}.action-icon-btn{width:44px;height:44px;border-radius:12px;background:#ffffff14;display:flex;align-items:center;justify-content:center}.action-icon-btn:active{transform:scale(.95)}.action-icon-btn ion-icon{font-size:22px}.delete{margin-left:auto;background:#ff3b301a}.delete ion-icon{color:#ff453a}ion-fab-button{--background:linear-gradient(135deg,#2dd36f,#1fb35f);width:56px;height:56px}ion-fab-button::part(native){border-radius:16px}ion-fab-button ion-icon{font-size:28px}
+/* 1. BACKGROUND GRADIENT */
+ion-content {
+  --background: radial-gradient(circle at 50% 0%, #1a2c4e 0%, #000000 70%);
+}
+
+.content-wrapper {
+  padding: 12px; /* Increased slightly so cards don't touch edges */
+}
+
+/* 2. HEADER & TOOLBAR */
+ion-toolbar {
+  /* FIX: Don't force 44px, it breaks vertical centering. 
+     Use standard density if you want it small. */
+  --background: transparent;
+  --border-color: transparent;
+  --color:  rgb(24, 27, 60);
+}
+
+ion-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* 3. PAGE HEADER AREA */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Pushes title left, search right */
+  gap: 10px; /* Adds safety gap so they don't touch */
+  padding: 0 4px 16px; /* Added bottom padding to separate from cards */
+
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: #fff;
+    /* FIX: Allow title to shrink if screen is tiny */
+    flex-shrink: 0; 
+  }
+}
+.custom-search {
+  /* 1. ALLOW IT TO GROW (Delete the fixed height) */
+  width: 100%;
+  
+  /* 2. VISIBILITY TEST (Keep this until you see it) */
+  --background: rgb(24, 27, 60) !important; 
+  
+  /* 3. STYLE RESTORATION */
+  --color: #fff;
+  --placeholder-color: #fff;
+  --icon-color: #fff;
+  --border-radius: 20px;
+  
+  /* 4. Let Ionic handle the height naturally */
+  padding-top: 0;
+  padding-bottom: 0;
+}
+/* 4. GLASS CARD (Optimized) */
+.glass-card {
+  /* Solid dark blue with transparency (High Performance) */
+  background: rgba(13, 22, 40, 0.85); 
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px; /* Slightly softer corners */
+  padding: 12px;
+  
+  /* FIX: Ensure cards in a grid row are equal height */
+  height: 100%; 
+  display: flex;
+  flex-direction: column;
+  
+  /* FIX: Use 'gap' instead of margins for cleaner spacing */
+  gap: 12px; 
+  
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+
+  /* Active State (Touch Feedback) */
+  &:active {
+    transform: scale(0.98);
+    background: rgba(30, 45, 70, 0.9);
+    border-color: rgba(74, 222, 128, 0.3); /* Green glow on touch */
+  }
+}
+
+/* 5. CARD HEADER SECTION */
+.card-header-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  /* Status Badge */
+  .status-indicator {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    
+    /* Default Colors */
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+
+    /* Dynamic Colors */
+    &[data-status="ready"] { color: #4ade80; background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.2); }
+    &[data-status="pending"] { color: #fbbf24; background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.2); }
+  }
+
+  /* Delete Button */
+  .delete-btn-mini {
+    background: transparent;
+    color: #ef4444; /* Red */
+    padding: 4px;
+    font-size: 1.1rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+
+    &:active { opacity: 1; }
+  }
+}
+
+/* 6. TITLE SECTION */
+.title-section {
+  h3 {
+    margin: 0 0 4px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    /* Truncate text if too long */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .date {
+    margin: 0;
+    font-size: 0.75rem;
+    color: #94a3b8; /* Slate gray */
+  }
+}
+
+/* 7. STATS GRID */
+.mission-stats {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 10px;
+  margin-top: auto; /* Pushes this to the bottom of the card */
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  &:last-child { margin-bottom: 0; }
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #cbd5e1;
+
+  ion-icon {
+    font-size: 0.9rem;
+    color: #4ade80; /* Matrix Green Icon */
+  }
+}
+
+/* 8. EMPTY STATES */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 80px;
+  color: #64748b;
+  
+  .empty-icon {
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+    padding: 20px;
+    margin-bottom: 16px;
+    
+    ion-icon {
+      font-size: 3rem;
+      color: #94a3b8;
+    }
+  }
+
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0;
+    color: #fff;
+  }
+}

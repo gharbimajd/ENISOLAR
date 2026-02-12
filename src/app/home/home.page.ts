@@ -1,7 +1,31 @@
 import { Component, OnInit, signal, computed, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { IonicModule, RefresherCustomEvent } from '@ionic/angular';
+import { FormsModule } from '@angular/forms'; 
+
+// ✅ 1. Import Types separately to avoid "Cannot find name" build errors
+import type { RefresherCustomEvent } from '@ionic/angular';
+
+// ✅ 2. Specific Standalone Imports (matches your HTML exactly)
+import { 
+  IonHeader, 
+  IonToolbar, 
+  IonButtons, 
+  IonMenuButton, 
+  IonTitle, 
+  IonSearchbar, 
+  IonContent, 
+  IonGrid, 
+  IonRow, 
+  IonCol, 
+  IonCard, 
+  IonIcon, 
+  IonFab, 
+  IonFabButton,
+  IonRefresher, 
+  IonRefresherContent 
+} from '@ionic/angular/standalone';
+
 import { Mission } from '../models/mission.model';
 import { MissionService } from '../services/mission';
 
@@ -19,8 +43,8 @@ import {
   rainyOutline,
   thunderstormOutline,
   locationOutline,
-  resizeOutline,
-  eyeOutline,
+  resizeOutline, 
+  eyeOutline, 
   navigateOutline,
   analyticsOutline,
   play
@@ -31,7 +55,26 @@ import {
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [
+    CommonModule, 
+    FormsModule,
+    // ✅ 3. Ensure ALL UI components used in HTML are listed here
+    IonHeader, 
+    IonToolbar, 
+    IonButtons, 
+    IonMenuButton, 
+    IonTitle, 
+    IonSearchbar, 
+    IonContent, 
+    IonGrid, 
+    IonRow, 
+    IonCol, 
+    IonCard, 
+    IonIcon, 
+    IonFab, 
+    IonFabButton,
+    
+  ]
 })
 export class HomePage implements OnInit {
   missions = signal<Mission[]>([]);

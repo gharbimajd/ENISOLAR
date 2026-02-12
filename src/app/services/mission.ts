@@ -11,7 +11,7 @@ import { CapacitorHttp, HttpResponse } from '@capacitor/core';
 })
 export class MissionService {
   
-  private apiUrl = 'http://192.168.1.184/enisolar_api'; 
+  private apiUrl = 'http://localhost:8000/enisolar_api'; 
 
   constructor() {} // HttpClient removed to solve the Mixed Content block
 

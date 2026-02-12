@@ -1,33 +1,42 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
 
-// 1. Import addIcons
+// 1. CHANGE: Import UI components from '@ionic/angular/standalone'
+// DO NOT use 'IonicModule' here.
+import { 
+  IonApp,
+  IonRouterOutlet,
+  IonMenu,         // <--- The magic fixer
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonList,
+  IonItem,
+  IonIcon,
+  IonLabel,
+  IonMenuToggle    // <--- Required for the menu logic
+} from '@ionic/angular/standalone';
+
+// 2. Import addIcons
 import { addIcons } from 'ionicons';
 
-// 2. Import EVERY icon used in the ENTIRE APP
+// 3. Import Icons
 import { 
-  // Base Menu Icons
   homeOutline, 
   mapOutline, 
   albumsOutline, 
   settingsOutline, 
   planetOutline,
-
-  // Action Icons (Home Page / General)
-  play,   // <--- Added back
-  stop,   // <--- Added back (just in case)
-
-  // Map Planner UI - Top/Stats
+  play, 
+  stop, 
   menuOutline,
   resizeOutline,
   navigateOutline,
   timeOutline,
   trendingUpOutline,
   eyeOutline,
-
-  // Sidebar / Configuration
   chevronForwardOutline,
   chevronBackOutline,
   arrowUpOutline,
@@ -36,14 +45,11 @@ import {
   layersOutline,
   swapHorizontalOutline,
   cameraOutline,
-
-  // Action Buttons / Bottom Bar
   arrowUndoOutline,
   trashOutline,
   checkmarkDoneOutline,
   saveOutline,
   informationCircleOutline
-
 } from 'ionicons/icons';
 
 @Component({
@@ -51,39 +57,48 @@ import {
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, RouterLink, RouterLinkActive],
+  // 4. CHANGE: Register the specific components here
+  imports: [
+    CommonModule, 
+    RouterLink, 
+    RouterLinkActive,
+    IonApp,           // Required
+    IonRouterOutlet,  // Required
+    IonMenu,          // <--- This fixes the "stuck" menu
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonList,
+    IonItem,
+    IonIcon,
+    IonLabel,
+    IonMenuToggle     // Required
+  ],
 })
 export class AppComponent {
   public appPages = [
     { title: 'Home', url: '/home', icon: 'home-outline' },
     { title: 'Map Planner', url: '/map-planner', icon: 'map-outline' },
     { title: 'Missions', url: '/mission-status', icon: 'albums-outline' },
-    
   ];
 
   constructor() {
-    // 3. Register ALL of them globally
+    // 5. Register ALL icons
     addIcons({ 
-      // Base Menu
       'home-outline': homeOutline, 
       'map-outline': mapOutline, 
       'albums-outline': albumsOutline, 
       'settings-outline': settingsOutline, 
       'planet-outline': planetOutline,
-
-      // Actions (Home/Global)
-      play,
-      stop,
-
-      // Map Planner - Stats & Top
+      'play': play,
+      'stop': stop,
       'menu-outline': menuOutline,
       'resize-outline': resizeOutline,
       'navigate-outline': navigateOutline,
       'time-outline': timeOutline,
       'trending-up-outline': trendingUpOutline,
       'eye-outline': eyeOutline,
-
-      // Sidebar & Config
       'chevron-forward-outline': chevronForwardOutline,
       'chevron-back-outline': chevronBackOutline,
       'arrow-up-outline': arrowUpOutline,
@@ -92,8 +107,6 @@ export class AppComponent {
       'layers-outline': layersOutline,
       'swap-horizontal-outline': swapHorizontalOutline,
       'camera-outline': cameraOutline,
-
-      // Actions & Info
       'arrow-undo-outline': arrowUndoOutline,
       'trash-outline': trashOutline,
       'checkmark-done-outline': checkmarkDoneOutline,

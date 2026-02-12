@@ -1,75 +1,76 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home" color="success"></ion-back-button>
-    </ion-buttons>
-    <ion-title>Mission Data</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content class="ion-padding">
   
-  <div *ngIf="!mission()" class="ion-text-center" style="margin-top: 50px;">
-    <ion-spinner color="success"></ion-spinner>
-    <p style="color: var(--ion-color-medium);">Fetching mission details...</p>
-  </div>
+  <ion-header class="ion-no-border">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/home" color="success"></ion-back-button>
+      </ion-buttons>
+      <ion-title>Mission Data</ion-title>
+    </ion-toolbar>
+  </ion-header>
 
-  <div class="mission-info-header" *ngIf="mission()">
-    <h1 class="mission-name">{{ mission().name }}</h1>
-    <p class="mission-meta">Generated CSV Flight Path</p>
-  </div>
-
-  <div class="csv-container glass-panel" *ngIf="mission()">
-    <div class="csv-header">
-      <span class="file-name">flight_path.csv</span>
-      <button class="copy-btn" (click)="copyToClipboard()" [disabled]="!mission()?.flightPath">
-        <ion-icon name="copy-outline"></ion-icon>
-      </button>
-    </div>
+  <ion-content class="ion-padding">
     
-    <div class="csv-content">
-      <pre><code>{{ csvDisplay() }}</code></pre>
-    </div>
-  </div>
-
-  <div class="glass-panel" style="margin-top: 16px; padding: 16px;" *ngIf="mission()">
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-      <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600;">Drone Uplink</h3>
-      <ion-badge [color]="isConnected ? 'success' : 'medium'">
-        {{ isConnected ? 'LINKED' : 'OFFLINE' }}
-      </ion-badge>
+    <div *ngIf="!mission()" class="ion-text-center" style="margin-top: 50px;">
+      <ion-spinner color="success"></ion-spinner>
+      <p style="color: var(--ion-color-medium);">Fetching mission details...</p>
     </div>
 
-    <div class="status-box" style="background: rgba(0,0,0,0.05); padding: 8px; border-radius: 6px; margin-bottom: 16px; font-family: monospace; font-size: 0.9rem;">
-      > {{ statusMessage }}
+    <div class="mission-info-header" *ngIf="mission()">
+      <h1 class="mission-name">{{ mission().name }}</h1>
+      <p class="mission-meta">Generated CSV Flight Path</p>
     </div>
 
-    <ion-grid class="ion-no-padding">
-      <ion-row class="ion-justify-content-between">
-        
-        <ion-col size="5.8">
-          <ion-button expand="block" (click)="scanAndConnect()" [disabled]="isConnected" shape="round">
-            <ion-icon slot="start" name="bluetooth-outline"></ion-icon>
-            Connect
-          </ion-button>
-        </ion-col>
+    <div class="csv-container glass-panel" *ngIf="mission()">
+      <div class="csv-header">
+        <span class="file-name">flight_path.csv</span>
+        <button class="copy-btn" (click)="copyToClipboard()" [disabled]="!mission()?.flightPath">
+          <ion-icon name="copy-outline"></ion-icon>
+        </button>
+      </div>
+      
+      <div class="csv-content">
+        <pre><code>{{ csvDisplay() }}</code></pre>
+      </div>
+    </div>
 
-        <ion-col size="5.8">
-          <ion-button expand="block" color="success" (click)="uploadMission()" 
-            [disabled]="!isConnected || !mission()?.flightPath?.length" shape="round">
-            <ion-icon slot="start" name="cloud-upload-outline"></ion-icon>
-            Upload
-          </ion-button>
-        </ion-col>
+    <div class="glass-panel" style="margin-top: 16px; padding: 16px;" *ngIf="mission()">
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600;">Drone Uplink</h3>
+        <ion-badge [color]="isConnected ? 'success' : 'medium'">
+          {{ isConnected ? 'LINKED' : 'OFFLINE' }}
+        </ion-badge>
+      </div>
 
-      </ion-row>
-    </ion-grid>
-  </div>
+      <div class="status-box" style="background: rgba(0,0,0,0.05); padding: 8px; border-radius: 6px; margin-bottom: 16px; font-family: monospace; font-size: 0.9rem;">
+        > {{ statusMessage }}
+      </div>
 
-  <div class="helper-text" *ngIf="mission()">
-    <ion-icon name="information-circle-outline"></ion-icon>
-    <span>Ensure the drone is powered on and in range.</span>
-  </div>
+      <ion-grid class="ion-no-padding">
+        <ion-row class="ion-justify-content-between">
+          
+          <ion-col size="6">
+            <ion-button expand="block" (click)="scanAndConnect()" [disabled]="isConnected" shape="round" class="ion-margin-end">
+              <ion-icon slot="start" name="bluetooth-outline"></ion-icon>
+              Connect
+            </ion-button>
+          </ion-col>
 
-</ion-content>
+          <ion-col size="6">
+            <ion-button expand="block" color="success" (click)="uploadMission()" 
+              [disabled]="!isConnected || !mission()?.flightPath?.length" shape="round">
+              <ion-icon slot="start" name="cloud-upload-outline"></ion-icon>
+              Upload
+            </ion-button>
+          </ion-col>
+
+        </ion-row>
+      </ion-grid>
+    </div>
+
+    <div class="helper-text" *ngIf="mission()">
+      <ion-icon name="information-circle-outline"></ion-icon>
+      <span>Ensure the drone is powered on and in range.</span>
+    </div>
+
+  </ion-content>

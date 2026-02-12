@@ -1,34 +1,38 @@
 <ion-app>
-  <ion-menu contentId="main-content" type="overlay">
-    <ion-content class="menu-content">
-      
-      <div class="menu-header">
-        <div class="logo-circle">
-          <ion-icon name="planet-outline"></ion-icon>
-        </div>
-        <h2>Solar Inspector</h2>
-        <p>Mission Control</p>
-      </div>
 
-      <ion-list id="inbox-list">
+  <ion-menu contentId="main-content" type="overlay">
+    
+    <ion-header class="ion-no-border">
+      <ion-toolbar class="menu-header">
+        <ion-title>Menu</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <ion-list class="menu-list">
+        
         <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages">
+          
           <ion-item 
-            routerDirection="root" 
+            button 
             [routerLink]="[p.url]" 
+            routerDirection="root" 
             lines="none" 
             detail="false" 
             routerLinkActive="selected">
-            <ion-icon aria-hidden="true" slot="start" [name]="p.icon"></ion-icon>
+            
+            <ion-icon slot="start" [name]="p.icon"></ion-icon>
             <ion-label>{{ p.title }}</ion-label>
+          
           </ion-item>
+        
         </ion-menu-toggle>
+      
       </ion-list>
     </ion-content>
-    
-    <div class="menu-footer">
-      <p>v1.0.0 Alpha</p>
-    </div>
+
   </ion-menu>
 
   <ion-router-outlet id="main-content"></ion-router-outlet>
+
 </ion-app>

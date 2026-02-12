@@ -1,0 +1,96 @@
+/* --- 1. MENU CONTAINER --- */
+ion-menu {
+    
+  --width: 280px; /* nice comfortable width */
+}
+
+/* The Deep Space Background */
+ion-content {
+  /* Vertical gradient from black to deep blue-grey */
+  --background: linear-gradient(180deg, rgb(24, 27, 60),rgba(24, 27, 60, 0.867) 50%,  rgb(24, 27, 60));
+}
+
+/* --- 2. HEADER (The "MENU" Title) --- */
+.menu-header {
+  --background: transparent;
+  --border-style: none;
+  padding-top: 30px; /* Push it down a bit from status bar */
+  padding-bottom: 10px;
+
+  ion-title {
+    color:  rgb(24, 27, 60); /* Neon Green */
+    font-size: 24px;
+    font-weight: 800; /* Extra Bold */
+    letter-spacing: 1.5px; /* Spaced out letters */
+    text-transform: uppercase;
+    padding-left: 24px; /* Align with list items */
+  }
+}
+
+/* --- 3. LIST CONTAINER --- */
+.menu-list {
+  background: transparent;
+  padding-top: 10px;
+}
+
+/* --- 4. MENU ITEMS (Default State) --- */
+ion-item {
+  /* Transparent so the gradient shows through */
+  --background: transparent;
+  --color: #ffffff; /* White Text */
+  
+  /* Sizing & Spacing */
+  --min-height: 56px;
+  --padding-start: 24px;
+  margin-bottom: 8px; /* Space between items */
+  
+  /* The "Tab" Shape (Rounded on the right only) */
+  margin-right: 16px; 
+  border-radius: 0 50px 50px 0; 
+  
+  cursor: pointer;
+
+  /* Icon Default Style */
+  ion-icon {
+    font-size: 22px;
+    margin-right: 20px;
+    color: rgba(255, 255, 255, 0.4); /* Dimmed/Ghosted when not active */
+    transition: all 0.3s ease;
+  }
+
+  ion-label {
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+  }
+}
+
+/* --- 5. ACTIVE STATE (The "Selected" Class) --- */
+/* This works because you added routerLinkActive="selected" in HTML */
+.selected {
+  /* The Green Glow Background */
+  --background: rgba(45, 211, 111, 0.15); 
+  
+  /* The Green Text */
+  --color: #2dd36f; 
+  
+  /* The Green Icon */
+  ion-icon {
+    color: #2dd36f;
+    opacity: 1;
+    transform: scale(1.1); /* Slight pop effect */
+  }
+
+  ion-label {
+    font-weight: 700; /* Bold text for active page */
+  }
+
+  /* Optional: A solid green bar on the left edge */
+  border-left: 4px solid #2dd36f;
+}
+
+/* --- 6. RIPPLE EFFECT OVERRIDE --- */
+/* Makes the click animation green instead of default grey */
+ion-item {
+  --ripple-color: #2dd36f;
+}
