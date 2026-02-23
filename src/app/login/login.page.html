@@ -1,0 +1,48 @@
+<ion-content class="login-bg" [scrollY]="false">
+  <div class="login-container">
+    
+    <form [formGroup]="loginForm" (ngSubmit)="submit()" class="login-form">
+      <h2>Enisolar</h2>
+      <p class="subtitle">Sign in to continue your journey</p>
+      
+      <div class="input-group">
+        <ion-icon name="mail-outline"></ion-icon>
+        <input 
+          type="email" 
+          formControlName="email" 
+          placeholder="Enter email" 
+        />
+      </div>
+
+      <div class="input-group">
+        <ion-icon name="lock-closed-outline"></ion-icon>
+        <input 
+          type="password" 
+          formControlName="password" 
+          placeholder="Enter password" 
+        />
+      </div>
+
+      <button type="submit" [disabled]="isLoading || loginForm.invalid" class="login-btn">
+        <span *ngIf="!isLoading">Login</span>
+        <span *ngIf="isLoading" class="spinner"></span>
+      </button>
+
+      <div class="alternatives">
+        <a class="forgot-link">Forgot password?</a>
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+    </form>
+
+    <div class="register-section">
+      <p>Don't have an account?</p>
+      <button class="register-btn" routerLink="/register">
+        <ion-icon name="person-add-outline"></ion-icon> Create Account
+      </button>
+    </div>
+  </div>
+</ion-content>

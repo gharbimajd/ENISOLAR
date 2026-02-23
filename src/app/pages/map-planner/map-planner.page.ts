@@ -152,6 +152,7 @@ export class MapPlannerPage implements ViewWillEnter, ViewDidEnter, OnDestroy {
   private createFreshMission() {
     const newMission: Mission = {
       id: `mission_${Date.now()}`,
+      user_id: localStorage.getItem('user_id') || '',
       name: ``,
       status: 'Draft',
       date: new Date(),

@@ -1,0 +1,179 @@
+/* =========================================
+   1. SHARED LAYOUT & BACKGROUND
+========================================= */
+ion-content.login-bg {
+  --background: transparent; // Removes the default white/gray background
+}
+
+ion-content.login-bg::part(background) {
+  /* Using the MDN Shorthand: color | image | repeat | attachment | position / size */
+  background: #000 url('/assets/img/bgim.png') no-repeat fixed center / cover !important;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100%;
+  padding: 24px;
+}
+
+/* =========================================
+   2. THE FORM (Modern Minimalist Glass)
+========================================= */
+.login-form {
+  width: 100%;
+  max-width: 440px; /* Slightly wider to fit 'Create Account' title */
+  background: rgba(13, 22, 40, 0.9); 
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 28px;
+  padding: 40px 28px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+
+  /* Header Row with Back Button */
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 8px;
+
+
+
+    h2 {
+      color: #ffffff;
+      font-size: 1.8rem;
+      font-weight: 300;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin: 0;
+    }
+  }
+
+  .subtitle {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+}
+
+/* =========================================
+   3. CRYSTAL CLEAR INPUTS
+========================================= */
+.input-group {
+  margin-bottom: 18px; /* Slightly tighter for longer forms */
+  display: flex;
+  align-items: center;
+  background: #ffffff; /* Pure white for maximum clarity */
+  border-radius: 14px;
+  padding: 4px 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+
+  &:focus-within {
+    transform: translateY(-2px);
+  }
+
+  ion-icon {
+    color: #1a2c4e;
+    font-size: 1.2rem;
+    margin-right: 12px;
+    opacity: 0.7;
+  }
+
+  input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 14px 0;
+    color: #0a1428; /* High-readability dark text */
+    font-size: 1rem;
+    font-weight: 500;
+    outline: none;
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+  }
+}
+
+/* =========================================
+   4. REGISTER BUTTON & ERRORS
+========================================= */
+.login-btn {
+  width: 100%;
+  padding: 18px;
+  background: #ffffff; /* White button */
+  color: #0a1428;      /* Deep blue text */
+  border: none;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 10px;
+  cursor: pointer;
+
+  &:active {
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  &:disabled {
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+.error-message {
+  margin-top: 15px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 10px;
+  border-radius: 10px;
+  color: #ef4444;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* =========================================
+   5. FOOTER SECTION
+========================================= */
+.register-section {
+  margin-top: 32px;
+  text-align: center;
+  
+  p {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.95rem;
+
+    a {
+      color: #ffffff;
+      font-weight: 600;
+      text-decoration: none;
+      margin-left: 5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      
+      &:active {
+        border-bottom-color: #ffffff;
+      }
+    }
+  }
+}
+
+/* --- Spinner --- */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(10, 20, 40, 0.2);
+  border-top: 2px solid #0a1428;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

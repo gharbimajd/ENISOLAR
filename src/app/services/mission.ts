@@ -5,29 +5,38 @@ import { Mission, createNewMission, FlightConfig } from '../models/mission.model
 import * as turf from '@turf/turf';
 import { Feature, LineString, Position, Polygon } from 'geojson';
 import { CapacitorHttp, HttpResponse } from '@capacitor/core';
-
+import { environment } from 'src/environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class MissionService {
   
-  private apiUrl = 'http://localhost:8000/enisolar_api'; 
+  private apiUrl = environment.apiUrl; 
 
   constructor() {} // HttpClient removed to solve the Mixed Content block
-
+  
   /**
    * Get all missions from the Database (enisolar)
    * Modified to use CapacitorHttp to bypass HTTPS/HTTP security blocks
    */
-  getMissions(): Observable<Mission[]> {
-    return from(CapacitorHttp.get({ url: `${this.apiUrl}/get_missions.php` })).pipe(
+ getMissions(): Observable<Mission[]> {
+    // 1. Get the user ID from storage (or use your getCurrentUserId() helper if you prefer)
+    const userId = localStorage.getItem('user_id') || '';
+
+    return from(CapacitorHttp.get({ 
+      url: `${this.apiUrl}/get_missions.php`, 
+      params: { user_id: userId } 
+    })).pipe(
       map((response: HttpResponse) => {
-        // Safety Check
-        if (!response.data) return [];
+        // Safety Check 1: No data or server returned an error message
+        if (!response.data || response.data.error) return [];
 
-        const missions = response.data as Mission[];
+        const missions = response.data;
 
-        return missions.map(m => {
+        // Safety Check 2: Make sure PHP actually sent an array back before trying to .map() it
+        if (!Array.isArray(missions)) return [];
+
+        return (missions as Mission[]).map(m => {
           // TRICK TYPESCRIPT: Force it to treat date as a string temporarily
           // This fixes "Property 'replace' does not exist"
           let dateStr = m.date as any;
@@ -54,18 +63,110 @@ export class MissionService {
    * Get a specific mission by ID
    */
   getMissionById(id: string): Observable<Mission | undefined> {
-    return this.getMissions().pipe(
-      map(missions => missions.find(m => m.id === id))
+  const userId = localStorage.getItem('user_id') || '';
+
+  return from(CapacitorHttp.get({ 
+    url: `${this.apiUrl}/get_missions.php`, 
+    params: { 
+      user_id: userId,
+      mission_id: id // This tells PHP: "I want a specific one"
+    } 
+  })).pipe(
+    map((response: HttpResponse) => {
+      // Safety: Error from server or no data
+      if (!response.data || response.data.error) return undefined;
+
+      const m = response.data;
+
+      // Handle the Date formatting logic just like in getMissions
+      let dateStr = m.date as any;
+      if (typeof dateStr === 'string') {
+          dateStr = dateStr.replace(' ', 'T');
+      }
+
+      return {
+        ...m,
+        date: new Date(dateStr),
+        // Force coordinates to arrays just in case PHP sends null
+        polygonPoints: m.polygonPoints || [],
+        flightPath: m.flightPath || []
+      } as Mission;
+    }),
+    catchError(error => {
+      console.error('Error fetching mission details:', error);
+      return of(undefined);
+    })
+  );
+}
+  
+  register(userData: any): Observable<any> {
+  return from(CapacitorHttp.post({
+    url: `${this.apiUrl}/register.php`,
+    data: userData,
+    headers: { 'Content-Type': 'application/json' }
+  })).pipe(
+    map(res => res.data)
+  );
+}
+  login(credentials: any): Observable<any> {
+    return from(CapacitorHttp.post({
+      url: `${this.apiUrl}/login.php`,
+      data: credentials,
+      headers: { 'Content-Type': 'application/json' }
+    })).pipe(
+      map(res => res.data)
     );
   }
+  /**
+   * Fetch User Profile Data
+   */
+  getProfile(): Observable<any> {
+    const userId = localStorage.getItem('user_id') || '';
+    
+    return from(CapacitorHttp.get({
+      url: `${this.apiUrl}/get_profile.php`,
+      params: { user_id: userId }
+    })).pipe(
+      map(res => res.data)
+    );
+  }
+  /**
+   * Change User Password
+   */
+  changePassword(passwordData: any): Observable<any> {
+    const userId = localStorage.getItem('user_id') || '';
+    
+    // Combine the user ID with the password payload
+    const payload = {
+      user_id: userId,
+      ...passwordData
+    };
 
+    return from(CapacitorHttp.post({
+      url: `${this.apiUrl}/change_password.php`,
+      data: payload,
+      headers: { 'Content-Type': 'application/json' }
+    })).pipe(
+      map(res => res.data)
+    );
+  }
+  
   /**
    * Save or update a mission to the Database
    */
-  saveMission(mission: Mission): Observable<any> {
+ saveMission(mission: Mission): Observable<any> {
+    // 1. Get the user ID from storage
+    const userId = localStorage.getItem('user_id') || '';
+
+    // 2. Ensure the mission has the user_id attached before saving
+    // This acts as a safety net in case the mission was somehow created without it
+    if (!mission.user_id) {
+      mission.user_id = userId;
+    }
+
     return from(CapacitorHttp.post({
       url: `${this.apiUrl}/save_mission.php`,
-      data: mission,
+      data: mission, // Now this definitely contains the user_id!
       headers: { 'Content-Type': 'application/json' }
     })).pipe(
       map(res => res.data)
@@ -75,15 +176,21 @@ export class MissionService {
   /**
    * Delete a mission from the Database
    */
-  deleteMission(id: string): Observable<any> {
+deleteMission(id: string): Observable<any> {
+    // 1. Get the current user's ID
+    const userId = localStorage.getItem('user_id') || '';
+
     return from(CapacitorHttp.delete({
       url: `${this.apiUrl}/delete_mission.php`,
-      params: { id: id }
+      // 2. Send BOTH the mission id and the user_id to the server
+      params: { 
+        id: id,
+        user_id: userId
+      }
     })).pipe(
       map(res => res.data)
     );
   }
-
   /**
    * Create a new mission structure (Client-side factory)
    */

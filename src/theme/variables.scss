@@ -1,30 +1,29 @@
-/* Ionic Variables and Theming. For more info, please see:
-http://ionicframework.com/docs/theming/ */
+/* Ionic Variables and Theming - Full Inverted Glass Restore */
 
 :root {
-  /* Primary Color (Blue) */
-  --ion-color-primary: #3880ff;
-  --ion-color-primary-rgb: 56, 128, 255;
+/* Primary Color - Matched to your Image (#0a1428) */
+  --ion-color-primary: #0a0420e0;
+  --ion-color-primary-rgb: 10, 20, 40;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #3171e0;
-  --ion-color-primary-tint: #4c8dff;
+  --ion-color-primary-shade: #110d20e0; /* Slightly darker for press state */
+  --ion-color-primary-tint: #0f0923e0;  /* Slightly lighter for hover state */
 
-  /* Secondary Color (Cyan) */
-  --ion-color-secondary: #3dc2ff;
-  --ion-color-secondary-rgb: 61, 194, 255;
+  /* Secondary Color (Was Cyan -> Now Glass) */
+  --ion-color-secondary: rgb(34, 28, 53);
+  --ion-color-secondary-rgb: 255, 255, 255;
   --ion-color-secondary-contrast: #ffffff;
   --ion-color-secondary-contrast-rgb: 255, 255, 255;
-  --ion-color-secondary-shade: #36abe0;
-  --ion-color-secondary-tint: #50c8ff;
+  --ion-color-secondary-shade: rgba(27, 25, 44, 0.918);
+  --ion-color-secondary-tint: rgb(28, 29, 62);
 
-  /* Tertiary Color (Purple) */
-  --ion-color-tertiary: #5260ff;
-  --ion-color-tertiary-rgb: 82, 96, 255;
+  /* Tertiary Color (Was Purple -> Now Glass) */
+  --ion-color-tertiary: rgb(32, 29, 49);
+  --ion-color-tertiary-rgb: 255, 255, 255;
   --ion-color-tertiary-contrast: #ffffff;
   --ion-color-tertiary-contrast-rgb: 255, 255, 255;
-  --ion-color-tertiary-shade: #4854e0;
-  --ion-color-tertiary-tint: #6370ff;
+  --ion-color-tertiary-shade: rgba(27, 25, 44, 0.918);
+  --ion-color-tertiary-tint: rgba(27, 25, 44, 0.918);
 
   /* Success Color (Green) */
   --ion-color-success: #2dd36f;
@@ -56,7 +55,7 @@ http://ionicframework.com/docs/theming/ */
   --ion-color-dark-contrast: #ffffff;
   --ion-color-dark-contrast-rgb: 255, 255, 255;
   --ion-color-dark-shade: #1e2023;
-  --ion-color-dark-tint: #383a3e;
+  --ion-color-dark-tint: #1c1a49;
 
   /* Medium Color (Grey) */
   --ion-color-medium: #92949c;

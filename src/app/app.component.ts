@@ -49,7 +49,9 @@ import {
   trashOutline,
   checkmarkDoneOutline,
   saveOutline,
-  informationCircleOutline
+  informationCircleOutline,
+  logInOutline,
+  personCircleOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -78,9 +80,10 @@ import {
 })
 export class AppComponent {
   public appPages = [
+    { title: 'My Profile', url: '/profile', icon: 'person-outline' },
     { title: 'Home', url: '/home', icon: 'home-outline' },
     { title: 'Map Planner', url: '/map-planner', icon: 'map-outline' },
-    { title: 'Missions', url: '/mission-status', icon: 'albums-outline' },
+    { title: 'logout', url: '/login', icon: 'log-in-outline' },
   ];
 
   constructor() {
@@ -111,7 +114,9 @@ export class AppComponent {
       'trash-outline': trashOutline,
       'checkmark-done-outline': checkmarkDoneOutline,
       'save-outline': saveOutline,
-      'information-circle-outline': informationCircleOutline
+      'information-circle-outline': informationCircleOutline,
+      'log-in-outline':logInOutline,
+      'person-outline':personCircleOutline
     });
   }
 }

@@ -7,13 +7,13 @@ export const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'login',
     pathMatch: 'full',
   },
-  // {
-  //   path: 'login',
-  //   loadComponent: () => import('./pages/login/login.page').then( m => m.LoginPage)
-  // },
+ {
+   path: 'login',
+   loadComponent: () => import('./login/login.page').then( m => m.LoginPage)
+   },
 
   // --- FIX STARTS HERE ---
   
@@ -39,5 +39,18 @@ export const routes: Routes = [
     path: 'mission-status/:id',
     loadComponent: () => import('./pages/mission-status/mission-status.page').then( m => m.MissionStatusPage)
   },
+  {
+    path: 'login',
+    loadComponent: () => import('./login/login.page').then( m => m.LoginPage)
+  },
+  {
+    path: 'register',
+    loadComponent: () => import('./register/register.page').then( m => m.RegisterPage)
+  },
+  {
+    path: 'profile',
+    loadComponent: () => import('./profile/profile.page').then( m => m.ProfilePage)
+  },
+
 ];
 

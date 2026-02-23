@@ -58,6 +58,7 @@ export interface FlightConfig {
 // The Mission Object
 export interface Mission {
   id: string;
+  user_id: string;
   name: string;
   date: Date;
   status: 'Draft' | 'Ready' | 'Flyable';
@@ -91,6 +92,7 @@ export const DEFAULT_FLIGHT_CONFIG: FlightConfig = {
 export function createNewMission(name?: string): Mission {
   return {
     id: generateId(),
+    user_id:getCurrentUserId(),
     name: name || `Mission ${new Date().toLocaleDateString()}`,
     date: new Date(),
     status: 'Draft',
@@ -108,3 +110,6 @@ export function createNewMission(name?: string): Mission {
 function generateId(): string {
   return `mission_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
+ function getCurrentUserId(): string {
+    return localStorage.getItem('user_id') || '';
+  }
