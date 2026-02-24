@@ -1,86 +1,82 @@
 /* 1. BACKGROUND & LAYOUT */
-/* 1. BACKGROUND & LAYOUT */
 ion-content {
-  --background: transparent; 
-}
-
-ion-content::part(background) {
-  /* Try the relative path (../../../) if the absolute path (/) fails */
- background: #000 url('/assets/img/bgim.png') no-repeat fixed center / cover !important;
-  
-  /* Fallback in case the image is missing, so you can see if the code works */
-  background-color: #0a1428 !important; 
-}
-
-/* 2. HEADER & TOOLBAR STYLING */
-ion-toolbar {
   --background: transparent;
-  --border-color: transparent;
-  --color: #ffffff;
   
-  ion-title {
-    font-weight: 300;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-  
-  ion-back-button, ion-button {
-    --color: #ffffff;
+  &::part(background) {
+    background: #000 url('/assets/img/bgim.png') no-repeat fixed center / cover !important;
+    background-color: #0a1428 !important;
   }
 }
 
-/* 3. MODERN GLASS CARDS */
-ion-card {
-  background: rgba(13, 22, 40, 0.85); /* Deep glass matching home page */
+.profile-scroll-container {
+  padding: 16px;
+  padding-bottom: 50px; // Space for the phoenix at the bottom
+}
+
+/* 2. GLASS TOOLBAR */
+ion-toolbar {
+  --background: rgba(10, 20, 40, 0.85);
+  backdrop-filter: blur(10px);
+  --color: #ffffff;
+  --border-style: none;
+
+  ion-title {
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 1rem;
+  }
+}
+
+/* 3. GLASS CARD COMPONENT */
+.glass-card {
+  background: rgba(13, 22, 40, 0.7) !important;
+  backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
-  margin: 16px 0;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  margin: 0 0 20px 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 
   ion-card-header {
-    padding-bottom: 0;
-    
     ion-card-title {
-      color: #ffffff;
-      font-size: 1.1rem;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      opacity: 0.9;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
     }
   }
 }
 
-/* 4. LIST & ITEM CUSTOMIZATION (For Clarity) */
-ion-list {
-  background: transparent !important;
-}
-
+/* 4. REMOVING WHITE BLOCKS (The Part Fix) */
 ion-item {
-  --background: transparent;
+  --background: transparent !important;
+  --color: #ffffff;
   --border-color: rgba(255, 255, 255, 0.05);
-  --padding-start: 0;
-  --inner-padding-end: 0;
-  margin-bottom: 4px;
-ion-icon {
-    color: #ffffff !important; 
-    --color: #ffffff !important; /* This forces Ionic's internal variable */
-    fill: #ffffff !important;   
-    stroke: #ffffff !important; 
+  --padding-start: 16px;
+
+  &::part(native) {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+  }
+
+  ion-icon {
+    color: #ffffff !important;
+    opacity: 0.8;
     font-size: 1.4rem;
-    margin-inline-end: 16px;
-    opacity: 0.9; 
   }
 
   h3 {
-    color: rgba(255, 255, 255, 0.5) !important; /* Muted label */
-    font-size: 0.75rem !important;
+    color: rgba(255, 255, 255, 0.45) !important;
+    font-size: 0.7rem !important;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
     margin-bottom: 4px;
   }
 
   p {
-    color: #ffffff !important; /* Crystal clear data text */
+    color: #ffffff !important;
     font-size: 1rem;
     font-weight: 500;
   }
@@ -88,38 +84,27 @@ ion-icon {
   ion-input {
     --color: #ffffff;
     --placeholder-color: rgba(255, 255, 255, 0.3);
-    --highlight-color-focused: #ffffff;
-    --background: transparent !important; /* Forces the white block to disappear */
     font-weight: 500;
-    
-    /* This stops Chrome/browsers from turning the background white when it autofills passwords */
+
     &::part(native) {
       background: transparent !important;
-      color: #ffffff !important;
     }
   }
 }
 
-/* 5. UPDATE PASSWORD BUTTON (The Spark) */
-ion-button[expand="block"] {
-  --background: #ffffff; /* Solid white button for modern contrast */
-  --color: #0a1428;      /* Deep blue text */
-  --border-radius: 12px;
-  --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  margin-top: 24px;
-  font-weight: 700;
-  height: 52px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+/* 5. BUTTON STYLING */
+.button-container {
+  padding: 10px 16px 20px 16px;
+}
 
-  &::part(native) {
-    transition: all 0.2s ease;
-  }
-
-  &:active {
-    opacity: 0.9;
-    transform: scale(0.98);
-  }
+ion-button {
+  --background: #ffffff;
+  --color: #0a1428;
+  --border-radius: 14px;
+  --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  font-weight: 800;
+  height: 54px;
+  margin: 0;
 
   &[disabled] {
     --background: rgba(255, 255, 255, 0.1);
@@ -128,7 +113,6 @@ ion-button[expand="block"] {
   }
 }
 
-/* 6. LOGOUT BUTTON SPECIAL STYLE */
-ion-buttons[slot="end"] ion-button {
-  --color: #eb445a; /* Red highlight for logout action */
+.logout-btn {
+  --color: #ff4d4d !important;
 }

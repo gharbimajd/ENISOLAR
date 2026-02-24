@@ -106,7 +106,8 @@ export class MapPlannerPage implements ViewWillEnter, ViewDidEnter, OnDestroy {
       'speedometer': speedometer,
       'layers': layers,
       'compass': compass,
-      'camera': camera
+      'camera': camera,
+       'checkmark-done-outline':checkmarkDoneOutline,
     });
   }
 

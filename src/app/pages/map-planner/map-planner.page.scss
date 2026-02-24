@@ -1,206 +1,431 @@
-// --- 1. CORE LAYOUT (Deep Space Theme) ---
+// ============================================================
+//  MAP PLANNING PAGE — COMPLETE STYLESHEET
+//  Matched 1-to-1 with the Angular/Ionic template.
+//  Sections:
+//    1.  Design Tokens
+//    2.  Core Layout (ion-content, #map)
+//    3.  Header & Toolbar
+//    4.  Back Button  (.glass-back-btn)
+//    5.  Stats Capsule (.stats-capsule / .landscape-stats-scaling)
+//    6.  Glass Utility  (.glass-panel)
+//    7.  Map Interface Wrapper
+//    8.  Settings Panel — Portrait bottom-sheet
+//    9.  Sheet Handle Bar
+//   10.  Sheet Content — Form elements
+//   11.  Floating Action Dock
+//   12.  Loading Overlay
+//   13.  Landscape Media Query (all overrides in one place)
+// ============================================================
+
+
+// ─── 1. DESIGN TOKENS ────────────────────────────────────────
+
+$bg-page:          #050508;
+$glass-bg:         rgba(13, 22, 40, 0.85);
+$glass-border:     rgba(255, 255, 255, 0.1);
+$glass-shadow:     0 8px 32px rgba(0, 0, 0, 0.4);
+$glass-blur:       blur(20px);
+
+$surface-mid:      rgba(30, 41, 59, 0.5);
+$surface-low:      rgba(30, 41, 59, 0.4);
+
+$accent:           #4ade80;
+$accent-fg:        #000000;
+$danger:           #ef4444;
+
+$text-primary:     #ffffff;
+$text-muted:       #94a3b8;
+$text-body:        #cbd5e1;
+
+$radius-sm:        8px;
+$radius-md:        12px;
+$radius-lg:        16px;
+$radius-xl:        24px;
+$radius-pill:      50px;
+
+$transition-panel: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+
+// ─── 2. CORE LAYOUT ──────────────────────────────────────────
+
 ion-content {
-  /* MATCHING HOME PAGE BACKGROUND */
-  --background: radial-gradient(circle at 50% 0%, #1a2c4e 0%, #000000 70%);
+  --background: #{$bg-page};
   position: relative;
 }
 
 #map {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
   z-index: 1;
 }
 
-// --- 2. HEADER STYLES (Blue Glass) ---
-.glass-back-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50% !important;
-  margin-left: 10px;
-  overflow: hidden;
 
-  /* THEME UPDATE: Blue tint instead of grey */
-  background: rgba(13, 22, 40, 0.75); 
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+// ─── 3. HEADER & TOOLBAR ─────────────────────────────────────
+
+ion-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1001;
+  background: transparent !important;
+  pointer-events: none;
+
+  ion-toolbar {
+    --background:     transparent;
+    --border-style:   none;
+    --border-width:   0;
+    --padding-top:    0;
+    --padding-bottom: 0;
+    --padding-start:  0;
+    --padding-end:    0;
+    --min-height:     56px;
+    --color:          #{$text-primary};
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 env(safe-area-inset-right, 8px) 0 env(safe-area-inset-left, 8px);
+    pointer-events: auto;
+  }
+}
+
+
+// ─── 4. BACK BUTTON ──────────────────────────────────────────
+
+.glass-back-btn {
+  --color:              #{$text-primary};
+  --background:         #{$glass-bg};
+  --background-hover:   rgba(13, 22, 40, 0.95);
+  --icon-font-size:     22px;
+  --icon-margin-end:    0;
+  --padding-start:      0;
+  --padding-end:        0;
+
+  backdrop-filter:      $glass-blur;
+  -webkit-backdrop-filter: $glass-blur;
+  border-radius:        $radius-md;
+  border:               1px solid $glass-border;
+
+  width:    44px;
+  height:   44px;
+  min-width: 44px;
 
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 
-  --background: transparent;
-  --color: #fff;
-  --padding-start: 0;
-  --padding-end: 0;
-  --border-radius: 0;
-  --ripple-color: rgba(74, 222, 128, 0.5); /* Green Ripple */
+  pointer-events: auto;
+  transition: transform 0.15s ease, background 0.15s ease;
+
+  &:active { transform: scale(0.92); }
 }
+
+
+// ─── 5. STATS CAPSULE ────────────────────────────────────────
 
 .stats-capsule {
   display: flex;
   align-items: center;
-  
-  /* THEME UPDATE: Blue tint */
-  background: rgba(13, 22, 40, 0.75);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 50px;
-  padding: 6px 16px;
-  height: 44px;
-  
-  .stat-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #fff;
-    
-    /* MATCH HOME ICON COLOR */
-    ion-icon { font-size: 16px; color: #4ade80; } 
+  gap: 12px;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: $radius-md;
+  flex-shrink: 0;
+  pointer-events: auto;
+  margin-right: env(safe-area-inset-right, 0px);
+}
 
-    div {
-      display: flex;
-      flex-direction: column;
-      line-height: 1;
-      .val { font-size: 14px; font-weight: 600; }
-      .unit { font-size: 9px; opacity: 0.7; color: #94a3b8; } /* Slate Grey */
-    }
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  ion-icon {
+    font-size: 16px;
+    color: $text-muted;
+    flex-shrink: 0;
   }
 
-  .stat-divider {
-    width: 1px;
-    height: 20px;
-    background: rgba(255,255,255,0.15);
-    margin: 0 10px;
+  > div {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+  }
+
+  .val {
+    font-size: 13px;
+    font-weight: 700;
+    color: $text-primary;
+    line-height: 1;
+  }
+
+  .unit {
+    font-size: 9px;
+    font-weight: 500;
+    color: $text-muted;
+    line-height: 1;
   }
 }
 
-// --- 3. BOTTOM DOCK ---
-.bottom-dock {
+.stat-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+
+// ─── 6. GLASS UTILITY ────────────────────────────────────────
+
+.glass-panel {
+  background:              $glass-bg !important;
+  backdrop-filter:         $glass-blur;
+  -webkit-backdrop-filter: $glass-blur;
+  border:                  1px solid $glass-border;
+  box-shadow:              $glass-shadow;
+}
+
+
+// ─── 7. MAP INTERFACE WRAPPER ────────────────────────────────
+
+.map-interface-wrapper {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
-  pointer-events: none;
+  z-index: 100;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  align-items: stretch;
+  pointer-events: none;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-// --- 4. BUTTONS ROW ---
-.action-bar-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding-bottom: 15px;
-  pointer-events: auto;
-  width: 100%;
-  transition: transform 0.3s ease;
-}
 
-// --- 5. SETTINGS PANEL (The Big Drawer) ---
+// ─── 8. SETTINGS PANEL (Portrait bottom-sheet) ───────────────
+
 .settings-panel {
-  width: 100%;
-  
-  /* THEME UPDATE: Deep Blue Solid Glass */
-  background: rgba(13, 22, 40, 0.95); 
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px 24px 0 0;
   pointer-events: auto;
+  width: 100%;
   overflow: hidden;
-  
-  max-height: 0; 
+  border-radius: $radius-xl $radius-xl 0 0;
+
+  max-height: 0;
   opacity: 0;
-  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-  
+  transition: $transition-panel;
+
   &.open {
     max-height: 70vh;
     opacity: 1;
-    padding-bottom: 30px;
+    padding-bottom: env(safe-area-inset-bottom, 30px);
   }
 }
+
+
+// ─── 9. SHEET HANDLE BAR ─────────────────────────────────────
 
 .sheet-handle-bar {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 0 16px 0;
+  padding: 12px 0 8px;
   cursor: pointer;
-  background: rgba(255,255,255,0.02);
-  
+  flex-shrink: 0;
+  user-select: none;
+
+  &:hover .drag-handle { background: rgba(255, 255, 255, 0.35); }
+
   .drag-handle {
     width: 36px;
     height: 4px;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 2px;
-    margin-bottom: 8px;
+    transition: background 0.2s ease;
   }
-  
+
   .sheet-title {
-    color: #94a3b8; /* Slate Grey to match Home */
+    color: $text-muted;
     font-size: 10px;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.2px;
-    font-weight: 700;
+    margin-top: 8px;
   }
 }
+
+
+// ─── 10. SHEET CONTENT — Form elements ───────────────────────
 
 .sheet-content {
-  padding: 0 20px;
   overflow-y: auto;
-  max-height: 60vh;
+  padding: 0 16px 8px;
+  overscroll-behavior: contain;
+
+  &::-webkit-scrollbar       { width: 3px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
 }
 
-// --- 6. GLASS BUTTONS ---
-.glass-panel {
-  &.fab-btn, &.action-group {
-    /* THEME UPDATE: Blue tint */
-    background: rgba(13, 22, 40, 0.85);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+.input-wrapper {
+  margin-bottom: 12px;
+}
+
+.glass-input {
+  --background:            #{$surface-mid};
+  --color:                 #{$text-primary};
+  --placeholder-color:     #{$text-muted};
+  --placeholder-opacity:   1;
+  --padding-start:         14px;
+  --padding-end:           14px;
+  --padding-top:           10px;
+  --padding-bottom:        10px;
+  --border-radius:         #{$radius-md};
+  --highlight-color-focused: #{$accent};
+
+  border-radius: $radius-md;
+  border: 1px solid $glass-border;
+  font-size: 14px;
+  width: 100%;
+}
+
+.sliders-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+
+  .control-box.full {
+    grid-column: 1 / -1;
   }
+
+  @media (max-width: 340px) {
+    grid-template-columns: 1fr;
+    .control-box.full { grid-column: 1; }
+  }
+}
+
+.control-box {
+  background: $surface-low;
+  border-radius: $radius-lg;
+  border: 1px solid $glass-border;
+  padding: 12px;
+
+  .box-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+
+    .label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: $text-muted;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+
+      ion-icon { font-size: 13px; }
+    }
+
+    .value {
+      font-size: 11px;
+      font-weight: 700;
+      color: $accent;
+    }
+  }
+
+  ion-range {
+    --bar-background:        rgba(255, 255, 255, 0.12);
+    --bar-background-active: #{$accent};
+    --knob-background:       #{$accent};
+    --knob-size:             18px;
+    --knob-shadow:           0 2px 8px rgba(74, 222, 128, 0.5);
+    --bar-height:            3px;
+    --pin-background:        #{$accent};
+    --pin-color:             #{$accent-fg};
+    padding: 0;
+    margin-top: 2px;
+  }
+}
+
+.multi-range {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  ion-range { margin: 0; }
+}
+
+.camera-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  border-radius: $radius-md;
+  color: $accent;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 4px;
+  margin-bottom: 4px;
+
+  ion-icon { font-size: 15px; flex-shrink: 0; }
+}
+
+
+// ─── 11. FLOATING ACTION DOCK ────────────────────────────────
+
+.floating-action-dock {
+  pointer-events: auto;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 12px 16px 15px;
+}
+
+.action-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .fab-btn {
   width: 50px;
   height: 50px;
+  min-width: 50px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-  color: #fff;
-  transition: all 0.2s ease;
-  
-  &.active {
-    background: #4ade80 !important; /* Lighter Green to match Home */
-    color: #050508;
-    box-shadow: 0 0 15px rgba(74, 222, 128, 0.4);
-  }
-  &:active { transform: scale(0.95); }
+  font-size: 22px;
+  color: $text-primary;
+  cursor: pointer;
+  border: none;
+  flex-shrink: 0;
+  transition: background 0.2s ease, transform 0.15s ease;
+
+  ion-icon { pointer-events: none; }
+
+  &:active   { transform: scale(0.9); }
+  &.active   { background: $accent !important; color: $accent-fg; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
 }
 
 .action-group {
   display: flex;
   align-items: center;
-  border-radius: 50px;
+  border-radius: $radius-pill;
   padding: 4px;
-  
+
   .icon-btn {
     width: 42px;
     height: 42px;
@@ -208,87 +433,201 @@ ion-content {
     display: flex;
     align-items: center;
     justify-content: center;
+    color: $text-body;
     font-size: 20px;
-    color: #cbd5e1; /* Off-white */
+    cursor: pointer;
+    border: none;
     background: transparent;
-    &.danger { color: #ef4444; } /* Red match */
-    &:disabled { opacity: 0.3; }
-    &:active:not(:disabled) { background: rgba(255,255,255,0.1); }
+    transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+
+    ion-icon { pointer-events: none; }
+
+    &:hover    { background: rgba(255, 255, 255, 0.06); }
+    &:active   { transform: scale(0.88); }
+    &.danger   { color: $danger; }
+    &:disabled { opacity: 0.35; cursor: not-allowed; }
   }
+
   .divider {
-    width: 1px; height: 24px; background: rgba(255,255,255,0.1); margin: 0 4px;
+    width: 1px;
+    height: 24px;
+    background: $glass-border;
+    margin: 0 4px;
+    flex-shrink: 0;
   }
 }
 
 .save-btn {
-  background: #4ade80; /* Home Page Green */
-  color: #000;
-  font-weight: 600;
-  border-radius: 50px;
-  padding: 0 24px;
-  height: 50px;
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
-  box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
-  transition: transform 0.2s;
-  &:active { transform: scale(0.95); }
-  &:disabled { opacity: 0.6; background: #334155; color: #94a3b8; }
+  height: 50px;
+  padding: 0 22px;
+  border-radius: $radius-pill;
+  background: $accent;
+  color: $accent-fg;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+  box-shadow: 0 4px 20px rgba(74, 222, 128, 0.35);
+
+  ion-icon { font-size: 18px; pointer-events: none; }
+
+  &:active   { transform: scale(0.96); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 }
 
-// --- 7. INPUTS & SLIDERS (Blue Tinted) ---
-.glass-input {
-  /* Subtle Blue-Grey Background */
-  --background: rgba(30, 41, 59, 0.5); 
-  --color: #fff;
-  --placeholder-color: #94a3b8;
-  --padding-start: 16px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  border: 1px solid rgba(255,255,255,0.1);
-}
 
-.sliders-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
-  
-  .control-box {
-    background: rgba(30, 41, 59, 0.4); /* Blue-ish tint */
-    border-radius: 16px;
-    padding: 12px;
-    border: 1px solid rgba(255,255,255,0.05);
-    
-    &.full { grid-column: span 2; }
-    
-    .box-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      .label { font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 4px; }
-      .value { font-size: 12px; color: #4ade80; font-weight: 600; }
-    }
-    
-    ion-range {
-      --bar-background: rgba(255,255,255,0.1);
-      --bar-background-active: #4ade80;
-      --knob-background: #fff;
-      --knob-size: 14px;
-      padding-top: 0; padding-bottom: 0;
-    }
+// ─── 12. LOADING OVERLAY ─────────────────────────────────────
+
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 5, 8, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  ion-spinner {
+    width: 48px;
+    height: 48px;
+    --color: #{$accent};
   }
 }
 
-.camera-tag {
-  text-align: center; font-size: 12px; color: #64748b;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-}
 
-.loading-overlay {
-  position: absolute; inset: 0; 
-  background: rgba(5, 5, 8, 0.9); /* Deep Dark Overlay */
-  display: flex; align-items: center; justify-content: center; z-index: 2000;
+// ─── 13. LANDSCAPE MEDIA QUERY ───────────────────────────────
+// All portrait "hide" rules (max-height:0, opacity:0) are
+// countered here with !important to guarantee landscape wins.
+
+@media (orientation: landscape) {
+
+  // 13a. Header — flatten
+  ion-header {
+    height: 44px !important;
+    padding-top: env(safe-area-inset-top, 0);
+
+    ion-toolbar {
+      --min-height: 44px !important;
+      display:          flex !important;
+      align-items:      center !important;
+      justify-content:  space-between !important;
+    }
+  }
+
+  // 13b. Back button — compact
+  .glass-back-btn {
+    width:    36px !important;
+    height:   36px !important;
+    min-width: 36px !important;
+    margin-left: env(safe-area-inset-left, 8px) !important;
+
+    ion-icon { font-size: 18px; }
+  }
+
+  // 13c. Stats capsule — compact, forced to far right
+  //      Class on template: .landscape-stats-scaling
+  .landscape-stats-scaling {
+    transform:        scale(0.85);
+    transform-origin: right center;
+    margin-left:      auto !important;
+    margin-right:     env(safe-area-inset-right, 8px) !important;
+    height:           34px !important;
+    padding:          0 10px !important;
+    gap:              8px !important;
+
+    .stat-item {
+      gap: 4px !important;
+      ion-icon { font-size: 13px !important; }
+      .val     { font-size: 11px !important; }
+      .unit    { font-size: 8px !important; }
+    }
+
+    .stat-divider {
+      height: 14px !important;
+      margin: 0 4px !important;
+    }
+  }
+
+  // 13d. Map interface wrapper — horizontal layout
+  .map-interface-wrapper {
+    flex-direction:  row !important;
+    align-items:     stretch !important;
+    justify-content: flex-start !important;
+    padding-bottom:  0 !important;
+    top:             0;
+    height:          100%;
+  }
+
+  // 13e. Settings panel — left sidebar
+  // CRITICAL: max-height:none and opacity:1 override the portrait collapse.
+  .settings-panel {
+    width:      300px !important;
+    height:     100% !important;
+    max-height: none !important;     // ← kills portrait max-height: 0
+    min-height: 0 !important;
+    opacity:    1 !important;        // ← kills portrait opacity: 0
+    display:    flex !important;
+    flex-direction: column !important;
+    border-radius: 0 $radius-xl $radius-xl 0 !important;
+    overflow:   hidden !important;
+
+    transform:  translateX(-100%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+    padding-bottom: env(safe-area-inset-bottom, 12px) !important;
+    padding-left:   env(safe-area-inset-left, 0px);
+
+    &.open {
+      transform:  translateX(0) !important;
+      max-height: none !important;
+      opacity:    1 !important;
+    }
+
+    // display:block stops flex compression hiding sliders/inputs
+    .sheet-content {
+      display:    block !important;
+      flex:       1 1 auto;
+      overflow-y: auto;
+      max-height: none !important;
+      padding-bottom: 16px;
+    }
+  }
+
+  // 13f. Floating dock — bottom-right corner, vertical stack
+  .floating-action-dock {
+    position:   absolute !important;
+    bottom:     env(safe-area-inset-bottom, 16px) !important;
+    right:      env(safe-area-inset-right, 16px) !important;
+    width:      auto !important;
+    padding:    0 !important;
+
+    .action-bar-wrapper {
+      flex-direction:  column-reverse !important;
+      align-items:     flex-end !important;
+      gap:             10px !important;
+    }
+
+    .action-group {
+      flex-direction: column !important;
+
+      .divider {
+        width:  24px !important;
+        height: 1px !important;
+        margin: 4px 0 !important;
+      }
+    }
+
+    .save-btn {
+      padding:   0 16px !important;
+      font-size: 13px !important;
+    }
+  }
 }
