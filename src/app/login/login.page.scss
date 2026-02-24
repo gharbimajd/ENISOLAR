@@ -1,13 +1,9 @@
 /* =========================================
-   1. BACKGROUND (The "Deep Blue" Image Color)
+   1. BACKGROUND (Matched to Dashboard)
 ========================================= */
 ion-content.login-bg {
-  --background: transparent; // Removes the default white/gray background
-}
-
-ion-content.login-bg::part(background) {
-  /* Using the MDN Shorthand: color | image | repeat | attachment | position / size */
-  background: #000 url('/assets/img/bgim.png') no-repeat fixed center / cover !important;
+  // Matched your Dashboard: Blue spotlight at the top fading to black
+  --background: radial-gradient(circle at 50% 0%, #1a2c4e 0%, #000000 70%) !important;
 }
 
 .login-container {
@@ -20,62 +16,52 @@ ion-content.login-bg::part(background) {
 }
 
 /* =========================================
-   2. THE FORM (Modern Minimalist Glass)
+   2. THE FORM (Matched to .glass-card)
 ========================================= */
 .login-form {
   width: 100%;
-  max-width: 420px;
-  /* Slightly more opaque for better readability */
-  background: rgba(13, 22, 40, 0.9); 
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  max-width: 400px;
+  // Using the exact background from your glass-card
+  background: rgba(13, 22, 40, 0.85); 
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 28px;
-  padding: 48px 32px;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+  padding: 40px 32px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   text-align: center;
 
   h2 {
     color: #ffffff;
     font-size: 2.2rem;
-    font-weight: 300; /* Modern thin-weight font */
-    letter-spacing: 4px;
+    font-weight: 700;
+    letter-spacing: 3px;
     text-transform: uppercase;
     margin-bottom: 8px;
   }
 
   .subtitle {
-    color: rgba(255, 255, 255, 0.6);
+    color: #94a3b8; // Slategray from your dashboard
     font-size: 0.95rem;
-    margin-bottom: 40px;
-    font-weight: 400;
+    margin-bottom: 32px;
   }
 }
 
 /* =========================================
-   3. CRYSTAL CLEAR INPUTS
+   3. INPUT GROUPS (High Contrast)
 ========================================= */
 .input-group {
-  margin-bottom: 24px;
-  text-align: left;
-
-  /* The actual input container */
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
-  background: #ffffff; /* Pure white background for 100% clarity */
+  background: #ffffff; 
   border-radius: 14px;
-  padding: 4px 16px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-
-  &:focus-within {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.15);
-  }
-
+  padding: 0 16px;
+  
   ion-icon {
-    color: #1a2c4e; /* Dark blue icon */
+    color: #1a2c4e; // Dark blue icon
     font-size: 1.3rem;
     margin-right: 12px;
-    opacity: 0.8;
   }
 
   input {
@@ -83,88 +69,56 @@ ion-content.login-bg::part(background) {
     background: transparent;
     border: none;
     padding: 16px 0;
-    color: #0a1428; /* Deep Blue text - very easy to read */
+    color: #0a1428; 
     font-size: 1.1rem;
-    font-weight: 500;
     outline: none;
 
-    &::placeholder {
-      color: #94a3b8;
-      font-weight: 400;
-    }
+    &::placeholder { color: #94a3b8; }
   }
 }
 
 /* =========================================
-   4. THE ACTION BUTTON (Modern Blue/White)
+   4. BUTTONS & ERRORS
 ========================================= */
 .login-btn {
   width: 100%;
   padding: 18px;
-  background: #ffffff; /* Inverted: White button on dark form */
-  color: #0a1428; /* Deep Blue text */
+  background: #ffffff; // White button for high contrast on dark form
+  color: #1a2c4e;
   border: none;
   border-radius: 14px;
   font-size: 1.1rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-top: 12px;
-  cursor: pointer;
+  margin-top: 10px;
   transition: all 0.2s ease;
 
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.96);
     background: rgba(255, 255, 255, 0.9);
-  }
-
-  &:disabled {
-    background: rgba(255, 255, 255, 0.3);
-    color: rgba(255, 255, 255, 0.5);
   }
 }
 
-/* =========================================
-   5. LINKS & FOOTER
-========================================= */
-.forgot-link {
-  display: inline-block;
-  margin-top: 20px;
-  color: rgba(255, 255, 255, 0.7);
+.error-message {
+  color: #ff4d4d;
+  background: rgba(255, 77, 77, 0.1);
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 16px;
   font-size: 0.9rem;
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.3s;
-
-  &:active {
-    color: #ffffff;
-    border-bottom-color: #ffffff;
-  }
+  font-weight: 600;
+  border: 1px solid rgba(255, 77, 77, 0.2);
 }
 
 .register-section {
-  margin-top: 40px;
-  text-align: center;
-
-  p {
-    color: rgba(255, 255, 255, 0.5);
-    margin-bottom: 12px;
-  }
-
+  margin-top: 32px;
+  p { color: rgba(255, 255, 255, 0.4); margin-bottom: 12px; }
   .register-btn {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #ffffff;
-    padding: 12px 32px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 10px 24px;
     border-radius: 50px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-
-    &:active {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: #ffffff;
-    }
+    font-size: 0.85rem;
   }
-  
 }

@@ -3,44 +3,48 @@ ion-content {
   --background: transparent;
   
   &::part(background) {
-    background: #000 url('/assets/img/bgim.png') no-repeat fixed center / cover !important;
-    background-color: #0a1428 !important;
+    /* Exact Dashboard Gradient */
+    background: radial-gradient(circle at 50% 0%, #1a2c4e 0%, #000000 70%) !important;
+    background-color: #000000 !important;
   }
 }
 
 .profile-scroll-container {
   padding: 16px;
-  padding-bottom: 50px; // Space for the phoenix at the bottom
+  padding-bottom: 50px;
 }
 
 /* 2. GLASS TOOLBAR */
 ion-toolbar {
   --background: rgba(10, 20, 40, 0.85);
-  backdrop-filter: blur(10px);
-  --color: #ffffff;
-  --border-style: none;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  --color: #ffffff; 
+  --border-color: transparent;
 
   ion-title {
     font-weight: 600;
     letter-spacing: 1px;
     text-transform: uppercase;
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 }
 
 /* 3. GLASS CARD COMPONENT */
 .glass-card {
-  background: rgba(13, 22, 40, 0.7) !important;
-  backdrop-filter: blur(15px);
+  /* Using your Dashboard's specific card background */
+  background: rgba(13, 22, 40, 0.85) !important;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
+  border-radius: 16px;
   margin: 0 0 20px 0;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 
   ion-card-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    
     ion-card-title {
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.7) !important;
+      font-size: 0.75rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1.5px;
@@ -48,7 +52,7 @@ ion-toolbar {
   }
 }
 
-/* 4. REMOVING WHITE BLOCKS (The Part Fix) */
+/* 4. ITEMS & INPUTS */
 ion-item {
   --background: transparent !important;
   --color: #ffffff;
@@ -57,62 +61,66 @@ ion-item {
 
   &::part(native) {
     background: transparent !important;
-    background-color: transparent !important;
     border: none !important;
   }
 
-  ion-icon {
-    color: #ffffff !important;
-    opacity: 0.8;
-    font-size: 1.4rem;
-  }
-
+  /* Label Styling - Matches Dashboard Slate Gray */
   h3 {
-    color: rgba(255, 255, 255, 0.45) !important;
-    font-size: 0.7rem !important;
-    font-weight: 600;
+    color: #94a3b8 !important; 
+    font-size: 0.65rem !important;
+    font-weight: 700;
     text-transform: uppercase;
     margin-bottom: 4px;
+    letter-spacing: 1px;
   }
 
   p {
     color: #ffffff !important;
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 400;
+  }
+
+  ion-icon {
+    color: #ffffff !important; 
+    margin-right: 12px;
+    opacity: 0.8;
   }
 
   ion-input {
     --color: #ffffff;
     --placeholder-color: rgba(255, 255, 255, 0.3);
     font-weight: 500;
-
-    &::part(native) {
-      background: transparent !important;
-    }
   }
 }
 
-/* 5. BUTTON STYLING */
+/* 5. ACTION BUTTONS */
 .button-container {
-  padding: 10px 16px 20px 16px;
+  padding: 10px 16px 30px 16px;
 }
 
 ion-button {
-  --background: #ffffff;
-  --color: #0a1428;
+  --background: #ffffff; /* Dashboard White Button */
+  --color: #1a2c4e; /* Dark navy text */
   --border-radius: 14px;
   --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-  font-weight: 800;
+  font-weight: 700;
   height: 54px;
-  margin: 0;
+  text-transform: uppercase;
 
   &[disabled] {
     --background: rgba(255, 255, 255, 0.1);
     --color: rgba(255, 255, 255, 0.3);
-    opacity: 0.5;
+    opacity: 0.4;
   }
 }
 
+/* Logout Button - Keeps Red but matches Dashboard Red (#ef4444) */
 .logout-btn {
-  --color: #ff4d4d !important;
+  --background: transparent;
+  --color: #ef4444 !important;
+  --border-color: rgba(239, 68, 68, 0.3);
+  --border-style: solid;
+  --border-width: 1px;
+  --box-shadow: none;
+  margin-top: 15px;
 }

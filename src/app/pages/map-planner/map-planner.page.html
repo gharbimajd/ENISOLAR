@@ -1,10 +1,7 @@
 <ion-header class="ion-no-border landscape-header-fix">
-  <ion-toolbar style="--background: transparent;">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home" class="glass-back-btn" icon="arrow-back"></ion-back-button>
-    </ion-buttons>
-
-    <div slot="end" class="stats-capsule glass-panel landscape-stats-scaling" *ngIf="mission()">
+  <ion-toolbar style="--background: transparent;" [style.opacity]="isReady() ? 0.85 : 0">
+    
+    <div class="stats-capsule glass-panel landscape-stats-scaling" *ngIf="mission()">
       <div class="stat-item">
         <ion-icon name="resize-outline"></ion-icon>
         <div><span class="val">{{ mission()?.areaSize || 0 }}</span><span class="unit">ha</span></div>
@@ -25,13 +22,14 @@
         <div><span class="val">{{ mission()?.gsd || 0 }}</span><span class="unit">cm</span></div>
       </div>
     </div>
+
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <div id="map"></div>
 
-  <div class="map-interface-wrapper">
+  <div class="map-interface-wrapper" *ngIf="isReady() && mission()">
     
     <div class="settings-panel glass-panel" [class.open]="sidebarOpen()">
       <div class="sheet-handle-bar" (click)="toggleSidebar()">
@@ -39,60 +37,78 @@
         <span class="sheet-title">Flight Settings</span>
       </div>
 
-      <ng-container *ngIf="mission()">
-        <div class="sheet-content">
-          <div class="input-wrapper">
-            <ion-input 
-              [(ngModel)]="mission()!.name"
-              (ionInput)="updateMissionName($any($event).target.value)"
-              placeholder="Enter Mission Name..." 
-              class="glass-input">
-            </ion-input>
-          </div>
+      <div class="sheet-content">
+        <div class="input-wrapper">
+          <ion-input 
+            [ngModel]="mission()?.name"
+            (ionInput)="updateMissionName($any($event).target.value)"
+            placeholder="Enter Mission Name..." 
+            class="glass-input">
+          </ion-input>
+        </div>
 
-          <div class="sliders-grid">
-            <div class="control-box">
-              <div class="box-header">
-                <span class="label"><ion-icon name="arrow-up"></ion-icon> Alt</span>
-                <span class="value">{{ mission()!.config.altitude }}m</span>
-              </div>
-              <ion-range [value]="mission()!.config.altitude" (ionChange)="mission()!.config.altitude = $any($event).detail.value; onConfigChange()" min="20" max="120" step="5"></ion-range>
+        <div class="sliders-grid">
+          <div class="control-box">
+            <div class="box-header">
+              <span class="label"><ion-icon name="arrow-up"></ion-icon> Alt</span>
+              <span class="value">{{ mission()?.config?.altitude }}m</span>
             </div>
-            
-            <div class="control-box">
-              <div class="box-header">
-                <span class="label"><ion-icon name="speedometer"></ion-icon> Speed</span>
-                <span class="value">{{ mission()!.config.speed }}m/s</span>
-              </div>
-              <ion-range [value]="mission()!.config.speed" (ionChange)="mission()!.config.speed = $any($event).detail.value; onConfigChange()" min="3" max="15" step="1"></ion-range>
-            </div>
-            
-            <div class="control-box">
-              <div class="box-header">
-                <span class="label"><ion-icon name="compass"></ion-icon> Angle</span>
-                <span class="value">{{ mission()!.config.gridAngle }}°</span>
-              </div>
-              <ion-range [value]="mission()!.config.gridAngle" (ionChange)="mission()!.config.gridAngle = $any($event).detail.value; onConfigChange()" min="0" max="180" step="5"></ion-range>
-            </div>
-            
-            <div class="control-box full">
-              <div class="box-header">
-                <span class="label"><ion-icon name="layers"></ion-icon> Overlap (F/S)</span>
-                <span class="value">{{ mission()!.config.overlapFront }}% / {{ mission()!.config.overlapSide }}%</span>
-              </div>
-              <div class="multi-range">
-                <ion-range [value]="mission()!.config.overlapFront" (ionChange)="mission()!.config.overlapFront = $any($event).detail.value; onConfigChange()" min="50" max="90" step="5"></ion-range>
-                <ion-range [value]="mission()!.config.overlapSide" (ionChange)="mission()!.config.overlapSide = $any($event).detail.value; onConfigChange()" min="50" max="90" step="5"></ion-range>
-              </div>
-            </div>
+            <ion-range 
+              [value]="mission()?.config?.altitude" 
+              (ionChange)="mission()!.config.altitude = $any($event).detail.value; onConfigChange()" 
+              min="20" max="120" step="5">
+            </ion-range>
           </div>
-
-          <div class="camera-tag">
-            <ion-icon name="camera"></ion-icon> 
-            {{ mission()!.config.camera.modelName }}
+          
+          <div class="control-box">
+            <div class="box-header">
+              <span class="label"><ion-icon name="speedometer"></ion-icon> Speed</span>
+              <span class="value">{{ mission()?.config?.speed }}m/s</span>
+            </div>
+            <ion-range 
+              [value]="mission()?.config?.speed" 
+              (ionChange)="mission()!.config.speed = $any($event).detail.value; onConfigChange()" 
+              min="3" max="15" step="1">
+            </ion-range>
+          </div>
+          
+          <div class="control-box">
+            <div class="box-header">
+              <span class="label"><ion-icon name="compass"></ion-icon> Angle</span>
+              <span class="value">{{ mission()?.config?.gridAngle }}°</span>
+            </div>
+            <ion-range 
+              [value]="mission()?.config?.gridAngle" 
+              (ionChange)="mission()!.config.gridAngle = $any($event).detail.value; onConfigChange()" 
+              min="0" max="180" step="5">
+            </ion-range>
+          </div>
+          
+          <div class="control-box full">
+            <div class="box-header">
+              <span class="label"><ion-icon name="layers"></ion-icon> Overlap (F/S)</span>
+              <span class="value">{{ mission()?.config?.overlapFront }}% / {{ mission()?.config?.overlapSide }}%</span>
+            </div>
+            <div class="multi-range">
+              <ion-range 
+                [value]="mission()?.config?.overlapFront" 
+                (ionChange)="mission()!.config.overlapFront = $any($event).detail.value; onConfigChange()" 
+                min="50" max="90" step="5">
+              </ion-range>
+              <ion-range 
+                [value]="mission()?.config?.overlapSide" 
+                (ionChange)="mission()!.config.overlapSide = $any($event).detail.value; onConfigChange()" 
+                min="50" max="90" step="5">
+              </ion-range>
+            </div>
           </div>
         </div>
-      </ng-container>
+
+        <div class="camera-tag">
+          <ion-icon name="camera"></ion-icon> 
+          {{ mission()?.config?.camera?.modelName }}
+        </div>
+      </div>
     </div>
 
     <div class="floating-action-dock">
@@ -112,17 +128,17 @@
         </div>
 
         <button class="save-btn" (click)="isDrawing() ? finishDrawing() : saveMission()" [disabled]="isSaving()">
-          <ion-icon [name]="isDrawing() ? 'checkmark-done-outline' : 'save-outline'"></ion-icon>
+          <ion-icon [name]="isSaving() ? 'hourglass-outline' : (isDrawing() ? 'checkmark-done-outline' : 'save-outline')"></ion-icon>
           <span>
             {{ isSaving() ? 'Saving...' : (isDrawing() ? 'Done' : 'Save') }}
           </span>
         </button>
       </div>
     </div>
-
   </div>
 
-  <div class="loading-overlay" *ngIf="!mission()">
+  <div class="loading-overlay" *ngIf="!isReady()">
     <ion-spinner name="crescent" color="success"></ion-spinner>
+    <p style="color: white; margin-top: 10px; font-weight: 500;">Initializing Planner...</p>
   </div>
 </ion-content>
