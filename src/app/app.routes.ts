@@ -1,6 +1,10 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
+{
+  path: 'mission-select', // <--- Make sure this matches exactly
+  loadComponent: () => import('./mission-select/mission-select.page').then(m => m.MissionSelectPage)
+},
   {
     path: 'home',
     loadComponent: () => import('./home/home.page').then((m) => m.HomePage),
@@ -50,6 +54,10 @@ export const routes: Routes = [
   {
     path: 'profile',
     loadComponent: () => import('./profile/profile.page').then( m => m.ProfilePage)
+  },
+  {
+    path: 'mission-select',
+    loadComponent: () => import('./mission-select/mission-select.page').then( m => m.MissionSelectPage)
   },
 
 ];

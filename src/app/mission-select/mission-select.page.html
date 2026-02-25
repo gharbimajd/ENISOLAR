@@ -1,0 +1,61 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" color="light"></ion-back-button>
+    </ion-buttons>
+    <ion-title>New Mission</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="page-header">
+    <h1 class="page-title">Select Pattern</h1>
+    <p class="subtitle">Choose a flight pattern for your drone</p>
+  </div>
+
+  <ion-grid class="ion-no-padding mission-grid">
+    <ion-row>
+      <ion-col size="6" class="ion-padding-bottom ion-padding-end">
+        <div class="glass-card option-card" (click)="selectMission('polygon')">
+          <div class="icon-wrapper">
+            <ion-icon name="scan-outline"></ion-icon>
+          </div>
+          <h3>Polygon</h3>
+          <p>Standard single-grid area mapping.</p>
+        </div>
+      </ion-col>
+
+      <ion-col size="6" class="ion-padding-bottom">
+        <div class="glass-card option-card" (click)="selectMission('matrix')">
+          <div class="icon-wrapper">
+            <ion-icon name="grid-outline"></ion-icon>
+          </div>
+          <h3>Matrix</h3>
+          <p>Crossed double-grid for 3D modeling.</p>
+        </div>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col size="6" class="ion-padding-end">
+        <div class="glass-card option-card" (click)="selectMission('linear')">
+          <div class="icon-wrapper">
+            <ion-icon name="pulse-outline"></ion-icon>
+          </div>
+          <h3>Linear</h3>
+          <p>Corridor mapping for roads & pipes.</p>
+        </div>
+      </ion-col>
+
+      <ion-col size="6">
+        <div class="glass-card option-card" (click)="selectMission('waypoint')">
+          <div class="icon-wrapper">
+            <ion-icon name="location-outline"></ion-icon>
+          </div>
+          <h3>Waypoint</h3>
+          <p>Custom point-to-point flight path.</p>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

@@ -72,16 +72,28 @@ export class MissionStatusPage implements OnInit {
   deviceId = '';
 
   // --- Computes CSV for Display ---
-  csvDisplay = computed(() => {
+csvDisplay = computed(() => {
     const m = this.mission();
     if (!m || !m.flightPath || !Array.isArray(m.flightPath) || m.flightPath.length === 0) {
       return 'No coordinates found.';
     }
 
-    const header = "order,latitude,longitude";
-    const rows = m.flightPath.map((pt: any, i: number) => 
-      `${i + 1},${Number(pt.lat).toFixed(7)},${Number(pt.lng).toFixed(7)}`
-    );
+    // 1. Check if altitude exists on the first point
+    const hasAltitude = m.flightPath[0].alt !== undefined;
+
+    // 2. Set the header dynamically based on the check
+    const header = hasAltitude 
+      ? "order,latitude,longitude,altitude" 
+      : "order,latitude,longitude";
+
+    // 3. Generate the rows dynamically
+    const rows = m.flightPath.map((pt: any, i: number) => {
+      const baseRow = `${i + 1},${Number(pt.lat).toFixed(7)},${Number(pt.lng).toFixed(7)}`;
+      return hasAltitude 
+        ? `${baseRow},${Number(pt.alt).toFixed(2)}` // Adds altitude if it exists
+        : baseRow;
+    });
+
     return [header, ...rows].join('\n');
   });
 

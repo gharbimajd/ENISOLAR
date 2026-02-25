@@ -14,6 +14,7 @@ export interface CameraSpecs {
 export interface Waypoint {
   lat: number;
   lng: number;
+  alt?: number;
 }
 
 // Predefined camera configurations

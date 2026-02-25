@@ -61,7 +61,7 @@ export class LoginPage implements OnInit {
           // 👉 FIX: Drop the cursor focus before navigating away
           (document.activeElement as HTMLElement)?.blur();
           
-          this.router.navigate(['/home']);
+          this.router.navigate(['/mission-select']);
         } else {
           this.errorMessage = res.message;
         }

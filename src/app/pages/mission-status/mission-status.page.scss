@@ -1,39 +1,149 @@
-// Mission Info & CSV Viewer - Compact Mobile
-.mission-info-header {
-  margin-bottom: 24px;
-  .mission-name { font-size: 24px; font-weight: 800; color: #fff; margin: 0; }
-  .mission-meta { color: #2dd36f; font-size: 14px; margin: 4px 0 0; opacity: 0.8; }
+/* 1. BACKGROUND GRADIENT (Matches Home Page) */
+ion-content {
+  --background: radial-gradient(circle at 50% 0%, #1a2c4e 0%, #000000 70%);
 }
 
+/* 2. MISSION HEADER */
+.mission-info-header {
+  margin-top: 10px;
+  margin-bottom: 24px;
+  text-align: center;
+
+  .mission-name {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    color: #fff; /* Matches your page-title */
+    letter-spacing: -0.5px;
+  }
+
+  .mission-meta {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #94a3b8; /* Matches your .date text */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+  }
+}
+
+/* 3. GLASS PANEL (Matches your .glass-card exactly) */
+.glass-panel {
+  background: rgba(13, 22, 40, 0.85); 
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+/* 4. CSV CONTAINER & TERMINAL */
 .csv-container {
-  border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
-  border: 1px solid rgba(255, 255, 255, 0.1); background: #000 !important;
+  margin-bottom: 24px;
 
   .csv-header {
-    padding: 10px 16px; background: rgba(255, 255, 255, 0.05);
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    /* Slightly lighter header to separate from the code body */
+    background: rgba(255, 255, 255, 0.05);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    .file-name { font-family: monospace; font-size: 12px; color: rgba(255,255,255,0.5); }
-    .copy-btn { 
-      background: transparent; border: none; color: #2dd36f; font-size: 18px;
-      &:active { transform: scale(0.9); }
+
+    .file-name {
+      font-family: monospace;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #cbd5e1; /* Matches your .stat text */
+    }
+
+    .copy-btn {
+      background: transparent;
+      border: none;
+      color: #4ade80; /* Your Matrix Green accent */
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      transition: opacity 0.2s ease;
+
+      &:active { opacity: 0.5; }
+      &:disabled { color: #64748b; }
     }
   }
 
   .csv-content {
-    padding: 16px; max-height: 60vh; overflow: auto;
+    padding: 16px;
+    max-height: 250px;
+    overflow-y: auto;
+    overflow-x: auto;
+    /* Very dark background inside the card for the code */
+    background: rgba(0, 0, 0, 0.4); 
+    
     pre {
       margin: 0;
       code {
-        font-family: 'Courier New', Courier, monospace; font-size: 13px;
-        line-height: 1.6; color: #e0e0e0; white-space: pre;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        color: #cbd5e1; /* Keeping it slate instead of green for readability */
+        white-space: pre;
       }
+    }
+
+    /* Custom Webkit Scrollbar */
+    &::-webkit-scrollbar { width: 8px; height: 8px; }
+    &::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
     }
   }
 }
 
+/* 5. STATUS BOX (Drone Uplink Console) */
+.status-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  border-radius: 8px;
+}
+
+/* 6. HELPER TEXT (Matches your .empty-state) */
 .helper-text {
-  display: flex; align-items: center; gap: 8px; margin-top: 16px;
-  color: rgba(255,255,255,0.4); font-size: 12px;
-  ion-icon { color: #2dd36f; font-size: 16px; }
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  
+  ion-icon {
+    font-size: 1.2rem;
+    color: #4ade80; /* Subtle green accent */
+  }
+}
+
+/* 7. IONIC OVERRIDES (To match the dark theme) */
+ion-badge {
+  /* Default medium/offline state */
+  &[color="medium"] {
+    --background: rgba(255, 255, 255, 0.1);
+    --color: #fff;
+  }
+  /* Connected/success state */
+  &[color="success"] {
+    --background: rgba(74, 222, 128, 0.15);
+    --color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.2);
+  }
+}
+
+ion-button {
+  --border-radius: 8px;
+  &[color="success"] {
+    --background: #4ade80;
+    --color: #064e3b; /* Dark green text for contrast on the light green button */
+  }
 }

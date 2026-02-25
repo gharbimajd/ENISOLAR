@@ -82,6 +82,7 @@ export class AppComponent {
   public appPages = [
     { title: 'My Profile', url: '/profile', icon: 'person-outline' },
     { title: 'Home', url: '/home', icon: 'home-outline' },
+     { title: 'Mode', url: '/mission-select', icon: 'settings-outline' },
     { title: 'Map Planner', url: '/map-planner', icon: 'map-outline' },
     { title: 'logout', url: '/login', icon: 'log-in-outline' },
   ];
