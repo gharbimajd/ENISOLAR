@@ -1,0 +1,316 @@
+<ion-header class="aux-header" [class.hidden]="!isReady()">
+  <ion-toolbar class="aux-toolbar">
+    <div class="toolbar-left">
+      <button class="icon-btn back-btn" (click)="router.navigate(['/home'])">
+        <ion-icon name="arrow-back"></ion-icon>
+      </button>
+      <div class="mission-name-wrap">
+        <ion-input
+          class="mission-name-input"
+          placeholder="Mission name..."
+          [value]="mission()?.name || ''"
+          (ionChange)="updateMissionName($any($event).detail.value)"
+        ></ion-input>
+      </div>
+    </div>
+
+    <div class="toolbar-center">
+      <!-- Mode Tabs -->
+      <div class="mode-tabs">
+        <button
+          class="mode-tab"
+          [class.active]="flightMode() === 'matrix'"
+          (click)="setMode('matrix')"
+        >
+          <ion-icon name="grid-outline"></ion-icon>
+          Matrix
+        </button>
+        <button
+          class="mode-tab"
+          [class.active]="flightMode() === 'linear'"
+          (click)="setMode('linear')"
+        >
+          <ion-icon name="navigate-outline"></ion-icon>
+          Linear
+        </button>
+        <button
+          class="mode-tab"
+          [class.active]="flightMode() === 'waypoints'"
+          (click)="setMode('waypoints')"
+        >
+          <ion-icon name="locate-outline"></ion-icon>
+          Waypoints
+        </button>
+      </div>
+    </div>
+
+    <div class="toolbar-right">
+      <button class="icon-btn" (click)="toggle3DMode()" [class.active]="is3DMode()">
+        <ion-icon [name]="is3DMode() ? 'cube-outline' : 'map-outline'"></ion-icon>
+      </button>
+      <button class="icon-btn" (click)="toggleSidebar()">
+        <ion-icon name="options-outline"></ion-icon>
+      </button>
+      <button class="save-btn" (click)="saveMission()" [disabled]="isSaving()">
+        <ion-icon name="save-outline"></ion-icon>
+        <span>{{ isSaving() ? 'Saving...' : 'Save' }}</span>
+      </button>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="aux-content" [fullscreen]="true">
+
+  <!-- Loading overlay -->
+  @if (!isReady()) {
+    <div class="loading-overlay">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Initializing Map...</p>
+    </div>
+  }
+
+  <!-- Map Container -->
+  <div id="aux-map" class="map-container"></div>
+
+  <!-- Drawing Instructions Banner -->
+  @if (isDrawing() && isReady()) {
+    <div class="drawing-banner">
+      <ion-icon name="locate-outline"></ion-icon>
+      <span>Click on the map to add polygon points</span>
+      @if ((mission()?.polygonPoints?.length || 0) >= 3) {
+        <button class="finish-btn" (click)="finishDrawing()">Finish Drawing</button>
+      }
+    </div>
+  }
+
+  <!-- Bottom Action Bar -->
+  <div class="bottom-bar" [class.visible]="isReady()">
+    <button class="action-btn undo-btn" (click)="undoLastPoint()" [disabled]="!(mission()?.polygonPoints?.length)">
+      <ion-icon name="arrow-undo-outline"></ion-icon>
+      Undo
+    </button>
+    <button class="action-btn clear-btn" (click)="clearPolygon()" [disabled]="!(mission()?.polygonPoints?.length)">
+      <ion-icon name="trash-outline"></ion-icon>
+      Clear
+    </button>
+    @if (!isDrawing() && (mission()?.polygonPoints?.length || 0) >= 3) {
+      <button class="action-btn draw-btn" (click)="isDrawing.set(true)">
+        <ion-icon name="locate-outline"></ion-icon>
+        Edit Area
+      </button>
+    }
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar" [class.open]="sidebarOpen()">
+    <div class="sidebar-header">
+      <span class="sidebar-title">
+        <ion-icon name="settings-outline"></ion-icon>
+        Mission Config
+      </span>
+      <button class="icon-btn small" (click)="toggleSidebar()">
+        <ion-icon name="chevron-down-outline"></ion-icon>
+      </button>
+    </div>
+
+    <div class="sidebar-body">
+
+      <!-- Mode-specific panel -->
+      @if (flightMode() === 'matrix') {
+        <div class="config-section">
+          <h4 class="section-title">
+            <ion-icon name="grid-outline"></ion-icon>
+            Matrix Grid
+          </h4>
+
+          <div class="config-row">
+            <label>Horizontal Spacing</label>
+            <div class="range-row">
+              <ion-range
+                [(ngModel)]="matrixSpacingX"
+                min="5" max="100" step="1"
+                (ionChange)="onMatrixSpacingChange()"
+              ></ion-range>
+              <span class="val">{{ matrixSpacingX }}m</span>
+            </div>
+          </div>
+
+          <div class="config-row">
+            <label>Vertical Spacing</label>
+            <div class="range-row">
+              <ion-range
+                [(ngModel)]="matrixSpacingY"
+                min="5" max="100" step="1"
+                (ionChange)="onMatrixSpacingChange()"
+              ></ion-range>
+              <span class="val">{{ matrixSpacingY }}m</span>
+            </div>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat-card">
+              <ion-icon name="locate-outline"></ion-icon>
+              <span class="stat-val">{{ mission()?.waypointCount || matrixPoints().length }}</span>
+              <span class="stat-lbl">Points</span>
+            </div>
+            <div class="stat-card">
+              <ion-icon name="resize-outline"></ion-icon>
+              <span class="stat-val">{{ matrixSpacingX }}×{{ matrixSpacingY }}</span>
+              <span class="stat-lbl">Grid (m)</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (flightMode() === 'linear') {
+        <div class="config-section">
+          <h4 class="section-title">
+            <ion-icon name="navigate-outline"></ion-icon>
+            Linear Scan
+          </h4>
+
+          <div class="config-row">
+            <label>Altitude</label>
+            <div class="range-row">
+              <ion-range
+                [(ngModel)]="currentMission!.config.altitude"
+                min="10" max="300" step="5"
+                (ionChange)="onConfigChange()"
+              ></ion-range>
+              <span class="val">{{ mission()?.config?.altitude }}m</span>
+            </div>
+          </div>
+
+          <div class="config-row">
+            <label>Speed</label>
+            <div class="range-row">
+              <ion-range
+                [(ngModel)]="currentMission!.config.speed"
+                min="1" max="20" step="1"
+                (ionChange)="onConfigChange()"
+              ></ion-range>
+              <span class="val">{{ mission()?.config?.speed }}m/s</span>
+            </div>
+          </div>
+
+          <div class="config-row">
+            <label>Grid Angle</label>
+            <div class="range-row">
+              <ion-range
+                [(ngModel)]="currentMission!.config.gridAngle"
+                min="0" max="180" step="5"
+                (ionChange)="onConfigChange()"
+              ></ion-range>
+              <span class="val">{{ mission()?.config?.gridAngle }}°</span>
+            </div>
+          </div>
+
+          <div class="config-row">
+            <label>Front Overlap</label>
+            <div class="range-row">
+              <ion-range
+                [(ngModel)]="currentMission!.config.overlapFront"
+                min="50" max="95" step="5"
+                (ionChange)="onConfigChange()"
+              ></ion-range>
+              <span class="val">{{ mission()?.config?.overlapFront }}%</span>
+            </div>
+          </div>
+
+          <div class="config-row">
+            <label>Side Overlap</label>
+            <div class="range-row">
+              <ion-range
+                [(ngModel)]="currentMission!.config.overlapSide"
+                min="50" max="95" step="5"
+                (ionChange)="onConfigChange()"
+              ></ion-range>
+              <span class="val">{{ mission()?.config?.overlapSide }}%</span>
+            </div>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat-card">
+              <ion-icon name="locate-outline"></ion-icon>
+              <span class="stat-val">{{ mission()?.waypointCount || 0 }}</span>
+              <span class="stat-lbl">Waypoints</span>
+            </div>
+            <div class="stat-card">
+              <ion-icon name="time-outline"></ion-icon>
+              <span class="stat-val">{{ formatTime(mission()?.estimatedTime || 0) }}</span>
+              <span class="stat-lbl">Est. Time</span>
+            </div>
+            <div class="stat-card">
+              <ion-icon name="resize-outline"></ion-icon>
+              <span class="stat-val">{{ (mission()?.areaSize || 0).toFixed(2) }}</span>
+              <span class="stat-lbl">Area (ha)</span>
+            </div>
+            <div class="stat-card">
+              <ion-icon name="eye-outline"></ion-icon>
+              <span class="stat-val">{{ (mission()?.gsd || 0).toFixed(1) }}</span>
+              <span class="stat-lbl">GSD (cm/px)</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (flightMode() === 'waypoints') {
+        <div class="config-section">
+          <h4 class="section-title">
+            <ion-icon name="locate-outline"></ion-icon>
+            Manual Waypoints
+          </h4>
+          <p class="mode-description">
+            Your polygon vertices are used directly as waypoints. 
+            Drag markers to refine the flight path.
+          </p>
+
+          <div class="stat-grid">
+            <div class="stat-card">
+              <ion-icon name="locate-outline"></ion-icon>
+              <span class="stat-val">{{ mission()?.polygonPoints?.length || 0 }}</span>
+              <span class="stat-lbl">Waypoints</span>
+            </div>
+            <div class="stat-card">
+              <ion-icon name="arrow-up"></ion-icon>
+              <span class="stat-val">{{ mission()?.config?.altitude }}m</span>
+              <span class="stat-lbl">Altitude</span>
+            </div>
+          </div>
+
+          <div class="config-row">
+            <label>Altitude</label>
+            <div class="range-row">
+              <ion-range
+                [(ngModel)]="currentMission!.config.altitude"
+                min="10" max="300" step="5"
+                (ionChange)="onConfigChange()"
+              ></ion-range>
+              <span class="val">{{ mission()?.config?.altitude }}m</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Points List -->
+      @if ((mission()?.polygonPoints?.length || 0) > 0) {
+        <div class="config-section points-list">
+          <h4 class="section-title">
+            <ion-icon name="locate-outline"></ion-icon>
+            Polygon Vertices ({{ mission()?.polygonPoints?.length }})
+          </h4>
+          @for (pt of mission()?.polygonPoints || []; track $index) {
+            <div class="point-row">
+              <span class="point-index">{{ $index + 1 }}</span>
+              <span class="point-coords">
+                {{ pt.lat.toFixed(5) }}, {{ pt.lng.toFixed(5) }}
+              </span>
+            </div>
+          }
+        </div>
+      }
+
+    </div>
+  </div>
+
+</ion-content>

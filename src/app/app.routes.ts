@@ -59,6 +59,10 @@ export const routes: Routes = [
     path: 'mission-select',
     loadComponent: () => import('./mission-select/mission-select.page').then( m => m.MissionSelectPage)
   },
+{
+  path: 'aux-map-planner/:id',
+  loadComponent: () => import('./aux-map-planner/aux-map-planner.page').then( m => m.AuxMapPlannerPage)
+}
 
 ];
 

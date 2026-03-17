@@ -46,10 +46,14 @@ export class MissionSelectPage implements OnInit {
   }
 
   selectMission(type: string) {
-    console.log('Selected mission type:', type);
-    // Navigate to map planner
-    this.router.navigate(['/map-planner'], { 
-      queryParams: { missionType: type } 
-    });
+    if (type === 'polygon') {
+      // Standard polygon goes to your original page
+      this.router.navigate(['/map-planner/new']); 
+    } else {
+      // Matrix, Linear, and Waypoint go to the new Aux page
+      this.router.navigate(['/aux-map-planner/new'], { 
+        queryParams: { mode: type } 
+      });
+    }
   }
 }

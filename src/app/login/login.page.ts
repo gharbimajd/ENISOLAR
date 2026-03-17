@@ -72,4 +72,10 @@ export class LoginPage implements OnInit {
       }
     });
   }
+  selectMission(type: string) {
+  // This changes the URL to something like: /map-planner?mode=survey
+  this.router.navigate(['/map-planner'], { 
+    queryParams: { mode: type } 
+  });
+}
 }
