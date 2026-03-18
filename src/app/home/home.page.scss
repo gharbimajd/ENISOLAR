@@ -1,19 +1,17 @@
-/* 1. BACKGROUND GRADIENT */
+// ── Background ───────────────────────────────────────────────
 ion-content {
   --background: radial-gradient(circle at 50% 0%, #1a2c4e 0%, #000000 70%);
 }
 
 .content-wrapper {
-  padding: 12px; /* Increased slightly so cards don't touch edges */
+  padding: 12px;
 }
 
-/* 2. HEADER & TOOLBAR */
+// ── Header & Toolbar ─────────────────────────────────────────
 ion-toolbar {
-  /* FIX: Don't force 44px, it breaks vertical centering. 
-     Use standard density if you want it small. */
   --background: transparent;
   --border-color: transparent;
-  --color:  rgb(24, 27, 60);
+  --color: rgb(24, 27, 60);
 }
 
 ion-title {
@@ -22,75 +20,137 @@ ion-title {
   letter-spacing: 0.5px;
 }
 
-/* 3. PAGE HEADER AREA */
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between; /* Pushes title left, search right */
-  gap: 10px; /* Adds safety gap so they don't touch */
-  padding: 0 4px 16px; /* Added bottom padding to separate from cards */
-
-  .page-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0;
-    color: #fff;
-    /* FIX: Allow title to shrink if screen is tiny */
-    flex-shrink: 0; 
-  }
-}
+// ── Search ───────────────────────────────────────────────────
 .custom-search {
-  /* 1. ALLOW IT TO GROW (Delete the fixed height) */
   width: 100%;
-  
-  /* 2. VISIBILITY TEST (Keep this until you see it) */
-  --background: rgb(24, 27, 60) !important; 
-  
-  /* 3. STYLE RESTORATION */
+  --background: rgb(24, 27, 60) !important;
   --color: #fff;
-  --placeholder-color: #fff;
-  --icon-color: #fff;
+  --placeholder-color: #94a3b8;
+  --icon-color: #94a3b8;
   --border-radius: 20px;
-  
-  /* 4. Let Ionic handle the height naturally */
   padding-top: 0;
   padding-bottom: 0;
 }
-/* 4. GLASS CARD (Optimized) */
+
+// ── Category toolbar ─────────────────────────────────────────
+.category-toolbar {
+  --background: rgba(10, 14, 26, 0.95) !important;
+  --border-color: transparent;
+  padding: 0 12px 8px;
+}
+
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.cat-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.04);
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+
+  ion-icon { font-size: 13px; pointer-events: none; }
+
+  .cat-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+    line-height: 1;
+  }
+
+  // Active states per category
+  &.active {
+    color: #fff;
+
+    .cat-count {
+      color: #000;
+    }
+  }
+
+  // Polygon tab — blue
+  &:nth-child(1).active {
+    background: rgba(91, 140, 255, 0.15);
+    border-color: rgba(91, 140, 255, 0.35);
+    color: #5b8cff;
+    box-shadow: 0 0 12px rgba(91, 140, 255, 0.15);
+
+    ion-icon { color: #5b8cff; }
+    .cat-count { background: #5b8cff; color: #000; }
+  }
+
+  // Matrix tab — green
+  &:nth-child(2).active {
+    background: rgba(74, 222, 128, 0.12);
+    border-color: rgba(74, 222, 128, 0.35);
+    color: #4ade80;
+    box-shadow: 0 0 12px rgba(74, 222, 128, 0.12);
+
+    ion-icon { color: #4ade80; }
+    .cat-count { background: #4ade80; color: #000; }
+  }
+
+  // Linear tab — cyan
+  &:nth-child(3).active {
+    background: rgba(0, 229, 255, 0.1);
+    border-color: rgba(0, 229, 255, 0.3);
+    color: #00e5ff;
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.1);
+
+    ion-icon { color: #00e5ff; }
+    .cat-count { background: #00e5ff; color: #000; }
+  }
+}
+
+// ── Glass card ───────────────────────────────────────────────
 .glass-card {
-  /* Solid dark blue with transparency (High Performance) */
-  background: rgba(13, 22, 40, 0.85); 
+  background: rgba(13, 22, 40, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px; /* Slightly softer corners */
+  border-radius: 16px;
   padding: 12px;
-  
-  /* FIX: Ensure cards in a grid row are equal height */
-  height: 100%; 
+  height: 100%;
   display: flex;
   flex-direction: column;
-  
-  /* FIX: Use 'gap' instead of margins for cleaner spacing */
-  gap: 12px; 
-  
+  gap: 12px;
   transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
   position: relative;
   overflow: hidden;
 
-  /* Active State (Touch Feedback) */
   &:active {
     transform: scale(0.98);
     background: rgba(30, 45, 70, 0.9);
-    border-color: rgba(74, 222, 128, 0.3); /* Green glow on touch */
+    border-color: rgba(74, 222, 128, 0.3);
   }
 }
 
-/* 5. CARD HEADER SECTION */
+// ── Card header ──────────────────────────────────────────────
 .card-header-compact {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  
-  /* Status Badge */
+  gap: 6px;
+
+  // Status badge
   .status-indicator {
     padding: 4px 8px;
     border-radius: 6px;
@@ -98,37 +158,68 @@ ion-title {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    
-    /* Default Colors */
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
 
-    /* Dynamic Colors */
-    &[data-status="ready"] { color: #4ade80; background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.2); }
-    &[data-status="pending"] { color: #fbbf24; background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.2); }
+    &[data-status="ready"]   { color: #4ade80; background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.2); }
+    &[data-status="draft"]   { color: #94a3b8; background: rgba(148,163,184,0.1); border: 1px solid rgba(148,163,184,0.15); }
+    &[data-status="pending"] { color: #fbbf24; background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.2); }
   }
 
-  /* Delete Button */
+  // Mission type badge
+  .type-badge {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 7px;
+    border-radius: 6px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    ion-icon { font-size: 10px; }
+
+    &[data-type="polygon"] {
+      background: rgba(91,140,255,0.12);
+      border: 1px solid rgba(91,140,255,0.2);
+      color: #5b8cff;
+    }
+    &[data-type="matrix"] {
+      background: rgba(74,222,128,0.1);
+      border: 1px solid rgba(74,222,128,0.2);
+      color: #4ade80;
+    }
+    &[data-type="linear"] {
+      background: rgba(0,229,255,0.08);
+      border: 1px solid rgba(0,229,255,0.18);
+      color: #00e5ff;
+    }
+  }
+
+  // Delete — pushed to the right
   .delete-btn-mini {
+    margin-left: auto;
     background: transparent;
-    color: #ef4444; /* Red */
+    color: #ef4444;
     padding: 4px;
     font-size: 1.1rem;
-    opacity: 0.7;
+    opacity: 0.65;
     transition: opacity 0.2s;
+    border: none;
+    cursor: pointer;
 
     &:active { opacity: 1; }
   }
 }
 
-/* 6. TITLE SECTION */
+// ── Title ────────────────────────────────────────────────────
 .title-section {
   h3 {
     margin: 0 0 4px 0;
     font-size: 1rem;
     font-weight: 600;
     color: #fff;
-    /* Truncate text if too long */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -136,15 +227,15 @@ ion-title {
   .date {
     margin: 0;
     font-size: 0.75rem;
-    color: #94a3b8; /* Slate gray */
+    color: #94a3b8;
   }
 }
 
-/* 7. STATS GRID */
+// ── Stats ────────────────────────────────────────────────────
 .mission-stats {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding-top: 10px;
-  margin-top: auto; /* Pushes this to the bottom of the card */
+  margin-top: auto;
 }
 
 .stat-row {
@@ -161,13 +252,10 @@ ion-title {
   font-size: 0.75rem;
   color: #cbd5e1;
 
-  ion-icon {
-    font-size: 0.9rem;
-    color: #4ade80; /* Matrix Green Icon */
-  }
+  ion-icon { font-size: 0.9rem; color: #4ade80; }
 }
 
-/* 8. EMPTY STATES */
+// ── Empty state ───────────────────────────────────────────────
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -175,23 +263,26 @@ ion-title {
   justify-content: center;
   margin-top: 80px;
   color: #64748b;
-  
+  text-align: center;
+
   .empty-icon {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 50%;
     padding: 20px;
     margin-bottom: 16px;
-    
-    ion-icon {
-      font-size: 3rem;
-      color: #94a3b8;
-    }
+
+    ion-icon { font-size: 3rem; color: #94a3b8; }
   }
 
-  h2 {
-    font-size: 1.1rem;
-    font-weight: 500;
-    margin: 0;
-    color: #fff;
-  }
+  ion-icon[size="large"] { font-size: 3rem; margin-bottom: 12px; color: #94a3b8; }
+
+  h2 { font-size: 1.1rem; font-weight: 500; margin: 0 0 6px; color: #fff; }
+  p  { font-size: 0.85rem; color: #64748b; margin: 0; }
+}
+
+// ── FAB ──────────────────────────────────────────────────────
+.custom-fab {
+  --background: #4ade80;
+  --color: #000;
+  --box-shadow: 0 0 24px rgba(74, 222, 128, 0.45);
 }

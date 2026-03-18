@@ -7,33 +7,71 @@
   </ion-toolbar>
 
   <ion-toolbar>
-    <ion-searchbar 
-      class="custom-search" 
-      placeholder="Search missions..." 
-      [debounce]="250" 
+    <ion-searchbar
+      class="custom-search"
+      placeholder="Search missions..."
+      [debounce]="250"
       (ionInput)="onSearch($event)">
     </ion-searchbar>
+  </ion-toolbar>
+
+  <!-- Category tabs -->
+  <ion-toolbar class="category-toolbar">
+    <div class="category-tabs">
+      <button class="cat-tab"
+              [class.active]="activeCategory() === 'polygon'"
+              (click)="setCategory('polygon')">
+        <ion-icon name="map-outline"></ion-icon>
+        <span>Polygon</span>
+        <span class="cat-count">{{ polygonMissions().length }}</span>
+      </button>
+      <button class="cat-tab"
+              [class.active]="activeCategory() === 'matrix'"
+              (click)="setCategory('matrix')">
+        <ion-icon name="grid-outline"></ion-icon>
+        <span>Matrix</span>
+        <span class="cat-count">{{ matrixMissions().length }}</span>
+      </button>
+      <button class="cat-tab"
+              [class.active]="activeCategory() === 'linear'"
+              (click)="setCategory('linear')">
+        <ion-icon name="navigate-outline"></ion-icon>
+        <span>Linear</span>
+        <span class="cat-count">{{ linearMissions().length }}</span>
+      </button>
+    </div>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <div class="content-wrapper">
+
+    <!-- Mission grid -->
     <ion-grid class="mission-grid" *ngIf="filteredMissions().length > 0">
       <ion-row>
-        <ion-col size="12" size-md="6" size-lg="4" *ngFor="let mission of filteredMissions()">
-          <ion-card class="mission-card glass-card" button="true" (click)="viewMissionStatus(mission, $event)">
-            
+        <ion-col size="12" size-md="6" size-lg="4"
+                 *ngFor="let mission of filteredMissions()">
+          <ion-card class="mission-card glass-card" button="true"
+                    (click)="viewMissionStatus(mission, $event)">
+
             <div class="card-header-compact">
-              <div class="status-indicator" [attr.data-status]="mission.status.toLowerCase()">
+              <div class="status-indicator"
+                   [attr.data-status]="mission.status.toLowerCase()">
                 {{ mission.status }}
               </div>
-              <button class="delete-btn-mini" (click)="deleteMission(mission, $event)">
+              <!-- Type badge derived from ID suffix -->
+              <div class="type-badge" [attr.data-type]="getMissionType(mission)">
+                <ion-icon [name]="getMissionTypeIcon(mission)"></ion-icon>
+                {{ getMissionType(mission) }}
+              </div>
+              <button class="delete-btn-mini"
+                      (click)="deleteMission(mission, $event)">
                 <ion-icon name="trash-outline"></ion-icon>
               </button>
             </div>
 
             <div class="title-section">
-              <h3>{{ mission.name }}</h3>
+              <h3>{{ mission.name || 'Untitled' }}</h3>
               <p class="date">{{ formatDate(mission.date) }}</p>
             </div>
 
@@ -59,23 +97,40 @@
                 </div>
               </div>
             </div>
-          </ion-card> 
-        </ion-col>          
+
+          </ion-card>
+        </ion-col>
       </ion-row>
     </ion-grid>
 
-    <div class="empty-state" *ngIf="missions().length > 0 && filteredMissions().length === 0">
+    <!-- No search results -->
+    <div class="empty-state"
+         *ngIf="filteredMissions().length === 0 && missions().length > 0">
       <ion-icon name="search-outline" size="large"></ion-icon>
       <h2>No results found</h2>
     </div>
 
+    <!-- No missions at all -->
     <div class="empty-state" *ngIf="missions().length === 0">
       <div class="empty-icon">
         <ion-icon name="cloud-upload-outline"></ion-icon>
       </div>
-      <h2>No Missions Created</h2>
-      <p>Tap the + button to start</p>
+      <h2>No Missions Yet</h2>
+      <p>Tap + to create your first mission</p>
     </div>
+
+    <!-- Active category is empty but others have missions -->
+    <div class="empty-state"
+         *ngIf="missions().length > 0 && categoryMissions().length === 0 && !searchQuery()">
+      <div class="empty-icon">
+        <ion-icon [name]="activeCategory() === 'matrix' ? 'grid-outline' :
+                          activeCategory() === 'linear' ? 'navigate-outline' : 'map-outline'">
+        </ion-icon>
+      </div>
+      <h2>No {{ activeCategory() | titlecase }} missions</h2>
+      <p>Switch tab or create a new mission</p>
+    </div>
+
   </div>
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">

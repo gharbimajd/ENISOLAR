@@ -411,4 +411,16 @@ deleteMission(id: string): Observable<any> {
     const batteriesNeeded = Math.ceil(flightTimeMinutes / 20);
     return Math.max(1, batteriesNeeded);
   }
+  saveMissionML(mission: any): Observable<any> {
+  const userId = localStorage.getItem('user_id') || '';
+  if (!mission.user_id) mission.user_id = userId;
+ 
+  return from(CapacitorHttp.post({
+    url: `${this.apiUrl}/save_mL.php`,
+    data: mission,
+    headers: { 'Content-Type': 'application/json' }
+  })).pipe(
+    map(res => res.data)
+  );
+}
 }
