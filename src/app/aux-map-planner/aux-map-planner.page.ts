@@ -4,7 +4,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController } from '@ionic/angular';
+
 
 import {
   IonContent,
@@ -76,7 +76,6 @@ export class AuxMapPlannerPage implements ViewWillEnter, ViewDidEnter, OnDestroy
     private missionService:  MissionService,
     private zone:            NgZone,
     private cdr:             ChangeDetectorRef,
-    private alertController: AlertController,
   ) {
     addIcons({
       'options-outline': optionsOutline, 'chevron-down-outline': chevronDownOutline,
@@ -505,18 +504,11 @@ export class AuxMapPlannerPage implements ViewWillEnter, ViewDidEnter, OnDestroy
 
   // ── SAVE ───────────────────────────────────────────────────────────────────
 
-  async saveMission() {
+  saveMission() {
     if (!this.currentMission || this.isSaving()) return;
-    const alert = await this.alertController.create({
-      header: 'Save Mission',
-      message: 'Include flight altitude in saved coordinates?',
-      cssClass: 'glass-alert',
-      buttons: [
-        { text: 'Without Height', role: 'cancel', handler: () => this.executeSave(false) },
-        { text: 'With Height',                    handler: () => this.executeSave(true)  }
-      ]
-    });
-    await alert.present();
+    // Use native window.confirm — works on browser AND Capacitor Android/iOS
+    const withHeight = window.confirm('Include flight altitude in saved coordinates?\nOK = With Height  |  Cancel = Without Height');
+    this.zone.run(() => this.executeSave(withHeight));
   }
 
   private executeSave(includeHeight: boolean) {

@@ -3,7 +3,6 @@ ion-content {
   --background: transparent;
   
   &::part(background) {
-    /* Exact Dashboard Gradient */
     background: radial-gradient(circle at 50% 0%, #1a2c4e 0%, #000000 70%) !important;
     background-color: #000000 !important;
   }
@@ -14,25 +13,41 @@ ion-content {
   padding-bottom: 50px;
 }
 
-/* 2. GLASS TOOLBAR */
+/* 2. TOOLBAR — white bg, indigo accent */
+ion-header {
+  background: #ffffff !important;
+  &::after { display: none; }
+}
+
 ion-toolbar {
-  --background: rgba(10, 20, 40, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  --color: #ffffff; 
+  --background: #ffffff;
   --border-color: transparent;
+  --color: #1e1b4b;
+  --min-height: 56px;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+
+  ion-back-button {
+    --color: #1e1b4b;
+    --icon-font-size: 22px;
+  }
 
   ion-title {
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    font-size: 1.05rem;
+    color: #1e1b4b;
+  }
+
+  // Logout icon button
+  .logout-btn {
+    --color: #ef4444;
+    --background: transparent;
+    --box-shadow: none;
   }
 }
 
 /* 3. GLASS CARD COMPONENT */
 .glass-card {
-  /* Using your Dashboard's specific card background */
   background: rgba(13, 22, 40, 0.85) !important;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
@@ -41,7 +56,7 @@ ion-toolbar {
 
   ion-card-header {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    
+
     ion-card-title {
       color: rgba(255, 255, 255, 0.7) !important;
       font-size: 0.75rem;
@@ -64,9 +79,8 @@ ion-item {
     border: none !important;
   }
 
-  /* Label Styling - Matches Dashboard Slate Gray */
   h3 {
-    color: #94a3b8 !important; 
+    color: #94a3b8 !important;
     font-size: 0.65rem !important;
     font-weight: 700;
     text-transform: uppercase;
@@ -81,7 +95,7 @@ ion-item {
   }
 
   ion-icon {
-    color: #ffffff !important; 
+    color: #ffffff !important;
     margin-right: 12px;
     opacity: 0.8;
   }
@@ -99,8 +113,8 @@ ion-item {
 }
 
 ion-button {
-  --background: #ffffff; /* Dashboard White Button */
-  --color: #1a2c4e; /* Dark navy text */
+  --background: #ffffff;
+  --color: #1a2c4e;
   --border-radius: 14px;
   --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
   font-weight: 700;
@@ -112,15 +126,4 @@ ion-button {
     --color: rgba(255, 255, 255, 0.3);
     opacity: 0.4;
   }
-}
-
-/* Logout Button - Keeps Red but matches Dashboard Red (#ef4444) */
-.logout-btn {
-  --background: transparent;
-  --color: #ef4444 !important;
-  --border-color: rgba(239, 68, 68, 0.3);
-  --border-style: solid;
-  --border-width: 1px;
-  --box-shadow: none;
-  margin-top: 15px;
 }

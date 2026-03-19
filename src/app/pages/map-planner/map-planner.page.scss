@@ -1,46 +1,57 @@
 // ============================================================
-//  MAP PLANNING PAGE — OPTIMIZED STYLESHEET
+//  MAP PLANNING PAGE — mobile-optimized
 // ============================================================
 
-// ─── 1. DESIGN TOKENS ────────────────────────────────────────
-$bg-page:          #050508;
-$glass-bg:         rgba(13, 22, 40, 0.85);
-$glass-border:     rgba(255, 255, 255, 0.1);
-$glass-shadow:     0 8px 32px rgba(0, 0, 0, 0.4);
-$glass-blur:       blur(20px);
+// ─── TOKENS (matched to AUX MAP PLANNER) ─────────────────────
+$bg-page:      #070c14;
+$bg-sidebar:   #0b1120;
+$glass-bg:     rgba(11, 17, 32, 0.88);
+$glass-border: rgba(255, 255, 255, 0.07);
+$glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+$glass-blur:   blur(10px);
+$surface-mid:  rgba(255, 255, 255, 0.04);
+$surface-low:  rgba(255, 255, 255, 0.055);
+$accent:       #4ade80;
+$accent-dim:   rgba(74, 222, 128, 0.1);
+$accent-fg:    #000000;
+$danger:       #ef4444;
+$text-primary: #e2e8f0;
+$text-muted:   #94a3b8;
+$text-body:    #94a3b8;
+$text-lo:      #475569;
+$radius-sm:    6px;
+$radius-md:    6px;
+$radius-lg:    6px;
+$radius-xl:    6px;
+$radius-pill:  50px;
+$border:       rgba(255, 255, 255, 0.07);
+$row-div:      rgba(255, 255, 255, 0.055);
 
-$surface-mid:      rgba(30, 41, 59, 0.5);
-$surface-low:      rgba(30, 41, 59, 0.4);
+* { box-sizing: border-box; }
 
-$accent:           #4ade80;
-$accent-fg:        #000000;
-$danger:           #ef4444;
-
-$text-primary:     #ffffff;
-$text-muted:       #94a3b8;
-$text-body:        #cbd5e1;
-
-$radius-md:        12px;
-$radius-lg:        16px;
-$radius-xl:        24px;
-$radius-pill:      50px;
-
-// ─── 2. CORE LAYOUT ──────────────────────────────────────────
+// ─── CORE ────────────────────────────────────────────────────
 ion-content {
   --background: #{$bg-page};
+  --ion-background-color: #{$bg-page};
   position: relative;
 }
 
 #map {
   position: absolute;
-  inset: 0; // Shorthand for top:0, right:0, bottom:0, left:0
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   z-index: 1;
-  background-color: #e5e3df; 
+  background-color: $bg-page;
 }
 
-// ─── 3. HEADER & TOOLBAR ─────────────────────────────────────
+// ─── MAPBOX ATTRIBUTION REMOVAL ──────────────────────────────
+.mapboxgl-ctrl-logo,
+.mapboxgl-ctrl-attrib {
+  display: none !important;
+}
+
+// ─── HEADER ──────────────────────────────────────────────────
 ion-header {
   position: absolute;
   inset: 0 0 auto 0;
@@ -51,77 +62,46 @@ ion-header {
   ion-toolbar {
     --padding-start: 0; --padding-end: 0;
     --padding-top: 0;   --padding-bottom: 0;
-    
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-    text-align: center;
   }
 }
 
-// ─── 4. BACK BUTTON ──────────────────────────────────────────
-.glass-back-btn {
-  --color:             #{$text-primary};
-  --background:        #{$glass-bg};
-  --background-hover:  rgba(13, 22, 40, 0.95);
-  --icon-font-size:    22px;
-  --icon-margin-end:   0;
-  --padding-start:     0;
-  --padding-end:       0;
-
-  backdrop-filter: $glass-blur;
-  -webkit-backdrop-filter: $glass-blur;
-  border-radius: $radius-md;
-  border: 1px solid $glass-border;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  pointer-events: auto;
-  transition: transform 0.15s ease, background 0.15s ease;
-
-  &:active { transform: scale(0.92); }
-}
-
-// ─── 5. STATS CAPSULE ────────────────────────────────────────
+// ─── STATS CAPSULE ───────────────────────────────────────────
 .stats-capsule {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  height: 42px;
-  padding: 0 20px;
-  border-radius: $radius-md;
+  gap: 8px;
+  height: 38px;
+  padding: 8px 12px;
+  border-radius: $radius-sm;
+  background: rgba(11, 17, 32, 0.88);
+  border: 1px solid $border;
+  backdrop-filter: $glass-blur;
+  -webkit-backdrop-filter: $glass-blur;
   flex-shrink: 0;
   pointer-events: auto;
-  margin: 0 auto; 
-  opacity: 0.85; 
+  margin: 0 auto;
   max-width: fit-content;
 
   .stat-item {
     display: flex;
-    align-items: center;
-    gap: 6px;
-
-    ion-icon { font-size: 16px; color: $text-muted; flex-shrink: 0; }
-    
-    > div { display: flex; align-items: baseline; gap: 2px; }
-    .val  { font-size: 13px; font-weight: 700; color: $text-primary; line-height: 1; }
-    .unit { font-size: 9px; font-weight: 500; color: $text-muted; line-height: 1; }
+    align-items: baseline;
+    gap: 2px;
+    .val  { font-size: 12px; font-weight: 700; color: $text-primary; }
+    .unit { font-size: 9px; color: $text-lo; }
   }
 
   .stat-divider {
-    width: 1px; height: 20px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 1px; flex-shrink: 0;
+    width: 1px; height: 12px;
+    background: $border;
+    flex-shrink: 0;
   }
 }
 
-// ─── 6. GLASS UTILITY ────────────────────────────────────────
+// ─── GLASS UTILITY ───────────────────────────────────────────
 .glass-panel {
   background: $glass-bg !important;
   backdrop-filter: $glass-blur;
@@ -130,11 +110,11 @@ ion-header {
   box-shadow: $glass-shadow;
 }
 
-// ─── 7. MAP INTERFACE WRAPPER ────────────────────────────────
+// ─── MAP INTERFACE WRAPPER ───────────────────────────────────
 .map-interface-wrapper {
   position: absolute;
   inset: auto 0 0 0;
-  z-index: 100;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -142,7 +122,7 @@ ion-header {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-// ─── 8. SETTINGS PANEL (Portrait Bottom Sheet) ───────────────
+// ─── SETTINGS PANEL ──────────────────────────────────────────
 .settings-panel {
   position: absolute;
   bottom: 0; left: 0;
@@ -150,58 +130,64 @@ ion-header {
   height: 70vh;
   z-index: 1000;
   pointer-events: auto;
-  transform: translate3d(0, 100%, 0); 
-  will-change: transform; 
+  background: $bg-sidebar;
+  border-top: 1px solid $border;
+  transform: translate3d(0, 100%, 0);
+  will-change: transform;
   backface-visibility: hidden;
-  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-  contain: size layout; 
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  contain: size layout;
   user-select: none;
   touch-action: pan-y;
 
   &.open { transform: translate3d(0, 0, 0); }
 
-  // Nested Handle Bar
   .sheet-handle-bar {
     width: 100%; display: flex; flex-direction: column;
     align-items: center; padding: 12px 0 8px;
     cursor: pointer; flex-shrink: 0;
-    
-    &:hover .drag-handle { background: rgba(255, 255, 255, 0.35); }
-    
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    border-bottom: 1px solid $border;
+
     .drag-handle {
       width: 36px; height: 4px; border-radius: 2px;
       background: rgba(255, 255, 255, 0.2);
       transition: background 0.2s ease;
     }
+    &:hover .drag-handle { background: rgba(255, 255, 255, 0.35); }
+
     .sheet-title {
       color: $text-muted; font-size: 10px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 1.2px; margin-top: 8px;
+      text-transform: uppercase; letter-spacing: 0.8px; margin-top: 8px;
     }
   }
 
-  // Nested Content
   .sheet-content {
-    overflow-y: auto; padding: 0 16px 8px; overscroll-behavior: contain;
-    
+    overflow-y: auto; padding: 0 12px 8px; overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+
     &::-webkit-scrollbar       { width: 3px; }
     &::-webkit-scrollbar-track { background: transparent; }
     &::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
 
-    .input-wrapper { margin-bottom: 12px; }
-    
+    .input-wrapper { margin-bottom: 10px; }
+
     .glass-input {
-      --background: #{$surface-mid}; --color: #{$text-primary};
-      --placeholder-color: #{$text-muted}; --placeholder-opacity: 1;
-      --padding-start: 14px; --padding-end: 14px;
-      --padding-top: 10px; --padding-bottom: 10px;
-      --border-radius: #{$radius-md}; --highlight-color-focused: #{$accent};
-      border-radius: $radius-md; border: 1px solid $glass-border;
-      font-size: 14px; width: 100%;
+      --background:              rgba(255, 255, 255, 0.04);
+      --color:                   #{$text-primary};
+      --placeholder-color:       #{$text-lo};
+      --placeholder-opacity:     1;
+      --padding-start:           10px; --padding-end: 10px;
+      --padding-top:             9px;  --padding-bottom: 9px;
+      --border-radius:           #{$radius-sm};
+      --highlight-color-focused: #{$accent};
+      border-radius: $radius-sm; border: 1px solid $border;
+      font-size: 13px; width: 100%;
     }
 
     .sliders-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;
-      
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;
       .control-box.full { grid-column: 1 / -1; }
       @media (max-width: 340px) {
         grid-template-columns: 1fr;
@@ -210,130 +196,149 @@ ion-header {
     }
 
     .control-box {
-      background: $surface-low; border-radius: $radius-lg;
-      border: 1px solid $glass-border; padding: 12px;
+      background: $surface-low; border-radius: $radius-sm;
+      border: 1px solid $border; padding: 10px 12px 8px;
 
       .box-header {
-        display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
-        
+        display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;
         .label {
-          display: flex; align-items: center; gap: 4px;
-          font-size: 11px; font-weight: 600; color: $text-muted;
-          text-transform: uppercase; letter-spacing: 0.6px;
-          ion-icon { font-size: 13px; }
+          display: flex; align-items: center; gap: 5px;
+          font-size: 10px; font-weight: 700; color: $text-muted;
+          text-transform: uppercase; letter-spacing: 0.8px;
+          ion-icon { font-size: 11px; color: $accent; }
         }
         .value { font-size: 11px; font-weight: 700; color: $accent; }
       }
 
       ion-range {
-        --bar-background: rgba(255, 255, 255, 0.12);
-        --bar-background-active: #{$accent}; --knob-background: #{$accent};
-        --knob-size: 18px; --knob-shadow: 0 2px 8px rgba(74, 222, 128, 0.5);
-        --bar-height: 3px; --pin-background: #{$accent}; --pin-color: #{$accent-fg};
-        padding: 0; margin-top: 2px;
+        --bar-background:        rgba(255, 255, 255, 0.08);
+        --bar-background-active: #{$accent};
+        --knob-background:       #{$accent};
+        --knob-size:             20px;
+        --knob-shadow:           0 0 8px rgba(74, 222, 128, 0.65);
+        --bar-height:            2px;
+        padding: 0; margin: 0;
       }
     }
 
     .multi-range { display: flex; flex-direction: column; gap: 2px; ion-range { margin: 0; } }
 
     .camera-tag {
-      display: flex; align-items: center; gap: 6px; padding: 8px 12px;
-      background: rgba(74, 222, 128, 0.08); border: 1px solid rgba(74, 222, 128, 0.2);
-      border-radius: $radius-md; color: $accent; font-size: 12px; font-weight: 600; margin: 4px 0;
-      ion-icon { font-size: 15px; flex-shrink: 0; }
+      display: flex; align-items: center; gap: 5px; padding: 8px 10px;
+      background: $accent-dim; border: 1px solid rgba(74, 222, 128, 0.2);
+      border-radius: $radius-sm; color: $accent; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.02em; margin: 4px 0;
+      ion-icon { font-size: 12px; flex-shrink: 0; }
     }
   }
 }
 
-// ─── 9. FLOATING ACTION DOCK ─────────────────────────────────
+// ─── FLOATING ACTION DOCK ────────────────────────────────────
 .floating-action-dock {
-  pointer-events: auto; display: flex; justify-content: center;
-  width: 100%; padding: 12px 16px 15px;
+  pointer-events: auto;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 12px 18px 18px;
 
-  .action-bar-wrapper { display: flex; align-items: center; gap: 12px; }
+  .action-bar-wrapper { display: flex; align-items: center; gap: 10px; }
 
   .fab-btn {
-    width: 50px; height: 50px; min-width: 50px; border-radius: 50%;
+    width: 40px; height: 40px; border-radius: $radius-sm;
     display: flex; align-items: center; justify-content: center;
-    font-size: 22px; color: $text-primary; cursor: pointer; border: none; flex-shrink: 0;
-    transition: background 0.2s ease, transform 0.15s ease;
-    
-    ion-icon { pointer-events: none; }
+    background: rgba(11, 17, 32, 0.88);
+    border: 1px solid $border;
+    color: $text-muted; cursor: pointer; flex-shrink: 0;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    backdrop-filter: $glass-blur;
+    -webkit-backdrop-filter: $glass-blur;
+    transition: color 0.15s, background 0.15s, transform 0.12s;
+
+    ion-icon { font-size: 17px; pointer-events: none; }
     &:active   { transform: scale(0.9); }
-    &.active   { background: $accent !important; color: $accent-fg; }
-    &:disabled { opacity: 0.4; cursor: not-allowed; }
+    &.active   { color: $accent; border-color: rgba(74, 222, 128, 0.32); background: $accent-dim; }
+    &:disabled { opacity: 0.3; cursor: not-allowed; }
   }
 
   .action-group {
-    display: flex; align-items: center; border-radius: $radius-pill; padding: 4px;
+    display: flex; align-items: center;
+    background: rgba(11, 17, 32, 0.88);
+    border: 1px solid $border;
+    border-radius: $radius-sm;
+    backdrop-filter: $glass-blur;
+    -webkit-backdrop-filter: $glass-blur;
+    padding: 4px;
 
     .icon-btn {
-      width: 42px; height: 42px; border-radius: 50%; display: flex;
-      align-items: center; justify-content: center; color: $text-body;
-      font-size: 20px; cursor: pointer; border: none; background: transparent;
-      transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
-      
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: $text-muted; font-size: 20px; cursor: pointer; border: none; background: transparent;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      transition: color 0.15s, transform 0.12s;
+
       ion-icon { pointer-events: none; }
-      &:hover    { background: rgba(255, 255, 255, 0.06); }
       &:active   { transform: scale(0.88); }
       &.danger   { color: $danger; }
-      &:disabled { opacity: 0.35; cursor: not-allowed; }
+      &:disabled { opacity: 0.3; cursor: not-allowed; }
     }
 
-    .divider { width: 1px; height: 24px; background: $glass-border; margin: 0 4px; flex-shrink: 0; }
+    .divider { width: 1px; height: 12px; background: $border; margin: 0 2px; flex-shrink: 0; }
   }
 
   .save-btn {
-    display: flex; align-items: center; gap: 8px; height: 50px; padding: 0 22px;
-    border-radius: $radius-pill; background: $accent; color: $accent-fg;
+    display: flex; align-items: center; gap: 7px; height: 48px; padding: 0 26px;
+    border-radius: $radius-pill; background: $accent; color: #000;
     font-size: 14px; font-weight: 700; cursor: pointer; border: none; white-space: nowrap;
-    flex-shrink: 0; transition: background 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
-    box-shadow: 0 4px 20px rgba(74, 222, 128, 0.35);
+    flex-shrink: 0;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 0 24px rgba(74, 222, 128, 0.5), 0 4px 16px rgba(74, 222, 128, 0.35);
+    transition: transform 0.12s, opacity 0.15s;
 
-    ion-icon { font-size: 18px; pointer-events: none; }
-    &:active   { transform: scale(0.96); }
-    &:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+    ion-icon { font-size: 16px; pointer-events: none; }
+    &:active   { transform: scale(0.95); }
+    &:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
   }
 }
 
-// ─── 10. LOADING OVERLAY ─────────────────────────────────────
+// ─── LOADING OVERLAY ─────────────────────────────────────────
 .loading-overlay {
   position: absolute; inset: 0; z-index: 500;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(5, 5, 8, 0.65);
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  
-  ion-spinner { width: 48px; height: 48px; --color: #{$accent}; }
+  background: rgba(5, 8, 14, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  ion-spinner { width: 44px; height: 44px; --color: #{$accent}; }
 }
 
-// ─── 11. LANDSCAPE OVERRIDES ─────────────────────────────────
+// ─── LANDSCAPE ───────────────────────────────────────────────
 @media (orientation: landscape) {
   ion-header {
-    height: 44px !important; padding-top: env(safe-area-inset-top, 0);
+    height: 44px !important;
+    padding-top: env(safe-area-inset-top, 0);
     ion-toolbar {
-      --min-height: 44px !important; display: flex !important;
-      align-items: center !important; justify-content: space-between !important;
+      --min-height: 44px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
     }
-  }
-
-  .glass-back-btn {
-    width: 36px !important; height: 36px !important; min-width: 36px !important;
-    margin-left: env(safe-area-inset-left, 8px) !important;
-    ion-icon { font-size: 18px; }
   }
 
   .landscape-stats-scaling {
     transform: scale(0.85); transform-origin: right center;
-    margin-left: auto !important; margin-right: env(safe-area-inset-right, 8px) !important;
+    margin-left: auto !important;
+    margin-right: env(safe-area-inset-right, 8px) !important;
     height: 34px !important; padding: 0 10px !important; gap: 8px !important;
-    
+
     .stat-item {
       gap: 4px !important;
-      ion-icon { font-size: 13px !important; }
-      .val     { font-size: 11px !important; }
-      .unit    { font-size: 8px !important; }
+      .val  { font-size: 11px !important; }
+      .unit { font-size: 8px  !important; }
     }
-    .stat-divider { height: 14px !important; margin: 0 4px !important; }
+    .stat-divider { height: 12px !important; }
   }
 
   .map-interface-wrapper {
@@ -343,16 +348,17 @@ ion-header {
   }
 
   .settings-panel {
-    width: 300px !important; height: 100% !important;
-    max-height: none !important; min-height: 0 !important; opacity: 1 !important;
+    width: 232px !important; height: 100% !important;
+    max-height: none !important; min-height: 0 !important;
     display: flex !important; flex-direction: column !important;
-    border-radius: 0 $radius-xl $radius-xl 0 !important; overflow: hidden !important;
+    border-radius: 0 !important; border-right: 1px solid $border !important;
+    border-top: none !important; overflow: hidden !important;
     transform: translateX(-100%);
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     padding-bottom: env(safe-area-inset-bottom, 12px) !important;
     padding-left: env(safe-area-inset-left, 0px);
 
-    &.open { transform: translateX(0) !important; max-height: none !important; opacity: 1 !important; }
+    &.open { transform: translateX(0) !important; max-height: none !important; }
 
     .sheet-content {
       display: block !important; flex: 1 1 auto; overflow-y: auto;
@@ -362,13 +368,17 @@ ion-header {
 
   .floating-action-dock {
     position: absolute !important;
-    bottom: env(safe-area-inset-bottom, 16px) !important; right: env(safe-area-inset-right, 16px) !important;
+    bottom: env(safe-area-inset-bottom, 18px) !important;
+    right: env(safe-area-inset-right, 18px) !important;
     width: auto !important; padding: 0 !important;
 
-    .action-bar-wrapper { flex-direction: column-reverse !important; align-items: flex-end !important; gap: 10px !important; }
+    .action-bar-wrapper {
+      flex-direction: column-reverse !important;
+      align-items: flex-end !important; gap: 10px !important;
+    }
     .action-group {
       flex-direction: column !important;
-      .divider { width: 24px !important; height: 1px !important; margin: 4px 0 !important; }
+      .divider { width: 24px !important; height: 1px !important; margin: 2px 0 !important; }
     }
     .save-btn { padding: 0 16px !important; font-size: 13px !important; }
   }

@@ -1,27 +1,7 @@
 <ion-header class="ion-no-border landscape-header-fix">
   <ion-toolbar style="--background: transparent;" [style.opacity]="isReady() ? 0.85 : 0">
     
-    <div class="stats-capsule glass-panel landscape-stats-scaling" *ngIf="mission()">
-      <div class="stat-item">
-        <ion-icon name="resize-outline"></ion-icon>
-        <div><span class="val">{{ mission()?.areaSize || 0 }}</span><span class="unit">ha</span></div>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat-item">
-        <ion-icon name="time-outline"></ion-icon>
-        <div><span class="val">{{ formatTime(mission()?.estimatedTime || 0) }}</span></div>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat-item">
-        <ion-icon name="navigate-outline"></ion-icon>
-        <div><span class="val">{{ mission()?.waypointCount || 0 }}</span><span class="unit">wp</span></div>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat-item">
-        <ion-icon name="eye-outline"></ion-icon>
-        <div><span class="val">{{ mission()?.gsd || 0 }}</span><span class="unit">cm</span></div>
-      </div>
-    </div>
+    
 
   </ion-toolbar>
 </ion-header>

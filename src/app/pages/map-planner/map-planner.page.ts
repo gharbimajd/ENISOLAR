@@ -2,7 +2,7 @@ import { Component, OnDestroy, signal, ChangeDetectorRef, NgZone, ChangeDetectio
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController } from '@ionic/angular';
+
 
 import { 
   IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, 
@@ -62,7 +62,6 @@ export class MapPlannerPage implements ViewWillEnter, ViewDidEnter, OnDestroy {
     private missionService: MissionService,
     private zone: NgZone,
     private cdr: ChangeDetectorRef,
-    private alertController: AlertController,
   ) {
    addIcons({ 
       'options-outline': optionsOutline, 
@@ -379,32 +378,10 @@ private initMap() {
     }
   }
 
-async saveMission() {
-    // Prevent opening multiple popups or saving if no mission exists
+  saveMission() {
     if (!this.currentMission || this.isSaving()) return;
-
-    const alert = await this.alertController.create({
-      header: 'Save Mission Geometry',
-      message: 'Do you want to include the flight height (altitude) in the saved coordinates?',
-      cssClass: 'glass-alert', // Optional: you can style this in your SCSS later
-      buttons: [
-        {
-          text: 'Without Height',
-          role: 'cancel',
-          handler: () => {
-            this.executeSave(false);
-          }
-        },
-        {
-          text: 'With Height',
-          handler: () => {
-            this.executeSave(true);
-          }
-        }
-      ]
-    });
-
-    await alert.present();
+    const withHeight = window.confirm('Include flight altitude in saved coordinates?\nOK = With Height  |  Cancel = Without Height');
+    this.zone.run(() => this.executeSave(withHeight));
   }
 
   private executeSave(includeHeight: boolean) {

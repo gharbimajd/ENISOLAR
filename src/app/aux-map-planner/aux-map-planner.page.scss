@@ -1,5 +1,5 @@
 // ============================================================
-//  AUX MAP PLANNER — no toolbar, sidebar-first layout
+//  AUX MAP PLANNER — mobile-optimized
 // ============================================================
 
 $bg-page:    #070c14;
@@ -16,7 +16,6 @@ $r-sm:       6px;
 $r-pill:     50px;
 $sw:         232px;
 
-// ─── RESET ───────────────────────────────────────────────────
 * { box-sizing: border-box; }
 
 ion-content, .planner-content {
@@ -46,29 +45,8 @@ ion-content, .planner-content {
   ion-spinner { width: 44px; height: 44px; --color: #{$accent}; }
 }
 
-// ─── DRAW HINT ───────────────────────────────────────────────
-.draw-hint {
-  position: absolute;
-  bottom: 80px;
-  left: calc(#{$sw} + (100% - #{$sw}) / 2);
-  transform: translateX(-50%);
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 20px;
-  border-radius: $r-pill;
-  background: rgba(8, 14, 26, 0.9);
-  border: 1px solid $border;
-  color: $t-mid;
-  font-size: 13px;
-  white-space: nowrap;
-  pointer-events: none;
-
-  ion-icon { font-size: 14px; color: $accent; }
-}
-
 // ─── FLOATING TOP-RIGHT FABS ──────────────────────────────────
+// z-index 1000+ ensures they sit above Mapbox canvas on mobile
 .fab-top-right {
   position: absolute;
   top: 14px;
@@ -77,11 +55,12 @@ ion-content, .planner-content {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  pointer-events: auto;
 }
 
 .fab-btn {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: $r-sm;
   display: flex;
   align-items: center;
@@ -90,6 +69,8 @@ ion-content, .planner-content {
   border: 1px solid $border;
   color: $t-mid;
   cursor: pointer;
+  touch-action: manipulation;     // kills 300ms tap delay
+  -webkit-tap-highlight-color: transparent;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: color 0.15s, background 0.15s, transform 0.12s;
@@ -103,12 +84,12 @@ ion-content, .planner-content {
   }
 }
 
-// ─── LEFT SIDEBAR ────────────────────────────────────────────
+// ─── SIDEBAR ────────────────────────────────────────────────
 .sidebar {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 1000;
+  z-index: 1000;         // above map canvas
   width: $sw;
   height: 100%;
   display: flex;
@@ -116,15 +97,14 @@ ion-content, .planner-content {
   background: $bg-sidebar;
   border-right: 1px solid $border;
   overflow: hidden;
-  // Sidebar always visible — no open/close needed since toolbar is gone
-  // but keep the signal-driven class in case you want to toggle it
-  transform: translateX(0);
+  transform: translateX(-100%);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
 
-  &:not(.open) { transform: translateX(-100%); }
+  &.open { transform: translateX(0); }
 }
 
-// ── Mode pills inside sidebar top ────────────────────────────
+// Mode pills
 .sidebar-mode {
   display: flex;
   gap: 6px;
@@ -139,7 +119,7 @@ ion-content, .planner-content {
   align-items: center;
   justify-content: center;
   gap: 5px;
-  padding: 7px 0;
+  padding: 8px 0;
   border-radius: $r-pill;
   border: 1px solid $border;
   background: rgba(255, 255, 255, 0.04);
@@ -148,6 +128,8 @@ ion-content, .planner-content {
   font-weight: 600;
   letter-spacing: 0.02em;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: all 0.18s;
 
   ion-icon { font-size: 12px; pointer-events: none; }
@@ -159,7 +141,7 @@ ion-content, .planner-content {
   }
 }
 
-// ── Mission name ─────────────────────────────────────────────
+// Mission name
 .sidebar-name {
   padding: 10px 12px 8px;
   border-bottom: 1px solid $border;
@@ -176,8 +158,8 @@ ion-content, .planner-content {
   --placeholder-opacity:     1;
   --padding-start:           10px;
   --padding-end:             10px;
-  --padding-top:             8px;
-  --padding-bottom:          8px;
+  --padding-top:             9px;
+  --padding-bottom:          9px;
   --border-radius:           #{$r-sm};
   --highlight-color-focused: #{$accent};
   border-radius: $r-sm;
@@ -203,7 +185,7 @@ ion-content, .planner-content {
   ion-icon { font-size: 10px; }
 }
 
-// ── Stats row ────────────────────────────────────────────────
+// Stats row
 .stats-row {
   display: flex;
   align-items: center;
@@ -221,14 +203,13 @@ ion-content, .planner-content {
   }
 
   .stat-sep {
-    width: 1px;
-    height: 12px;
+    width: 1px; height: 12px;
     background: $border;
     flex-shrink: 0;
   }
 }
 
-// ── Control rows ─────────────────────────────────────────────
+// Control rows
 .control-row {
   padding: 10px 12px 8px;
   border-bottom: 1px solid $row-div;
@@ -264,7 +245,7 @@ ion-content, .planner-content {
     --bar-background:        rgba(255, 255, 255, 0.08);
     --bar-background-active: #{$accent};
     --knob-background:       #{$accent};
-    --knob-size:             16px;
+    --knob-size:             20px;   // larger for easier mobile touch
     --knob-shadow:           0 0 8px rgba(74, 222, 128, 0.65);
     --bar-height:            2px;
     padding: 0;
@@ -272,26 +253,27 @@ ion-content, .planner-content {
   }
 }
 
-// ─── BOTTOM-RIGHT ACTIONS ────────────────────────────────────
+// ─── BOTTOM-RIGHT ACTIONS ───────────────────────────────────
 .bottom-actions {
   position: absolute;
-  bottom: 18px;
+  bottom: env(safe-area-inset-bottom, 18px);
   right: 18px;
-  z-index: 1000;
+  z-index: 1000;       // above map canvas
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   pointer-events: none;
 
   > * {
     pointer-events: auto;
-    touch-action: manipulation; // prevents 300ms tap delay on mobile
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
 .icon-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -299,8 +281,10 @@ ion-content, .planner-content {
   background: rgba(8, 14, 26, 0.9);
   border: 1px solid $border;
   color: $t-mid;
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: transform 0.12s, color 0.15s;
 
   ion-icon  { pointer-events: none; }
@@ -313,7 +297,7 @@ ion-content, .planner-content {
   display: flex;
   align-items: center;
   gap: 7px;
-  height: 44px;
+  height: 48px;
   padding: 0 22px;
   border-radius: $r-pill;
   background: $accent;
@@ -324,6 +308,7 @@ ion-content, .planner-content {
   cursor: pointer;
   flex-shrink: 0;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   box-shadow: 0 0 20px rgba(74, 222, 128, 0.45), 0 4px 14px rgba(74, 222, 128, 0.3);
   transition: transform 0.12s;
 
@@ -335,8 +320,8 @@ ion-content, .planner-content {
   display: flex;
   align-items: center;
   gap: 7px;
-  height: 44px;
-  padding: 0 24px;
+  height: 48px;
+  padding: 0 26px;
   border-radius: $r-pill;
   background: $accent;
   color: #000;
@@ -346,6 +331,7 @@ ion-content, .planner-content {
   cursor: pointer;
   flex-shrink: 0;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   box-shadow: 0 0 24px rgba(74, 222, 128, 0.5), 0 4px 16px rgba(74, 222, 128, 0.35);
   transition: transform 0.12s, opacity 0.15s;
 
@@ -354,4 +340,26 @@ ion-content, .planner-content {
   &:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 }
 
-.btn-spinner { --color: #000; width: 15px; height: 15px; }
+.btn-spinner { --color: #000; width: 16px; height: 16px; }
+
+// ─── DRAW HINT ───────────────────────────────────────────────
+.draw-hint {
+  position: absolute;
+  bottom: calc(env(safe-area-inset-bottom, 18px) + 70px);
+  left: calc(#{$sw} + (100% - #{$sw}) / 2);
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 20px;
+  border-radius: $r-pill;
+  background: rgba(8, 14, 26, 0.9);
+  border: 1px solid $border;
+  color: $t-mid;
+  font-size: 13px;
+  white-space: nowrap;
+  pointer-events: none;
+
+  ion-icon { font-size: 14px; color: $accent; }
+}

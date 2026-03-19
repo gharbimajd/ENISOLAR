@@ -1,38 +1,43 @@
-/* 1. BACKGROUND GRADIENT */
+/* 1. BACKGROUND */
 ion-content {
   --background: radial-gradient(circle at 50% 0%, #1a2c4e 0%, #000000 70%);
 }
 
 /* 2. HEADER & TOOLBAR */
+ion-header {
+  background: #ffffff !important;
+  &::after { display: none; }
+}
+
 ion-toolbar {
-  --background: transparent;
+  --background: #ffffff;
   --border-color: transparent;
-  --color: #fff;
+  --color: #1e1b4b;
+  --min-height: 56px;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+
+  ion-back-button {
+    --color: #1e1b4b;
+    --icon-font-size: 22px;
+  }
 }
 
 ion-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: #1e1b4b;
 }
 
 /* 3. PAGE HEADER AREA */
 .page-header {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   text-align: center;
 
-  .page-title {
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin: 0 0 4px 0;
-    color: #fff;
-    letter-spacing: -0.5px;
-  }
-  
   .subtitle {
     margin: 0;
     font-size: 0.9rem;
-    color: #94a3b8; /* Slate gray */
+    color: #94a3b8;
   }
 }
 
@@ -41,64 +46,67 @@ ion-title {
   margin-top: 10px;
 }
 
-/* 5. GLASS CARD OPTION */
+/* 5. GLASS CARD OPTION — full width row layout */
 .glass-card.option-card {
-  /* Solid dark blue with transparency */
-  background: rgba(13, 22, 40, 0.85); 
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 20px 12px;
-  
-  height: 100%; 
+  background: rgba(11, 17, 32, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+  padding: 18px 20px;
+
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  text-align: center;
-  gap: 10px; 
-  
+  gap: 16px;
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.2s, background 0.2s;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 
-  /* Icon Styling */
   .icon-wrapper {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(74, 222, 128, 0.1);
     border-radius: 50%;
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 8px;
 
     ion-icon {
-      font-size: 1.8rem;
-      color: #4ade80; /* Matrix Green Icon */
+      font-size: 1.6rem;
+      color: #4ade80;
     }
   }
 
-  /* Text Styling */
+  .card-text {
+    display: flex;
+    flex-direction: column;
+  }
+
   h3 {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #fff;
+    margin: 0 0 3px 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e2e8f0;
   }
 
   p {
     margin: 0;
-    font-size: 0.75rem;
-    color: #94a3b8; /* Slate gray */
+    font-size: 0.8rem;
+    color: #94a3b8;
     line-height: 1.4;
   }
 
-  /* Active/Hover State */
   &:active {
-    transform: scale(0.96);
+    transform: scale(0.98);
     background: rgba(30, 45, 70, 0.9);
-    border-color: rgba(74, 222, 128, 0.3); /* Green glow on touch */
-    
+    border-color: rgba(99, 102, 241, 0.4);
+
     .icon-wrapper {
-      background: rgba(74, 222, 128, 0.15); /* Green tint on touch */
+      background: rgba(99, 102, 241, 0.15);
     }
   }
 }

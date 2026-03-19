@@ -24,3 +24,7 @@ body {
   padding: 0;
   /* Removed the forced black background and red borders */
 }
+.mapboxgl-ctrl-logo,
+.mapboxgl-ctrl-attrib {
+  display: none !important;
+}

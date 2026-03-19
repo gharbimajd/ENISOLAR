@@ -3,9 +3,6 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
-// REMOVED: import { IonicModule } ... (This was causing the conflict)
-
-// KEEP: Standalone imports
 import { 
   IonContent, 
   IonHeader, 
@@ -20,8 +17,8 @@ import {
   IonRow,
   IonCol,
   IonButton,
-  IonCard,       // Added these just in case your HTML uses them
-  IonCardHeader, // based on your previous messages
+  IonCard,
+  IonCardHeader,
   IonCardContent,
   IonList,
   IonItem,
@@ -44,7 +41,6 @@ import { BleClient } from '@capacitor-community/bluetooth-le';
   imports: [
     CommonModule, 
     FormsModule,
-    // REMOVED IonicModule here too
     IonContent, 
     IonHeader, 
     IonTitle, 
@@ -58,7 +54,6 @@ import { BleClient } from '@capacitor-community/bluetooth-le';
     IonRow,
     IonCol,
     IonButton,
-   
   ]
 })
 export class MissionStatusPage implements OnInit {
@@ -71,26 +66,22 @@ export class MissionStatusPage implements OnInit {
   isConnected = false;
   deviceId = '';
 
-  // --- Computes CSV for Display ---
-csvDisplay = computed(() => {
+  csvDisplay = computed(() => {
     const m = this.mission();
     if (!m || !m.flightPath || !Array.isArray(m.flightPath) || m.flightPath.length === 0) {
       return 'No coordinates found.';
     }
 
-    // 1. Check if altitude exists on the first point
     const hasAltitude = m.flightPath[0].alt !== undefined;
 
-    // 2. Set the header dynamically based on the check
     const header = hasAltitude 
       ? "order,latitude,longitude,altitude" 
       : "order,latitude,longitude";
 
-    // 3. Generate the rows dynamically
     const rows = m.flightPath.map((pt: any, i: number) => {
       const baseRow = `${i + 1},${Number(pt.lat).toFixed(7)},${Number(pt.lng).toFixed(7)}`;
       return hasAltitude 
-        ? `${baseRow},${Number(pt.alt).toFixed(2)}` // Adds altitude if it exists
+        ? `${baseRow},${Number(pt.alt).toFixed(2)}`
         : baseRow;
     });
 
@@ -102,7 +93,6 @@ csvDisplay = computed(() => {
     private missionService: MissionService,
     private zone: NgZone
   ) {
-    // Added more icons that were in your HTML (trash, resize, etc.)
     addIcons({ 
       copyOutline, 
       informationCircleOutline, 
@@ -215,18 +205,31 @@ csvDisplay = computed(() => {
         csvPayload += `${index + 1},${Number(pt.lat).toFixed(6)},${Number(pt.lng).toFixed(6)},30,0\n`;
       });
 
+      // --- FIXED: Chunked BLE sending ---
       const encoder = new TextEncoder();
       const encodedData = encoder.encode(csvPayload);
-      const dataView = new DataView(encodedData.buffer);
+
+      const CHUNK_SIZE = 180;
+      const totalChunks = Math.ceil(encodedData.length / CHUNK_SIZE);
 
       this.zone.run(() => this.statusMessage = 'Uploading...');
 
-      await BleClient.writeWithoutResponse(
-        this.deviceId,
-        this.DRONE_SERVICE,
-        this.DRONE_CHARACTERISTIC,
-        dataView
-      );
+      for (let i = 0; i < encodedData.length; i += CHUNK_SIZE) {
+        const chunk = encodedData.slice(i, i + CHUNK_SIZE);
+        const dataView = new DataView(chunk.buffer);
+
+        await BleClient.writeWithoutResponse(
+          this.deviceId,
+          this.DRONE_SERVICE,
+          this.DRONE_CHARACTERISTIC,
+          dataView
+        );
+
+        // Update progress so user sees something happening
+        const currentChunk = Math.floor(i / CHUNK_SIZE) + 1;
+        this.zone.run(() => this.statusMessage = `Uploading... ${currentChunk}/${totalChunks}`);
+      }
+      // --- END FIX ---
 
       this.zone.run(() => this.statusMessage = 'Upload Success! ✅');
       alert("Mission Sent Successfully!");
