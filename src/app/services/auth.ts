@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { NavController } from '@ionic/angular';
 
 export interface User {
   email: string;
@@ -13,7 +14,8 @@ export class AuthService {
   private currentUserSubject: BehaviorSubject<User | null>;
   public currentUser: Observable<User | null>;
 
-  constructor() {
+  // 👉 FIX 1: Injected NavController into the constructor
+  constructor(private navCtrl: NavController) {
     const storedUser = localStorage.getItem('currentUser');
     this.currentUserSubject = new BehaviorSubject<User | null>(
       storedUser ? JSON.parse(storedUser) : null
@@ -46,8 +48,15 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem('currentUser');
+    // 👉 FIX 2: Destroy ALL user memory so the Bouncers (Guards) know they are logged out
+    localStorage.removeItem('user_id'); 
+    localStorage.removeItem('currentUser'); 
+    
+    // Tell the app the user is officially gone
     this.currentUserSubject.next(null);
+    
+    // 👉 Wipe the history and throw them to the login screen
+    this.navCtrl.navigateRoot('/login');
   }
 
   isAuthenticated(): boolean {

@@ -423,4 +423,104 @@ deleteMission(id: string): Observable<any> {
     map(res => res.data)
   );
 }
+updateAvatar(payload: { image: string }): Observable<any> {
+    const userId = localStorage.getItem('user_id') || '';
+    const fullPayload = { ...payload, user_id: userId };
+
+    return from(CapacitorHttp.post({
+      url: `${this.apiUrl}/updateAvatar.php`,
+      data: fullPayload,
+      headers: { 'Content-Type': 'application/json' }
+    })).pipe(
+      map(res => res.data)
+    );
+  }
+verifyEmail(data: any): Observable<any> {
+  return from(CapacitorHttp.post({
+    url: `${this.apiUrl}/verify_email.php`,
+    data: data,
+    headers: { 'Content-Type': 'application/json' }
+  })).pipe(
+    map(res => res.data)
+  );
+}
+
+confirmOtp(data: any): Observable<any> {
+  return from(CapacitorHttp.post({
+    url: `${this.apiUrl}/confirm_otp.php`,
+    data: data,
+    headers: { 'Content-Type': 'application/json' }
+  })).pipe(
+    map(res => res.data)
+  );
+}
+updateProfile(data: any): Observable<any> {
+    const options = {
+      url: `${this.apiUrl}/update_profile.php`,
+      headers: { 'Content-Type': 'application/json' },
+      data: data
+    };
+
+    // Wrap the Capacitor Promise in an Observable so .subscribe() works in the frontend
+    return from(
+      CapacitorHttp.post(options).then((response: HttpResponse) => {
+        // CapacitorHttp returns the parsed JSON inside the 'data' property
+        return response.data; 
+      })
+    );
+  }
+  checkEmailExists(email: string): Observable<any> {
+    const options = {
+      url: `${this.apiUrl}/check_email.php`,
+      headers: { 'Content-Type': 'application/json' },
+      data: { email: email }
+    };
+
+    return from(
+      CapacitorHttp.post(options).then((response) => {
+        return response.data;
+      })
+    );
+  }
+  resetPassword(payload: { email: string, new_password: string }): Observable<any> {
+    const options = {
+      url: `${this.apiUrl}/reset_password.php`,
+      headers: { 'Content-Type': 'application/json' },
+      data: payload
+    };
+
+    return from(
+      CapacitorHttp.post(options).then((response) => {
+        return response.data;
+      })
+    );
+  }
+  updateMission(data: { user_id: string, mission_id: string, name: string, status: string }): Observable<any> {
+    
+    // 1. Set up the Capacitor HTTP options
+    const options = {
+      url: `${this.apiUrl}/update_mission.php`,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      data: data // Capacitor will automatically stringify this for you
+    };
+
+    // 2. Wrap the Promise in 'from()' to turn it into an Observable
+    return from(CapacitorHttp.post(options)).pipe(
+      map((response: HttpResponse) => {
+        
+        // CapacitorHttp doesn't automatically throw errors for 400/500 status codes like Angular does.
+        // We have to manually throw it so your component's "error: (err) =>" block catches it!
+        if (response.status >= 400) {
+          throw { status: response.status, data: response.data };
+        }
+        
+        // If it's a 200 OK, return the pure JSON data to the component
+        return response.data;
+      })
+    );
+  }
+
 }

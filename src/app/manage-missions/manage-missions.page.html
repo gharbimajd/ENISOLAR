@@ -1,0 +1,83 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/mission-select"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Manage Missions</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  
+  <ion-list lines="full">
+    
+    <ion-list-header color="light">
+      <ion-grid class="ion-no-padding">
+        <ion-row>
+          <ion-col size="7"><strong>Name</strong></ion-col>
+          <ion-col size="5"><strong>Status</strong></ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-list-header>
+
+    <ion-item *ngFor="let mission of missions" button (click)="openEditModal(mission)" detail="true">
+      <ion-grid class="ion-no-padding">
+        <ion-row class="ion-align-items-center">
+          <ion-col size="7">
+            <ion-text>{{ mission.name }}</ion-text>
+          </ion-col>
+          <ion-col size="5">
+            <ion-badge [color]="getStatusColor(mission.status)">
+              {{ mission.status | uppercase }}
+            </ion-badge>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-item>
+
+  </ion-list>
+
+  <ion-modal [isOpen]="isModalOpen" (didDismiss)="closeModal()" initialBreakpoint="0.6" [breakpoints]="[0, 0.6, 0.8]">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Edit Mission</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeModal()">Cancel</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      
+      <ion-content class="ion-padding">
+        <form [formGroup]="editForm" (ngSubmit)="saveMission()">
+          
+          <ion-item fill="solid" class="ion-margin-bottom">
+            <ion-label position="stacked">Mission Name</ion-label>
+            <ion-input type="text" formControlName="name" placeholder="Enter unique name"></ion-input>
+          </ion-item>
+          
+          <ion-text color="danger" *ngIf="editForm.errors?.['nameExists'] && editForm.get('name')?.touched" class="ion-padding-start">
+            <p style="margin-top: -10px; font-size: 14px;">
+              <ion-icon name="alert-circle-outline"></ion-icon> This name is already in use.
+            </p>
+          </ion-text>
+
+          <ion-item fill="solid" class="ion-margin-bottom">
+            <ion-label position="stacked">Status</ion-label>
+            <ion-select formControlName="status" interface="action-sheet">
+              <ion-select-option value="draft">Draft</ion-select-option>
+              <ion-select-option value="ready">Ready</ion-select-option>
+              <ion-select-option value="done">Done</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-button expand="block" type="submit" [disabled]="editForm.invalid" class="ion-margin-top">
+            Save Changes
+          </ion-button>
+
+        </form>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>

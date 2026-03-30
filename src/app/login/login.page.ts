@@ -1,13 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, NavController } from '@ionic/angular'; // <--- IMPORT NAVCONTROLLER
 import { Router, RouterModule } from '@angular/router';
 import { MissionService } from '../services/mission';
 
-
-
-// Import the specific icons to fix the console errors in your 2nd screenshot
 import { addIcons } from 'ionicons';
 import { mailOutline, lockClosedOutline, personAddOutline } from 'ionicons/icons';
 
@@ -32,10 +29,9 @@ export class LoginPage implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
+    private navCtrl: NavController, // <--- INJECT IT HERE
     private missionService: MissionService
-    
   ) {
-    // This registers the icons so they actually show up!
     addIcons({ mailOutline, lockClosedOutline, personAddOutline});
   }
 
@@ -56,12 +52,13 @@ export class LoginPage implements OnInit {
       next: (res: any) => {
         this.isLoading = false;
         if (res.success) {
-          localStorage.setItem('user_id', res.user_id);
+          // You already save this, which is great! The guards will use it.
+          localStorage.setItem('user_id', res.user_id); 
           
-          // 👉 FIX: Drop the cursor focus before navigating away
           (document.activeElement as HTMLElement)?.blur();
           
-          this.router.navigate(['/mission-select']);
+          // 👉 THE MAGIC FIX: This wipes history and makes it the new "Root" page
+          this.navCtrl.navigateRoot('/mission-select'); 
         } else {
           this.errorMessage = res.message;
         }
@@ -72,10 +69,10 @@ export class LoginPage implements OnInit {
       }
     });
   }
+
   selectMission(type: string) {
-  // This changes the URL to something like: /map-planner?mode=survey
-  this.router.navigate(['/map-planner'], { 
-    queryParams: { mode: type } 
-  });
-}
+    this.router.navigate(['/map-planner'], { 
+      queryParams: { mode: type } 
+    });
+  }
 }

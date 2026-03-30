@@ -1,41 +1,93 @@
 <ion-content class="login-bg" [scrollY]="false">
   <div class="login-container">
-    
-    <form [formGroup]="registerForm" (ngSubmit)="onRegister()" class="login-form">
+
+    <!-- ===== STEP 1: REGISTER FORM ===== -->
+    <form *ngIf="currentStep === 'register'"
+          [formGroup]="registerForm"
+          (ngSubmit)="onRegister()"
+          class="login-form">
+
       <div class="header-row">
         <h2>Create Account</h2>
       </div>
-      
       <p class="subtitle">Join Enisolar to start your missions</p>
-      
+
       <div class="input-group">
         <ion-icon name="person-outline"></ion-icon>
         <input type="text" formControlName="full_name" placeholder="Full Name" />
       </div>
 
-      <div class="input-group">
+      <div class="input-group" [class.invalid-group]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
         <ion-icon name="mail-outline"></ion-icon>
-        <input type="email" formControlName="email" placeholder="Email Address" />
+        <input type="email" formControlName="email" placeholder="Gmail Address" />
       </div>
+      <p class="helper-text" *ngIf="registerForm.get('email')?.errors?.['pattern'] && registerForm.get('email')?.touched">
+        Please use a valid @gmail.com address.
+      </p>
 
       <div class="input-group">
         <ion-icon name="lock-closed-outline"></ion-icon>
         <input type="password" formControlName="password" placeholder="Password" />
       </div>
 
-      <div class="input-group">
+      <div class="input-group" [class.invalid-group]="registerForm.errors?.['mismatch'] && registerForm.get('confirm_password')?.touched">
         <ion-icon name="lock-closed-outline"></ion-icon>
         <input type="password" formControlName="confirm_password" placeholder="Confirm Password" />
       </div>
 
       <button type="submit" [disabled]="isLoading || registerForm.invalid" class="login-btn">
         <span *ngIf="!isLoading">Register Now</span>
-        <span *ngIf="isLoading" class="spinner"></span>
+        <div *ngIf="isLoading" class="loading-wrapper">
+          <span class="spinner"></span>
+          <span class="loading-text">Verifying email...</span>
+        </div>
       </button>
 
       <div class="error-message" *ngIf="errorMessage || (registerForm.errors?.['mismatch'] && registerForm.get('confirm_password')?.touched)">
         <span>{{ errorMessage || "Passwords don't match!" }}</span>
       </div>
+    </form>
+
+    <!-- ===== STEP 2: OTP VERIFICATION ===== -->
+    <form *ngIf="currentStep === 'otp'"
+          [formGroup]="otpForm"
+          (ngSubmit)="onConfirmOtp()"
+          class="login-form otp-form">
+
+      <div class="header-row">
+        <h2>Verify Email</h2>
+      </div>
+      <p class="subtitle">We sent a 6-digit code to</p>
+      <p class="email-badge">{{ maskedEmail }}</p>
+
+      <div class="input-group otp-input-group">
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+        <input type="text"
+               formControlName="otp"
+               placeholder="000000"
+               maxlength="6"
+               inputmode="numeric"
+               class="otp-input" />
+      </div>
+      <p class="helper-text" *ngIf="otpForm.get('otp')?.invalid && otpForm.get('otp')?.touched">
+        Enter the 6-digit code from your email.
+      </p>
+
+      <button type="submit" [disabled]="isLoading || otpForm.invalid" class="login-btn">
+        <span *ngIf="!isLoading">Confirm Code</span>
+        <div *ngIf="isLoading" class="loading-wrapper">
+          <span class="spinner"></span>
+          <span class="loading-text">Creating account...</span>
+        </div>
+      </button>
+
+      <div class="error-message" *ngIf="errorMessage">
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <button type="button" class="back-btn" (click)="goBack()">
+        ← Use a different email
+      </button>
     </form>
 
     <div class="register-section">

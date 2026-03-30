@@ -1,8 +1,7 @@
 /* =========================================
-   1. SHARED LAYOUT & BACKGROUND (No Image)
+   1. SHARED LAYOUT & BACKGROUND
 ========================================= */
 ion-content.login-bg {
-  // Matched to your dashboard: Deep navy spotlight to black
   --background: radial-gradient(circle at 50% 0%, #1a2c4e 0%, #000000 70%) !important;
 }
 
@@ -21,7 +20,7 @@ ion-content.login-bg {
 .login-form {
   width: 100%;
   max-width: 440px;
-  background: rgba(13, 22, 40, 0.85); // Exact color from your mission cards
+  background: rgba(13, 22, 40, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -38,7 +37,7 @@ ion-content.login-bg {
     h2 {
       color: #ffffff;
       font-size: 1.8rem;
-      font-weight: 700; // Bold like your mission titles
+      font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
       margin: 0;
@@ -46,7 +45,7 @@ ion-content.login-bg {
   }
 
   .subtitle {
-    color: #94a3b8; // Slate gray from dashboard
+    color: #94a3b8;
     font-size: 0.9rem;
     text-align: center;
     margin-bottom: 32px;
@@ -54,7 +53,7 @@ ion-content.login-bg {
 }
 
 /* =========================================
-   3. INPUT GROUPS (High Visibility)
+   3. INPUT GROUPS & VALIDATION
 ========================================= */
 .input-group {
   margin-bottom: 16px; 
@@ -64,6 +63,12 @@ ion-content.login-bg {
   border-radius: 12px;
   padding: 0 16px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &.invalid-group {
+    border: 1px solid #ff4d4d;
+    background: rgba(255, 255, 255, 0.95);
+  }
 
   ion-icon {
     color: #1a2c4e;
@@ -87,8 +92,18 @@ ion-content.login-bg {
   }
 }
 
+.helper-text {
+  color: #ff4d4d;
+  font-size: 0.75rem;
+  margin-top: -10px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  text-align: left;
+  padding-left: 5px;
+}
+
 /* =========================================
-   4. BUTTON & ERROR (The "Wrong" Password Red)
+   4. BUTTON & ERROR
 ========================================= */
 .login-btn {
   width: 100%;
@@ -101,6 +116,7 @@ ion-content.login-bg {
   font-weight: 700;
   text-transform: uppercase;
   margin-top: 10px;
+  cursor: pointer;
 
   &:active {
     transform: scale(0.96);
@@ -108,17 +124,30 @@ ion-content.login-bg {
   }
 
   &:disabled {
-    opacity: 0.4;
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .loading-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    .loading-text {
+      text-transform: none;
+      font-size: 0.95rem;
+    }
   }
 }
 
 .error-message {
   margin-top: 15px;
-  background: rgba(255, 77, 77, 0.1); // Same red as your login
+  background: rgba(255, 77, 77, 0.1);
   border: 1px solid rgba(255, 77, 77, 0.2);
-  padding: 10px;
+  padding: 12px;
   border-radius: 10px;
-  color: #ff4d4d; // Red
+  color: #ff4d4d;
   font-size: 0.85rem;
   text-align: center;
   font-weight: 600;
@@ -136,17 +165,18 @@ ion-content.login-bg {
     font-size: 0.95rem;
 
     a {
-      color: #f3f3f3; // Matrix Green from your icons
+      color: #f3f3f3;
       font-weight: 600;
       text-decoration: none;
       margin-left: 5px;
+      &:hover { text-decoration: underline; }
     }
   }
 }
 
 .spinner {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border: 2px solid rgba(26, 44, 78, 0.2);
   border-top: 2px solid #1a2c4e;
   border-radius: 50%;
@@ -157,4 +187,41 @@ ion-content.login-bg {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+/* OTP Step Additions */
+.email-badge {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 10px 20px;
+  margin-bottom: 24px;
+  letter-spacing: 0.5px;
+}
+
+.otp-input-group {
+  justify-content: center;
+}
+
+.otp-input {
+  text-align: center;
+  font-size: 1.8rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 8px;
+  color: #1a2c4e !important;
+}
+
+.back-btn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+  margin-top: 16px;
+  cursor: pointer;
+  padding: 8px;
+  &:hover { color: rgba(255, 255, 255, 0.7); }
 }

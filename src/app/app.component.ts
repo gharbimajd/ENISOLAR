@@ -84,7 +84,9 @@ export class AppComponent {
     { title: 'Home', url: '/home', icon: 'home-outline' },
      { title: 'Mode', url: '/mission-select', icon: 'settings-outline' },
     { title: 'Map Planner', url: '/map-planner', icon: 'map-outline' },
-    { title: 'logout', url: '/login', icon: 'log-in-outline' },
+    { title: 'settings', url: '/settings', icon: 'settings-outline' },
+
+
   ];
 
   constructor() {

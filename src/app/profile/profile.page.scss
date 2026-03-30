@@ -1,129 +1,225 @@
-/* 1. BACKGROUND & LAYOUT */
+// Page Background 
 ion-content {
-  --background: transparent;
-  
-  &::part(background) {
-    background: radial-gradient(circle at 50% 0%, #1a2c4e 0%, #000000 70%) !important;
-    background-color: #000000 !important;
-  }
-}
-
-.profile-scroll-container {
-  padding: 16px;
-  padding-bottom: 50px;
-}
-
-/* 2. TOOLBAR — white bg, indigo accent */
-ion-header {
-  background: #ffffff !important;
-  &::after { display: none; }
+  --background: #0a0e14;
+  --color: #ffffff;
 }
 
 ion-toolbar {
-  --background: #ffffff;
-  --border-color: transparent;
-  --color: #1e1b4b;
-  --min-height: 56px;
-  border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+  --background: #0a0e14;
+  --color: #ffffff;
+}
 
-  ion-back-button {
-    --color: #1e1b4b;
-    --icon-font-size: 22px;
-  }
+// Loading Spinner for full page
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  color: rgba(255, 255, 255, 0.6);
 
-  ion-title {
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    font-size: 1.05rem;
-    color: #1e1b4b;
-  }
-
-  // Logout icon button
-  .logout-btn {
-    --color: #ef4444;
-    --background: transparent;
-    --box-shadow: none;
+  ion-spinner {
+    color: #5b8cff;
+    margin-bottom: 15px;
   }
 }
 
-/* 3. GLASS CARD COMPONENT */
-.glass-card {
-  background: rgba(13, 22, 40, 0.85) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+// User Info Card
+.profile-header-card {
+  background: #1a2c4e;
   border-radius: 16px;
-  margin: 0 0 20px 0;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  padding: 30px 20px;
+  text-align: center;
+  margin-bottom: 24px;
+  border: 1px solid rgba(91, 140, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 
-  ion-card-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  // --- NEW AVATAR STYLING ---
+  .avatar-edit-container {
+    display: block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 15px;
+    cursor: pointer;
+    
+    // Circular border and clipping
+    border-radius: 50%;
+    border: 2px solid #5b8cff;
+    overflow: hidden; // Ensures image/overlay are circular
+    
+    background: rgba(91, 140, 255, 0.1);
+    transition: transform 0.2s ease;
 
-    ion-card-title {
-      color: rgba(255, 255, 255, 0.7) !important;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
+    &:active {
+      transform: scale(0.95); // Subtle pulse when clicked
+    }
+
+    // While loading, fade the image
+    &.loading .avatar-image {
+      opacity: 0.3;
+    }
+
+    // The Avatar Image (fills container)
+    .avatar-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; // Ensures the image doesn't stretch
+      display: block;
+    }
+
+    // Hover/Active Overlay
+    .avatar-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7); // Frosted dark effect
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      
+      // Hidden by default, appears on hover/active
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      color: #ffffff;
+
+      ion-icon {
+        font-size: 24px;
+        color: #ffffff;
+        margin-bottom: 2px;
+      }
+
+      p {
+        margin: 0;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: bold;
+      }
+    }
+
+    // On hover or while active, show the overlay
+    &:hover .avatar-overlay,
+    &:active .avatar-overlay {
+      opacity: 1;
+    }
+
+    // Spinner specific to the avatar box
+    .avatar-spinner {
+      position: absolute;
+      top: calc(50% - 14px); // Center spinner
+      left: calc(50% - 14px);
+      width: 28px;
+      height: 28px;
+      color: #5b8cff;
     }
   }
-}
+  // --- END NEW AVATAR STYLING ---
 
-/* 4. ITEMS & INPUTS */
-ion-item {
-  --background: transparent !important;
-  --color: #ffffff;
-  --border-color: rgba(255, 255, 255, 0.05);
-  --padding-start: 16px;
-
-  &::part(native) {
-    background: transparent !important;
-    border: none !important;
+  h2 {
+    margin: 0 0 5px;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #ffffff;
   }
 
-  h3 {
-    color: #94a3b8 !important;
-    font-size: 0.65rem !important;
-    font-weight: 700;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-    letter-spacing: 1px;
+  .email {
+    margin: 0 0 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
   }
 
-  p {
-    color: #ffffff !important;
-    font-size: 1rem;
-    font-weight: 400;
-  }
-
-  ion-icon {
-    color: #ffffff !important;
-    margin-right: 12px;
-    opacity: 0.8;
-  }
-
-  ion-input {
-    --color: #ffffff;
-    --placeholder-color: rgba(255, 255, 255, 0.3);
+  .member-since {
+    margin: 0;
+    color: rgba(91, 140, 255, 0.8);
+    font-size: 12px;
     font-weight: 500;
   }
 }
 
-/* 5. ACTION BUTTONS */
-.button-container {
-  padding: 10px 16px 30px 16px;
+// Stats Grid
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 30px;
+
+  .stat-box {
+    background: #1a2c4e;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid rgba(91, 140, 255, 0.1);
+
+    .stat-icon {
+      font-size: 28px;
+      margin-bottom: 10px;
+
+      &.primary { color: #5b8cff; }
+      &.success { color: #2dd36f; }
+    }
+
+    h3 {
+      margin: 0 0 5px;
+      font-size: 26px;
+      font-weight: bold;
+      color: #ffffff;
+    }
+
+    p {
+      margin: 0;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
 }
 
-ion-button {
-  --background: #ffffff;
-  --color: #1a2c4e;
-  --border-radius: 14px;
-  --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-  font-weight: 700;
-  height: 54px;
-  text-transform: uppercase;
+// Action List
+.action-list {
+  background: transparent;
 
-  &[disabled] {
-    --background: rgba(255, 255, 255, 0.1);
-    --color: rgba(255, 255, 255, 0.3);
-    opacity: 0.4;
+  ion-item {
+    --background: #1a2c4e;
+    --border-radius: 12px;
+    --padding-start: 16px;
+    --inner-padding-end: 16px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(91, 140, 255, 0.1);
+
+    ion-icon {
+      color: #5b8cff;
+      margin-right: 16px;
+    }
+
+    h3 {
+      font-weight: 500;
+      color: #ffffff;
+      margin-bottom: 4px;
+      font-size: 16px;
+    }
+
+    p {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+  }
+
+  .logout-item {
+    margin-top: 24px;
+    border-color: rgba(235, 68, 90, 0.2);
+    
+    ion-icon {
+      color: var(--ion-color-danger);
+    }
+    
+    h3 {
+      color: var(--ion-color-danger);
+    }
   }
 }

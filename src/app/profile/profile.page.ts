@@ -1,50 +1,58 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common'; // Fixes the 'date' pipe error
-import { FormsModule } from '@angular/forms';   // Fixes the 'ngModel' error
-import { IonicModule, ToastController } from '@ionic/angular'; // Fixes all the 'ion-' element errors
+import { CommonModule } from '@angular/common'; 
+import { FormsModule } from '@angular/forms'; 
+import { IonicModule, ToastController } from '@ionic/angular'; 
 import { addIcons } from 'ionicons';
 import { 
-  logOutOutline, personCircleOutline, mailOutline, 
-  calendarOutline, lockClosedOutline, keyOutline 
+  logOutOutline, person, airplane, checkmarkCircle, 
+  settingsOutline, helpCircleOutline, cameraOutline 
 } from 'ionicons/icons';
+import { AuthService } from '../services/auth';
+// Import Capacitor Camera
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 
 // Import your service
-import { MissionService } from '../services/mission';// Adjust path if needed
+import { MissionService } from '../services/mission'; 
 
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
-  standalone: true, // Tells Angular this component handles its own imports
-  imports: [IonicModule, CommonModule, FormsModule] // The magic line that fixes all your terminal errors
+  standalone: true, 
+  imports: [IonicModule, CommonModule, FormsModule,] 
 })
 export class ProfilePage implements OnInit {
   
-  userData = {
-    full_name: '',
+  userData: any = {
+    full_name: 'Loading Pilot...',
     email: '',
-    created_at: ''
+    created_at: '',
+    total_missions: 0,
+    done_missions: 0,
+    image: null // Will hold the Base64 from DB
   };
 
-  passwordData = {
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  };
+  isLoading = true;
+  isLoadingAvatar = false;
+  
+  // Default fallback image
+  avatarUrl: string = 'https://ionicframework.com/docs/img/demos/avatar.svg'; 
 
   constructor(
+    private authService: AuthService,
     private router: Router,
     private toastController: ToastController,
     private missionService: MissionService
   ) {
     addIcons({
       'log-out-outline': logOutOutline,
-      'person-circle-outline': personCircleOutline,
-      'mail-outline': mailOutline,
-      'calendar-outline': calendarOutline,
-      'lock-closed-outline': lockClosedOutline,
-      'key-outline': keyOutline
+      'person': person,
+      'airplane': airplane,
+      'checkmark-circle': checkmarkCircle,
+      'settings-outline': settingsOutline,
+      'help-circle-outline': helpCircleOutline,
+      'camera-outline': cameraOutline
     });
   }
 
@@ -53,57 +61,80 @@ export class ProfilePage implements OnInit {
   }
 
   loadUserData() {
+    this.isLoading = true;
     this.missionService.getProfile().subscribe({
-      next: (data) => {
+      next: (data: any) => {
         if (data && !data.error) {
           this.userData = data;
+          // If the DB has an image, use it!
+          if (this.userData.image) {
+            this.avatarUrl = this.userData.image;
+          }
         } else {
           this.showToast(data.error || 'Could not load profile', 'danger');
         }
+        this.isLoading = false;
       },
       error: (err) => {
         console.error('Error loading profile:', err);
         this.showToast('Network error while loading profile', 'danger');
+        this.isLoading = false;
       }
     });
   }
 
-  changePassword() {
-    if (this.passwordData.newPassword !== this.passwordData.confirmPassword) {
-      this.showToast('New passwords do not match!', 'warning');
-      return;
-    }
+  async changeAvatar() {
+    try {
+      // 1. Get photo as Base64 string
+      const image = await Camera.getPhoto({
+        quality: 70, // Reduced quality slightly for faster DB upload
+        allowEditing: true, 
+        resultType: CameraResultType.Base64, // CHANGED from Uri to Base64
+        source: CameraSource.Photos, 
+      });
 
-    if (this.passwordData.newPassword.length < 6) {
-      this.showToast('Password must be at least 6 characters.', 'warning');
-      return;
-    }
+      if (image.base64String) {
+        this.isLoadingAvatar = true;
+        
+        // Format the string for display and storage
+        const base64Data = `data:image/${image.format};base64,${image.base64String}`;
+        
+        // Show immediate preview
+        this.avatarUrl = base64Data; 
 
-    const payload = {
-      current_password: this.passwordData.currentPassword,
-      new_password: this.passwordData.newPassword
-    };
-
-    this.missionService.changePassword(payload).subscribe({
-      next: (data) => {
-        if (data && data.success) {
-          this.showToast('Password updated successfully!', 'success');
-          // Clear form on success
-          this.passwordData = { currentPassword: '', newPassword: '', confirmPassword: '' };
-        } else {
-          this.showToast(data.error || 'Failed to update password', 'danger');
-        }
-      },
-      error: (err) => {
-        console.error('Error changing password:', err);
-        this.showToast('Network error while updating password', 'danger');
+        // 2. THIS IS THE MISSING LINK: Send to PHP
+        this.missionService.updateAvatar({ image: base64Data }).subscribe({
+          next: (res: any) => {
+            if (res.success) {
+              this.showToast('Avatar saved to database.', 'success');
+            } else {
+              this.showToast(res.error || 'Failed to save to database.', 'warning');
+            }
+            this.isLoadingAvatar = false;
+          },
+          error: (err) => {
+            console.error('Upload error', err);
+            this.showToast('Network error while saving avatar.', 'danger');
+            this.isLoadingAvatar = false;
+          }
+        });
       }
-    });
+    } catch (error: any) {
+      if (error.message !== 'User cancelled photos app') {
+        console.error('Camera error:', error);
+        this.showToast('Failed to access photos.', 'danger');
+      }
+    }
   }
 
-  logout() {
-    localStorage.removeItem('user_id');
-    this.router.navigate(['/login']);
+  // Helper methods
+  navigateTo(path: string) {
+    this.router.navigate([path]);
+  }
+
+ logout() {
+    // This triggers the perfectly secure, history-wiping logout we just built!
+    this.authService.logout();
   }
 
   async showToast(message: string, color: 'success' | 'warning' | 'danger') {

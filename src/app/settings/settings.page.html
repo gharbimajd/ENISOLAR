@@ -1,0 +1,88 @@
+<ion-header class="ion-no-border blur-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Settings</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="modern-bg">
+  <div class="settings-wrapper ion-padding">
+
+    <div class="settings-section">
+      <h3 class="section-title">App Preferences</h3>
+      <div class="glass-card">
+        <ion-list lines="none">
+          <ion-item>
+            <div class="icon-wrapper" slot="start">
+              <ion-icon name="moon-outline"></ion-icon>
+            </div>
+            <ion-label>Dark Mode</ion-label>
+            <ion-toggle slot="end" [(ngModel)]="settings.darkMode" mode="ios"></ion-toggle>
+          </ion-item>
+
+          <ion-item>
+            <div class="icon-wrapper" slot="start">
+              <ion-icon name="notifications-outline"></ion-icon>
+            </div>
+            <ion-label>Push Notifications</ion-label>
+            <ion-toggle slot="end" [(ngModel)]="settings.notifications" mode="ios"></ion-toggle>
+          </ion-item>
+        </ion-list>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3 class="section-title">Flight & Map Engine</h3>
+      <div class="glass-card">
+        <ion-list lines="none">
+          <ion-item>
+            <div class="icon-wrapper" slot="start">
+              <ion-icon name="earth-outline"></ion-icon>
+            </div>
+            <ion-label>Default Map Style</ion-label>
+            <ion-select slot="end" [(ngModel)]="settings.mapStyle" interface="action-sheet">
+              <ion-select-option value="dark">Dark Theme</ion-select-option>
+              <ion-select-option value="satellite">Satellite</ion-select-option>
+              <ion-select-option value="streets">Streets</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <div class="icon-wrapper" slot="start">
+              <ion-icon name="speedometer-outline"></ion-icon>
+            </div>
+            <ion-label>Distance Units</ion-label>
+            <ion-select slot="end" [(ngModel)]="settings.distanceUnit" interface="action-sheet">
+              <ion-select-option value="metric">Metric (m/km)</ion-select-option>
+              <ion-select-option value="imperial">Imperial (ft/mi)</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-list>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3 class="section-title">Data Management</h3>
+      <div class="glass-card danger-card">
+        <ion-list lines="none">
+          <ion-item button detail="false" (click)="clearCache()">
+            <div class="icon-wrapper danger-icon" slot="start">
+              <ion-icon name="trash-outline"></ion-icon>
+            </div>
+            <ion-label color="danger">Clear Application Cache</ion-label>
+          </ion-item>
+        </ion-list>
+      </div>
+    </div>
+
+    <div class="action-container">
+      <ion-button expand="block" class="glow-btn" (click)="saveSettings()">
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        Save Configuration
+      </ion-button>
+    </div>
+
+  </div>
+</ion-content>

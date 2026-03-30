@@ -1,0 +1,78 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Manage Profile</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding profile-bg">
+  
+  <div class="loading-container" *ngIf="isFetchingData">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading profile...</p>
+  </div>
+
+  <div *ngIf="!isFetchingData" class="form-container">
+    <form [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="custom-form">
+
+      <div class="section-title">Personal Information</div>
+      
+      <div class="input-group">
+        <ion-icon name="person-outline"></ion-icon>
+        <input type="text" formControlName="full_name" placeholder="Full Name" />
+      </div>
+
+      <div class="input-group" [class.invalid-group]="profileForm.get('email')?.invalid && profileForm.get('email')?.touched">
+        <ion-icon name="mail-outline"></ion-icon>
+        <input type="email" formControlName="email" placeholder="Email Address" />
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-title">Change Password <span>(Optional)</span></div>
+
+      <div class="input-group">
+        <ion-icon name="key-outline"></ion-icon>
+        <input type="password" 
+               formControlName="current_password" 
+               placeholder="Current Password" 
+               autocomplete="current-password" /> 
+      </div>
+
+      <div class="input-group">
+        <ion-icon name="lock-closed-outline"></ion-icon>
+        <input type="password" 
+               formControlName="new_password" 
+               placeholder="New Password" 
+               autocomplete="new-password" /> 
+      </div>
+
+      <div class="input-group" [class.invalid-group]="profileForm.errors?.['mismatch'] && profileForm.get('confirm_password')?.touched">
+        <ion-icon name="lock-closed-outline"></ion-icon>
+        <input type="password" 
+               formControlName="confirm_password" 
+               placeholder="Confirm New Password" 
+               autocomplete="new-password" />
+      </div>
+      
+      <div class="error-message" *ngIf="profileForm.errors?.['mismatch'] && profileForm.get('confirm_password')?.touched">
+        <span>Passwords don't match!</span>
+      </div>
+
+      <div class="forgot-password-container">
+        <a (click)="goToForgotPassword()" class="forgot-link">Forgot your current password?</a>
+      </div>
+
+      <button type="submit" [disabled]="isLoading || profileForm.invalid" class="save-btn">
+        <span *ngIf="!isLoading">Save Changes</span>
+        <div *ngIf="isLoading" class="loading-wrapper">
+          <ion-spinner name="crescent" class="btn-spinner"></ion-spinner>
+          <span>Saving...</span>
+        </div>
+      </button>
+
+    </form>
+  </div>
+</ion-content>
