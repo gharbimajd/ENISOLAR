@@ -1,26 +1,20 @@
 // ============================================================
-//  AUX MAP PLANNER — mobile-optimized
+//  AUX MAP PLANNER — rotation-aware layout
+//  Portrait : top bar (theme-aware) + collapsible bottom sheet
+//             ONE toggle FAB in bottom-right corner
+//  Landscape: wider left sidebar (220px) + ONE tab toggle
+//  Uses --eni-* theme variables throughout (dark mode safe)
 // ============================================================
 
-$bg-page:    #070c14;
-$bg-sidebar: #0b1120;
-$border:     rgba(255, 255, 255, 0.07);
-$row-div:    rgba(255, 255, 255, 0.055);
-$accent:     #4ade80;
-$accent-dim: rgba(74, 222, 128, 0.1);
-$danger:     #ef4444;
-$t-hi:       #e2e8f0;
-$t-mid:      #94a3b8;
-$t-lo:       #475569;
-$r-sm:       6px;
-$r-pill:     50px;
-$sw:         232px;
+$r-sm:      6px;
+$r-pill:    50px;
+$sidebar-w: 220px;
 
 * { box-sizing: border-box; }
 
 ion-content, .planner-content {
-  --background: #{$bg-page};
-  --ion-background-color: #{$bg-page};
+  --background: var(--eni-bg);
+  --ion-background-color: var(--eni-bg);
   position: relative;
 }
 
@@ -28,6 +22,17 @@ ion-content, .planner-content {
   position: absolute;
   inset: 0;
   z-index: 1;
+}
+
+// ─── ORIENTATION VISIBILITY ──────────────────────────────────
+// Each element is strictly one orientation only — no bleed.
+.portrait-only {
+  display: flex;
+  @media (orientation: landscape) { display: none !important; }
+}
+.landscape-only {
+  display: none;
+  @media (orientation: landscape) { display: flex !important; }
 }
 
 // ─── LOADING ─────────────────────────────────────────────────
@@ -38,328 +43,349 @@ ion-content, .planner-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(5, 8, 14, 0.75);
+  background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-
-  ion-spinner { width: 44px; height: 44px; --color: #{$accent}; }
+  ion-spinner { width: 44px; height: 44px; --color: var(--eni-accent); }
 }
 
-// ─── FLOATING TOP-RIGHT FABS ──────────────────────────────────
-// z-index 1000+ ensures they sit above Mapbox canvas on mobile
-.fab-top-right {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  pointer-events: auto;
-}
+// ─── SHARED COMPONENTS ───────────────────────────────────────
 
 .fab-btn {
-  width: 40px;
-  height: 40px;
+  width: 40px; height: 40px;
   border-radius: $r-sm;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(11, 17, 32, 0.88);
-  border: 1px solid $border;
-  color: $t-mid;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
+  color: var(--eni-text-2);
   cursor: pointer;
-  touch-action: manipulation;     // kills 300ms tap delay
+  touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   transition: color 0.15s, background 0.15s, transform 0.12s;
-
+  flex-shrink: 0;
   ion-icon { font-size: 17px; pointer-events: none; }
   &:active { transform: scale(0.9); }
   &.active {
-    color: $accent;
-    border-color: rgba(74, 222, 128, 0.32);
-    background: $accent-dim;
+    color: var(--eni-accent);
+    border-color: var(--eni-accent-border);
+    background: var(--eni-accent-dim);
+  }
+  &.sm {
+    width: 30px; height: 30px;
+    border-radius: 5px;
+    ion-icon { font-size: 14px; }
   }
 }
 
-// ─── SIDEBAR ────────────────────────────────────────────────
-.sidebar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1000;         // above map canvas
-  width: $sw;
-  height: 100%;
+.mode-pill {
   display: flex;
-  flex-direction: column;
-  background: $bg-sidebar;
-  border-right: 1px solid $border;
-  overflow: hidden;
-  transform: translateX(-100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
-
-  &.open { transform: translateX(0); }
-}
-
-// Mode pills
-.sidebar-mode {
-  display: flex;
-  gap: 6px;
-  padding: 12px 10px 10px;
-  border-bottom: 1px solid $border;
-  flex-shrink: 0;
-}
-
-.pill {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 8px 0;
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
   border-radius: $r-pill;
-  border: 1px solid $border;
-  background: rgba(255, 255, 255, 0.04);
-  color: $t-mid;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  padding: 3px; gap: 3px;
+  &.compact {
+    flex: 1;
+    .mode-option { font-size: 11px; padding: 4px 8px; }
+  }
+}
+
+.mode-option {
+  display: flex; align-items: center; gap: 4px;
+  padding: 5px 12px;
+  border-radius: $r-pill;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--eni-text-2);
+  font-size: 11px; font-weight: 600;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   transition: all 0.18s;
-
-  ion-icon { font-size: 12px; pointer-events: none; }
-
+  white-space: nowrap;
+  ion-icon { font-size: 11px; pointer-events: none; }
   &.active {
-    background: rgba(74, 222, 128, 0.12);
-    border-color: rgba(74, 222, 128, 0.38);
-    color: $accent;
+    background: var(--eni-accent-dim);
+    border-color: var(--eni-accent-border);
+    color: var(--eni-accent);
   }
-}
-
-// Mission name
-.sidebar-name {
-  padding: 10px 12px 8px;
-  border-bottom: 1px solid $border;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
 }
 
 .glass-input {
-  --background:              rgba(255, 255, 255, 0.04);
-  --color:                   #{$t-hi};
-  --placeholder-color:       #{$t-lo};
+  --background:              var(--eni-surface-2);
+  --color:                   var(--eni-text);
+  --placeholder-color:       var(--eni-text-3);
   --placeholder-opacity:     1;
   --padding-start:           10px;
   --padding-end:             10px;
-  --padding-top:             9px;
-  --padding-bottom:          9px;
+  --padding-top:             8px;
+  --padding-bottom:          8px;
   --border-radius:           #{$r-sm};
-  --highlight-color-focused: #{$accent};
+  --highlight-color-focused: var(--eni-accent);
   border-radius: $r-sm;
-  border: 1px solid $border;
-  font-size: 13px;
+  border: 1px solid var(--eni-border);
+  font-size: 12px;
   width: 100%;
 }
 
-.mission-id-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 9px;
-  border-radius: $r-pill;
-  background: $accent-dim;
-  border: 1px solid rgba(74, 222, 128, 0.2);
-  color: $accent;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  align-self: flex-start;
-
-  ion-icon { font-size: 10px; }
-}
-
-// Stats row
-.stats-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-bottom: 1px solid $border;
-  flex-shrink: 0;
-
-  .stat-item {
-    display: flex;
-    align-items: baseline;
-    gap: 2px;
-    .val  { font-size: 12px; font-weight: 700; color: $t-hi; }
-    .unit { font-size: 9px; color: $t-lo; }
-  }
-
-  .stat-sep {
-    width: 1px; height: 12px;
-    background: $border;
-    flex-shrink: 0;
-  }
-}
-
-// Control rows
-.control-row {
-  padding: 10px 12px 8px;
-  border-bottom: 1px solid $row-div;
-  flex-shrink: 0;
-
-  .row-header {
+.slider-row {
+  margin-bottom: 10px;
+  .slider-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
   }
-
-  .row-label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 10px;
-    font-weight: 700;
-    color: $t-mid;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-
-    ion-icon { font-size: 11px; color: $accent; }
+  .slider-label {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 700;
+    color: var(--eni-text-2);
+    text-transform: uppercase; letter-spacing: 0.8px;
+    ion-icon { font-size: 11px; color: var(--eni-accent); }
   }
-
-  .row-value {
-    font-size: 11px;
-    font-weight: 700;
-    color: $accent;
+  .slider-value {
+    font-size: 11px; font-weight: 700;
+    color: var(--eni-accent);
   }
-
   ion-range {
-    --bar-background:        rgba(255, 255, 255, 0.08);
-    --bar-background-active: #{$accent};
-    --knob-background:       #{$accent};
-    --knob-size:             20px;   // larger for easier mobile touch
-    --knob-shadow:           0 0 8px rgba(74, 222, 128, 0.65);
+    --bar-background:        var(--eni-border);
+    --bar-background-active: var(--eni-accent);
+    --knob-background:       var(--eni-accent);
+    --knob-size:             20px;
+    --knob-shadow:           0 0 6px var(--eni-accent-dim);
     --bar-height:            2px;
-    padding: 0;
-    margin: 0;
+    padding: 0; margin: 0;
   }
 }
 
-// ─── BOTTOM-RIGHT ACTIONS ───────────────────────────────────
-.bottom-actions {
-  position: absolute;
-  bottom: env(safe-area-inset-bottom, 18px);
-  right: 18px;
-  z-index: 1000;       // above map canvas
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  pointer-events: none;
-
-  > * {
-    pointer-events: auto;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
+.sheet-actions {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 8px;
 }
 
 .icon-btn {
-  width: 44px;
-  height: 44px;
+  width: 42px; height: 42px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(8, 14, 26, 0.9);
-  border: 1px solid $border;
-  color: $t-mid;
-  font-size: 20px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--eni-surface-2);
+  border: 1px solid var(--eni-border);
+  color: var(--eni-text-2);
+  font-size: 17px;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.12s, color 0.15s;
-
-  ion-icon  { pointer-events: none; }
-  &:active  { transform: scale(0.88); }
-  &.danger  { color: $danger; }
+  ion-icon { pointer-events: none; }
+  &:active { transform: scale(0.88); }
+  &.danger {
+    color: var(--eni-danger);
+    border-color: var(--eni-danger-border);
+    background: var(--eni-danger-bg);
+  }
   &:disabled { opacity: 0.3; cursor: not-allowed; }
 }
 
-.finish-btn {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  height: 48px;
-  padding: 0 22px;
-  border-radius: $r-pill;
-  background: $accent;
-  color: #000;
-  font-size: 14px;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  flex-shrink: 0;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 0 20px rgba(74, 222, 128, 0.45), 0 4px 14px rgba(74, 222, 128, 0.3);
-  transition: transform 0.12s;
-
-  ion-icon { font-size: 16px; pointer-events: none; }
-  &:active { transform: scale(0.95); }
-}
-
 .save-btn {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  height: 48px;
-  padding: 0 26px;
+  flex: 1;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  height: 44px;
   border-radius: $r-pill;
-  background: $accent;
-  color: #000;
-  font-size: 14px;
-  font-weight: 700;
+  background: var(--eni-accent);
+  color: var(--eni-accent-text);
+  font-size: 13px; font-weight: 700;
   border: none;
   cursor: pointer;
-  flex-shrink: 0;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 0 24px rgba(74, 222, 128, 0.5), 0 4px 16px rgba(74, 222, 128, 0.35);
   transition: transform 0.12s, opacity 0.15s;
-
-  ion-icon { font-size: 16px; pointer-events: none; }
-  &:active   { transform: scale(0.95); }
-  &:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+  ion-icon { font-size: 15px; pointer-events: none; }
+  &:active   { transform: scale(0.97); }
+  &:disabled { opacity: 0.35; cursor: not-allowed; }
 }
 
-.btn-spinner { --color: #000; width: 16px; height: 16px; }
+.btn-spinner { --color: var(--eni-accent-text); width: 15px; height: 15px; }
 
-// ─── DRAW HINT ───────────────────────────────────────────────
-.draw-hint {
+.mission-id-badge {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--eni-accent-dim);
+  border: 1px solid var(--eni-accent-border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  ion-icon { font-size: 13px; color: var(--eni-accent); }
+}
+
+// ─── PORTRAIT: TOP BAR ───────────────────────────────────────
+// Uses --eni-surface + --eni-border so it respects dark/light mode.
+// No hardcoded rgba colours.
+.top-bar {
   position: absolute;
-  bottom: calc(env(safe-area-inset-bottom, 18px) + 70px);
-  left: calc(#{$sw} + (100% - #{$sw}) / 2);
+  top: 0; left: 0; right: 0;
+  height: calc(52px + env(safe-area-inset-top, 0px));
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;        // ← stick content to bottom of the bar
+  justify-content: space-between;
+  padding: 0 10px env(safe-area-inset-top, 0px);  // bottom padding pushes buttons down
+  padding-bottom: 8px;
+  gap: 8px;
+  background: var(--eni-surface);
+  border-bottom: 1px solid var(--eni-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+// ─── PORTRAIT: STATS BADGE ───────────────────────────────────
+.stats-badge {
+  position: absolute;
+  top: 52px; left: 50%;
   transform: translateX(-50%);
-  z-index: 50;
+  z-index: 99;
+  align-items: center; gap: 10px;
+  padding: 4px 14px;
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  pointer-events: none;
+  white-space: nowrap;
+
+  .val  { font-size: 11px; font-weight: 700; color: var(--eni-text); }
+  .unit { font-size: 8px; color: var(--eni-text-3); }
+  .sep  { width: 1px; height: 10px; background: var(--eni-border); flex-shrink: 0; display: inline-block; }
+}
+
+// ─── PORTRAIT: SINGLE TOGGLE BUTTON ──────────────────────────
+// Centered tab glued to the top edge of the sheet.
+// bottom: 0 when collapsed, bottom: 260px when open — matches sheet height.
+.panel-toggle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 102;
+  bottom: 0;
+  width: 48px;
+  height: 24px;
+  border-radius: 10px 10px 0 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 20px;
-  border-radius: $r-pill;
-  background: rgba(8, 14, 26, 0.9);
-  border: 1px solid $border;
-  color: $t-mid;
-  font-size: 13px;
-  white-space: nowrap;
-  pointer-events: none;
+  justify-content: center;
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
+  border-bottom: none;
+  color: var(--eni-text-2);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: bottom 0.38s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s, border-color 0.15s;
+  ion-icon { font-size: 14px; pointer-events: none; }
 
-  ion-icon { font-size: 14px; color: $accent; }
+  &.panel-open {
+    bottom: 260px;   // must equal .bottom-sheet height
+    color: var(--eni-accent);
+    border-color: var(--eni-accent-border);
+  }
 }
+
+// ─── PORTRAIT: BOTTOM SHEET ──────────────────────────────────
+.bottom-sheet {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 100;
+  flex-direction: column;
+  background: var(--eni-surface);
+  border-top: 1px solid var(--eni-border);
+  border-radius: 16px 16px 0 0;
+  padding: 14px 14px calc(env(safe-area-inset-bottom, 0px) + 12px);
+  height: 260px;        // fixed height — matches panel-toggle offset
+  overflow-y: auto;     // scroll if content overflows
+  transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+
+  &.sheet-collapsed { transform: translateY(100%); }
+}
+
+.sheet-name-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px;
+}
+
+// ─── LANDSCAPE: SINGLE TAB TOGGLE BUTTON ─────────────────────
+// Sticks out from the right edge of the sidebar, vertically centred.
+// Its `left` value transitions with the sidebar via CSS — zero JS needed.
+// landscape-only means it is NEVER rendered in portrait.
+.sidebar-tab {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 101;
+
+  // When sidebar is open: tab sits at sidebar right edge
+  left: $sidebar-w;
+  // When sidebar is closed: tab sits at screen left edge
+  &:not(.sidebar-open) { left: 0; }
+
+  width: 20px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  color: var(--eni-text-2);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: left 0.38s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s;
+  ion-icon { font-size: 12px; pointer-events: none; }
+  &:active { color: var(--eni-accent); }
+}
+
+// ─── LANDSCAPE: LEFT SIDEBAR ─────────────────────────────────
+.left-sidebar {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: $sidebar-w;
+  z-index: 100;
+  flex-direction: column;
+  background: var(--eni-surface);
+  border-right: 1px solid var(--eni-border);
+  padding: 12px 12px calc(env(safe-area-inset-bottom, 0px) + 12px);
+  gap: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+
+  &.sidebar-collapsed { transform: translateX(-100%); }
+}
+
+.sidebar-top-row {
+  display: flex; align-items: center; gap: 6px;
+  width: 100%;
+}
+
+.sidebar-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--eni-surface-2);
+  border: 1px solid var(--eni-border);
+  border-radius: $r-sm;
+  padding: 8px 10px;
+  width: 100%;
+
+  .stat-item {
+    display: flex; flex-direction: column; align-items: center;
+    .val  { font-size: 13px; font-weight: 700; color: var(--eni-text); }
+    .unit { font-size: 9px; color: var(--eni-text-3); margin-top: 1px; }
+  }
+  .stat-sep { width: 1px; height: 16px; background: var(--eni-border); }
+}
+
+.sidebar-sliders {
+  display: flex; flex-direction: column;
+  width: 100%;
+  flex: 1;
+}
+
+.sidebar-spacer { flex: 1; min-height: 8px; }

@@ -205,7 +205,10 @@ export class MissionStatusPage implements OnInit {
         csvPayload += `${index + 1},${Number(pt.lat).toFixed(6)},${Number(pt.lng).toFixed(6)},30,0\n`;
       });
 
-      // --- FIXED: Chunked BLE sending ---
+      // --- NEW: Add EOF Marker so ESP32 knows when to stop ---
+      csvPayload += "EOF\n";
+
+      // --- FIXED: Reliable Chunked BLE sending ---
       const encoder = new TextEncoder();
       const encodedData = encoder.encode(csvPayload);
 
@@ -216,7 +219,9 @@ export class MissionStatusPage implements OnInit {
 
       for (let i = 0; i < encodedData.length; i += CHUNK_SIZE) {
         const chunk = encodedData.slice(i, i + CHUNK_SIZE);
-        const dataView = new DataView(chunk.buffer);
+        
+        // SAFE DATAVIEW: Uses offset and length to avoid full-buffer bleed
+        const dataView = new DataView(chunk.buffer, chunk.byteOffset, chunk.byteLength);
 
         await BleClient.writeWithoutResponse(
           this.deviceId,
@@ -225,9 +230,11 @@ export class MissionStatusPage implements OnInit {
           dataView
         );
 
-        // Update progress so user sees something happening
         const currentChunk = Math.floor(i / CHUNK_SIZE) + 1;
         this.zone.run(() => this.statusMessage = `Uploading... ${currentChunk}/${totalChunks}`);
+
+        // --- NEW: Give the ESP32 buffer time to process the chunk (50ms) ---
+        await new Promise(resolve => setTimeout(resolve, 50));
       }
       // --- END FIX ---
 

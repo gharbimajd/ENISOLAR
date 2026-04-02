@@ -1,30 +1,32 @@
-/* * 1. Standard Ionic Imports 
- * (Keep these to ensure Ionic components work correctly)
- */
-@import "@ionic/angular/css/core.css";
-@import "@ionic/angular/css/normalize.css";
-@import "@ionic/angular/css/structure.css";
-@import "@ionic/angular/css/typography.css";
-@import "@ionic/angular/css/display.css";
-@import "@ionic/angular/css/padding.css";
-@import "@ionic/angular/css/float-elements.css";
-@import "@ionic/angular/css/text-alignment.css";
-@import "@ionic/angular/css/text-transformation.css";
-@import "@ionic/angular/css/flex-utils.css";
+  /* * 1. Standard Ionic Imports 
+  * (Keep these to ensure Ionic components work correctly)
+  */
+  @use 'theme/theme.variables' as *;
+  @use 'theme/global.theme' as *;
+  @import "@ionic/angular/css/core.css";
+  @import "@ionic/angular/css/normalize.css";
+  @import "@ionic/angular/css/structure.css";
+  @import "@ionic/angular/css/typography.css";
+  @import "@ionic/angular/css/display.css";
+  @import "@ionic/angular/css/padding.css";
+  @import "@ionic/angular/css/float-elements.css";
+  @import "@ionic/angular/css/text-alignment.css";
+  @import "@ionic/angular/css/text-transformation.css";
+  @import "@ionic/angular/css/flex-utils.css";
 
-/* * 2. Global Defaults 
- * (Optional: Sets a nice font and ensures the map fills the screen)
- */
-:host {
-  --ion-font-family: 'Inter', sans-serif;
-}
+  /* * 2. Global Defaults 
+  * (Optional: Sets a nice font and ensures the map fills the screen)
+  */
+  :host {
+    --ion-font-family: 'Inter', sans-serif;
+  }
 
-body {
-  margin: 0;
-  padding: 0;
-  /* Removed the forced black background and red borders */
-}
-.mapboxgl-ctrl-logo,
-.mapboxgl-ctrl-attrib {
-  display: none !important;
-}
+  body {
+    margin: 0;
+    padding: 0;
+    /* Removed the forced black background and red borders */
+  }
+  .mapboxgl-ctrl-logo,
+  .mapboxgl-ctrl-attrib {
+    display: none !important;
+  }

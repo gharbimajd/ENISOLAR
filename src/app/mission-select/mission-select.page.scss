@@ -1,112 +1,60 @@
-/* 1. BACKGROUND */
-ion-content {
-  --background: radial-gradient(circle at 50% 0%, #1a2c4e 0%, #000000 70%);
-}
+// MISSION SELECT PAGE
+ion-content { --background: var(--eni-bg); }
 
-/* 2. HEADER & TOOLBAR */
-ion-header {
-  background: #ffffff !important;
+ion-header { background: var(--eni-toolbar-bg) !important;
   &::after { display: none; }
 }
 
 ion-toolbar {
-  --background: #ffffff;
-  --border-color: transparent;
-  --color: #1e1b4b;
-  --min-height: 56px;
-  border-bottom: 1px solid rgba(99, 102, 241, 0.15);
-
-  ion-back-button {
-    --color: #1e1b4b;
-    --icon-font-size: 22px;
-  }
+  --background: var(--eni-toolbar-bg);
+  --border-color: var(--eni-border-faint);
+  --color: var(--eni-text);
+  ion-back-button { --color: var(--eni-text-2); }
 }
 
-ion-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  color: #1e1b4b;
+ion-title { font-size: 1rem; font-weight: 600; color: var(--eni-text); }
+
+.page-header { margin-bottom: 20px; text-align: center;
+  .subtitle { margin: 0; font-size: 0.85rem; color: var(--eni-text-3); }
 }
 
-/* 3. PAGE HEADER AREA */
-.page-header {
-  margin-bottom: 20px;
-  text-align: center;
+.mission-grid { margin-top: 8px; }
 
-  .subtitle {
-    margin: 0;
-    font-size: 0.9rem;
-    color: #94a3b8;
-  }
-}
-
-/* 4. GRID LAYOUT */
-.mission-grid {
-  margin-top: 10px;
-}
-
-/* 5. GLASS CARD OPTION — full width row layout */
 .glass-card.option-card {
-  background: rgba(11, 17, 32, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 6px;
-  padding: 18px 20px;
-
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 16px;
-
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.2s, background 0.2s;
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+  background: var(--eni-surface); border: 1px solid var(--eni-border);
+  border-radius: 10px; padding: 16px 18px;
+  display: flex; flex-direction: row; align-items: center; gap: 16px;
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.2s;
+  cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  border-left: 2.5px solid var(--eni-accent);
 
   .icon-wrapper {
-    background: rgba(74, 222, 128, 0.1);
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    flex-shrink: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    ion-icon {
-      font-size: 1.6rem;
-      color: #4ade80;
-    }
+    background: var(--eni-accent-dim); border-radius: 9px;
+    width: 46px; height: 46px; flex-shrink: 0;
+    display: flex; justify-content: center; align-items: center;
+    ion-icon { font-size: 1.5rem; color: var(--eni-accent); }
   }
 
-  .card-text {
-    display: flex;
-    flex-direction: column;
-  }
+  .card-text { display: flex; flex-direction: column; }
+  h3 { margin: 0 0 3px; font-size: 0.95rem; font-weight: 600; color: var(--eni-text); }
+  p { margin: 0; font-size: 0.78rem; color: var(--eni-text-3); line-height: 1.4; }
 
-  h3 {
-    margin: 0 0 3px 0;
-    font-size: 1rem;
-    font-weight: 700;
-    color: #e2e8f0;
+  &:active { transform: scale(0.98); border-color: var(--eni-accent-border);
+    .icon-wrapper { background: var(--eni-accent-dim); }
   }
+}
 
-  p {
-    margin: 0;
-    font-size: 0.8rem;
-    color: #94a3b8;
-    line-height: 1.4;
-  }
-
-  &:active {
-    transform: scale(0.98);
-    background: rgba(30, 45, 70, 0.9);
-    border-color: rgba(99, 102, 241, 0.4);
-
-    .icon-wrapper {
-      background: rgba(99, 102, 241, 0.15);
-    }
-  }
+// Open Map Planner button
+ion-button {
+  --background: var(--eni-accent-dim);
+  --color: var(--eni-accent);
+  --border-radius: 10px;
+  --border-width: 1px;
+  --border-style: solid;
+  --border-color: var(--eni-accent-border);
+  --box-shadow: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.3px;
+  height: 52px;
 }

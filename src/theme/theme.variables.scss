@@ -1,0 +1,112 @@
+// ═══════════════════════════════════════════════════════════════
+//  ENISOLAR — GLOBAL THEME VARIABLES
+//  Import this in your global styles (styles.scss or variables.scss)
+//  Usage: var(--eni-bg), var(--eni-surface), etc.
+// ═══════════════════════════════════════════════════════════════
+
+// ── Dark theme (default) ──────────────────────────────────────
+:root,
+.dark-theme {
+  // Backgrounds
+  --eni-bg:           #0a0c12;
+  --eni-surface:      #0f1420;
+  --eni-surface-2:    #141a28;
+  --eni-deep:         #060810;
+
+  // Borders
+  --eni-border:       #1e2538;
+  --eni-border-faint: #141820;
+
+  // Text
+  --eni-text:         #e2e8f0;
+  --eni-text-2:       #9ca3af;
+  --eni-text-3:       #4b5563;
+  --eni-text-4:       #2a3548;
+
+  // Accent — teal-mint
+  --eni-accent:       #00d4aa;
+  --eni-accent-dim:   rgba(0, 212, 170, 0.12);
+  --eni-accent-border:rgba(0, 212, 170, 0.25);
+  --eni-accent-text:  #001a14;
+
+  // Status colors
+  --eni-ready:        #00d4aa;
+  --eni-ready-bg:     rgba(0, 212, 170, 0.1);
+  --eni-ready-border: rgba(0, 212, 170, 0.2);
+
+  --eni-draft:        #6b7280;
+  --eni-draft-bg:     rgba(107, 114, 128, 0.1);
+  --eni-draft-border: rgba(107, 114, 128, 0.2);
+
+  --eni-pending:      #fbbf24;
+  --eni-pending-bg:   rgba(251, 191, 36, 0.1);
+  --eni-pending-border:rgba(251, 191, 36, 0.2);
+
+  --eni-polygon:      #60a5fa;
+  --eni-polygon-bg:   rgba(96, 165, 250, 0.1);
+  --eni-polygon-border:rgba(96, 165, 250, 0.2);
+
+  --eni-danger:       #f87171;
+  --eni-danger-bg:    rgba(248, 113, 113, 0.08);
+  --eni-danger-border:rgba(248, 113, 113, 0.2);
+
+  // Menu
+  --eni-menu-bg:      #060810;
+  --eni-menu-selected-bg: rgba(0, 212, 170, 0.08);
+
+  // Toolbar
+  --eni-toolbar-bg:   #0a0c12;
+}
+
+// ── Light theme ───────────────────────────────────────────────
+.light-theme {
+  // Backgrounds
+  --eni-bg:           #f0f2f5;
+  --eni-surface:      #ffffff;
+  --eni-surface-2:    #f8f9fb;
+  --eni-deep:         #e4e7ed;
+
+  // Borders
+  --eni-border:       #dde1ea;
+  --eni-border-faint: #eaecf0;
+
+  // Text
+  --eni-text:         #0f1117;
+  --eni-text-2:       #4b5563;
+  --eni-text-3:       #9ca3af;
+  --eni-text-4:       #c4cad4;
+
+  // Accent — slightly richer in light mode
+  --eni-accent:       #00b899;
+  --eni-accent-dim:   rgba(0, 184, 153, 0.1);
+  --eni-accent-border:rgba(0, 184, 153, 0.3);
+  --eni-accent-text:  #ffffff;
+
+  // Status colors (same hues, adjusted bg for light)
+  --eni-ready:        #009e7a;
+  --eni-ready-bg:     rgba(0, 158, 122, 0.08);
+  --eni-ready-border: rgba(0, 158, 122, 0.2);
+
+  --eni-draft:        #6b7280;
+  --eni-draft-bg:     rgba(107, 114, 128, 0.08);
+  --eni-draft-border: rgba(107, 114, 128, 0.18);
+
+  --eni-pending:      #d97706;
+  --eni-pending-bg:   rgba(217, 119, 6, 0.08);
+  --eni-pending-border:rgba(217, 119, 6, 0.2);
+
+  --eni-polygon:      #2563eb;
+  --eni-polygon-bg:   rgba(37, 99, 235, 0.08);
+  --eni-polygon-border:rgba(37, 99, 235, 0.2);
+
+  --eni-danger:       #dc2626;
+  --eni-danger-bg:    rgba(220, 38, 38, 0.06);
+  --eni-danger-border:rgba(220, 38, 38, 0.2);
+
+  // Menu
+  --eni-menu-bg:      #f8f9fb;
+  --eni-menu-selected-bg: rgba(0, 184, 153, 0.08);
+
+  // Toolbar
+  --eni-toolbar-bg:   #ffffff;
+}

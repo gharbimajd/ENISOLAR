@@ -1,0 +1,109 @@
+/*
+ * ENISOLAR — Global Styles
+ * Add this to your src/global.scss (or import theme.variables.scss from there)
+ * ─────────────────────────────────────────────────────────────────────────────
+ * IMPORTANT: Also add this import at the TOP of your src/global.scss:
+ *   @import 'theme.variables';
+ *
+ * And in src/index.html <body> tag, add class="dark-theme" as the default,
+ * or let ThemeService handle it on app init.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+// ── Ionic system overrides — both themes ─────────────────────────────────────
+
+// Ionic reads these CSS vars for its internal components
+:root,
+.dark-theme {
+  --ion-background-color:             var(--eni-bg);
+  --ion-background-color-rgb:         10, 12, 18;
+  --ion-text-color:                   var(--eni-text);
+  --ion-text-color-rgb:               226, 232, 240;
+  --ion-color-step-50:                var(--eni-surface);
+  --ion-color-step-100:               var(--eni-surface-2);
+  --ion-color-step-150:               #1a2030;
+  --ion-color-step-200:               var(--eni-border);
+  --ion-toolbar-background:           var(--eni-toolbar-bg);
+  --ion-item-background:              var(--eni-surface);
+  --ion-card-background:              var(--eni-surface);
+
+  // Override primary color to teal accent
+  --ion-color-primary:                var(--eni-accent);
+  --ion-color-primary-rgb:            0, 212, 170;
+  --ion-color-primary-contrast:       var(--eni-accent-text);
+  --ion-color-primary-contrast-rgb:   0, 26, 20;
+  --ion-color-primary-shade:          #00b899;
+  --ion-color-primary-tint:           #1ad8b2;
+
+  --ion-color-success:                var(--eni-ready);
+  --ion-color-warning:                var(--eni-pending);
+  --ion-color-danger:                 var(--eni-danger);
+}
+
+.light-theme {
+  --ion-background-color:             var(--eni-bg);
+  --ion-background-color-rgb:         240, 242, 245;
+  --ion-text-color:                   var(--eni-text);
+  --ion-text-color-rgb:               15, 17, 23;
+  --ion-color-step-50:                var(--eni-surface);
+  --ion-color-step-100:               var(--eni-surface-2);
+  --ion-color-step-150:               #eaecf2;
+  --ion-color-step-200:               var(--eni-border);
+  --ion-toolbar-background:           var(--eni-toolbar-bg);
+  --ion-item-background:              var(--eni-surface);
+  --ion-card-background:              var(--eni-surface);
+
+  --ion-color-primary:                var(--eni-accent);
+  --ion-color-primary-rgb:            0, 184, 153;
+  --ion-color-primary-contrast:       #ffffff;
+  --ion-color-primary-contrast-rgb:   255, 255, 255;
+  --ion-color-primary-shade:          #009e7a;
+  --ion-color-primary-tint:           #1ac4a5;
+
+  --ion-color-success:                var(--eni-ready);
+  --ion-color-warning:                var(--eni-pending);
+  --ion-color-danger:                 var(--eni-danger);
+}
+
+// ── Global resets ─────────────────────────────────────────────────────────────
+* { -webkit-tap-highlight-color: transparent; }
+
+ion-app { font-family: -apple-system, 'SF Pro Text', 'Segoe UI', sans-serif; }
+
+// Smooth theme transitions
+ion-content,
+ion-toolbar,
+ion-header,
+ion-item,
+ion-list,
+ion-card,
+.glass-card,
+.glass-panel {
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.2s ease;
+}
+
+// ── Toast overrides ────────────────────────────────────────────────────────────
+ion-toast {
+  --border-radius: 10px;
+  --box-shadow: none;
+  &::part(container) { border-radius: 10px; }
+}
+
+// ── Action sheet overrides ────────────────────────────────────────────────────
+ion-action-sheet {
+  --background: var(--eni-surface);
+  --button-color: var(--eni-text);
+  --button-background: transparent;
+  --button-background-activated: var(--eni-accent-dim);
+}
+
+// ── Select popover overrides ──────────────────────────────────────────────────
+ion-select-popover {
+  --background: var(--eni-surface);
+  ion-item { --background: var(--eni-surface); --color: var(--eni-text); }
+}
+
+// ── Scrollbar (web/desktop) ────────────────────────────────────────────────────
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--eni-border); border-radius: 2px; }

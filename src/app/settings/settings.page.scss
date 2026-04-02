@@ -1,140 +1,64 @@
-// Deep dark background with a very subtle radial gradient for depth
-.modern-bg {
-  --background: radial-gradient(circle at top left, #121b2b 0%, #0a0e14 100%);
-  --color: #ffffff;
-}
+// SETTINGS PAGE
+ion-content { --background: var(--eni-bg); --color: var(--eni-text); }
+ion-toolbar { --background: var(--eni-toolbar-bg); --color: var(--eni-text); --border-color: var(--eni-border-faint); }
+ion-back-button { --color: var(--eni-text-2); }
+ion-title { color: var(--eni-text); font-weight: 600; font-size: 1rem; }
 
-// Blurry Header
-.blur-header {
-  ion-toolbar {
-    --background: rgba(10, 14, 20, 0.75);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    --color: #ffffff;
-  }
-}
+.settings-wrapper { padding-bottom: 48px; }
 
-.settings-wrapper {
-  padding-bottom: 40px;
-}
-
-.settings-section {
-  margin-bottom: 30px;
-
+.settings-section { margin-bottom: 28px;
   .section-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.4);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-bottom: 12px;
-    padding-left: 8px;
+    font-size: 0.68rem; font-weight: 700; color: var(--eni-text-3);
+    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; padding-left: 4px;
   }
 }
 
-// The Glassmorphism Card Effect
 .glass-card {
-  background: rgba(26, 44, 78, 0.3);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
+  background: var(--eni-surface); border-radius: 12px; border: 1px solid var(--eni-border); overflow: hidden;
 
-  ion-list {
-    background: transparent;
-    padding: 0;
-  }
+  ion-list { background: transparent; padding: 0; }
 
   ion-item {
     --background: transparent;
-    --padding-start: 16px;
-    --inner-padding-end: 16px;
-    --min-height: 65px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    --background-activated: var(--eni-accent-dim);
+    --padding-start: 16px; --inner-padding-end: 16px; --min-height: 60px;
+    --color: var(--eni-text);
+    border-bottom: 1px solid var(--eni-border-faint);
+    &:last-child { border-bottom: none; }
 
-    &:last-child {
-      border-bottom: none;
-    }
+    ion-label { color: var(--eni-text); font-weight: 500; font-size: 0.95rem; letter-spacing: 0.2px; }
 
-    ion-label {
-      color: #ffffff;
-      font-weight: 500;
-      font-size: 15px;
-      letter-spacing: 0.3px;
-    }
-
-    // Modern Icon Wrappers
     .icon-wrapper {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: rgba(91, 140, 255, 0.15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 16px;
-
-      ion-icon {
-        color: #5b8cff;
-        font-size: 18px;
-        margin: 0;
-      }
-
-      &.danger-icon {
-        background: rgba(235, 68, 90, 0.15);
-        ion-icon { color: var(--ion-color-danger); }
+      width: 34px; height: 34px; border-radius: 8px;
+      background: var(--eni-accent-dim); display: flex; align-items: center; justify-content: center; margin-right: 14px;
+      ion-icon { color: var(--eni-accent); font-size: 1.1rem; margin: 0; }
+      &.danger-icon { background: var(--eni-danger-bg);
+        ion-icon { color: var(--eni-danger); }
       }
     }
 
-    // Select styling
-    ion-select {
-      color: #5b8cff;
-      font-weight: 600;
-      --placeholder-color: rgba(255, 255, 255, 0.5);
-      
-      &::part(icon) {
-        color: #5b8cff;
-        opacity: 0.8;
-      }
+    ion-select { color: var(--eni-text-2); font-weight: 500; font-size: 0.88rem; --placeholder-color: var(--eni-text-3);
+      &::part(icon) { color: var(--eni-text-3); opacity: 0.8; }
     }
   }
 }
 
-// Custom Danger Card styling
-.danger-card {
-  border: 1px solid rgba(235, 68, 90, 0.15);
-  background: rgba(235, 68, 90, 0.02);
-}
+.danger-card { border-color: var(--eni-danger-border); background: var(--eni-danger-bg) !important; }
 
-// Custom Toggle (using iOS mode in HTML makes it a pill shape, this colors it)
 ion-toggle {
-  --background: rgba(255, 255, 255, 0.1);
-  --background-checked: #5b8cff;
+  --background: var(--eni-border);
+  --background-checked: var(--eni-accent);
   --handle-background: #ffffff;
-  --handle-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  --handle-box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
 
-// Premium Glowing Save Button
-.action-container {
-  margin-top: 40px;
-
+.action-container { margin-top: 36px;
   .glow-btn {
-    --background: linear-gradient(135deg, #4a7ae0 0%, #5b8cff 100%);
-    --color: #ffffff;
-    --border-radius: 16px;
-    --box-shadow: 0 8px 24px rgba(91, 140, 255, 0.3);
-    font-weight: 700;
-    height: 56px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    font-size: 14px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-    &:active {
-      transform: scale(0.98);
-      --box-shadow: 0 4px 12px rgba(91, 140, 255, 0.4);
-    }
+    --background: var(--eni-accent);
+    --background-activated: var(--eni-accent);
+    --color: var(--eni-accent-text);
+    --border-radius: 10px;
+    --box-shadow: 0 4px 16px rgba(0, 212, 170, 0.25);
+    font-weight: 600; height: 50px; font-size: 0.9rem; letter-spacing: 0.5px; text-transform: none;
   }
 }

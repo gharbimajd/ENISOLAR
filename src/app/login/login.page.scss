@@ -1,144 +1,67 @@
-/* =========================================
-   1. BACKGROUND (Matched to Dashboard)
-========================================= */
-ion-content.login-bg {
-  // Matched your Dashboard: Blue spotlight at the top fading to black
-  --background: radial-gradient(circle at 50% 0%, #1a2c4e 0%, #000000 70%) !important;
-}
+// LOGIN PAGE
+ion-content.login-bg { --background: var(--eni-bg) !important; }
 
 .login-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100%;
-  padding: 24px;
+  display: flex; flex-direction: column; justify-content: center;
+  align-items: center; min-height: 100%; padding: 32px 24px;
 }
 
-/* =========================================
-   2. THE FORM (Matched to .glass-card)
-========================================= */
-.login-form {
-  width: 100%;
-  max-width: 400px;
-  // Using the exact background from your glass-card
-  background: rgba(13, 22, 40, 0.85); 
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 28px;
-  padding: 40px 32px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-  text-align: center;
-
-  h2 {
-    color: #ffffff;
-    font-size: 2.2rem;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .subtitle {
-    color: #94a3b8; // Slategray from your dashboard
-    font-size: 0.95rem;
-    margin-bottom: 32px;
-  }
+.login-logo {
+  text-align: center; margin-bottom: 44px;
+  .wordmark { font-size: 1.75rem; font-weight: 600; color: var(--eni-text); letter-spacing: 6px; text-transform: uppercase; }
+  .tagline { font-size: 0.62rem; color: var(--eni-text-4); letter-spacing: 3px; text-transform: uppercase; margin-top: 6px; }
+  .logo-rule { width: 28px; height: 1.5px; background: var(--eni-accent); margin: 12px auto 0; border-radius: 1px; }
 }
 
-/* =========================================
-   3. INPUT GROUPS (High Contrast)
-========================================= */
+.login-form { width: 100%; max-width: 400px; text-align: center;
+  .subtitle { color: var(--eni-text-3); font-size: 0.85rem; margin-bottom: 28px; }
+}
+
 .input-group {
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  background: #ffffff; 
-  border-radius: 14px;
-  padding: 0 16px;
-  
-  ion-icon {
-    color: #1a2c4e; // Dark blue icon
-    font-size: 1.3rem;
-    margin-right: 12px;
-  }
-
-  input {
-    width: 100%;
-    background: transparent;
-    border: none;
-    padding: 16px 0;
-    color: #0a1428; 
-    font-size: 1.1rem;
-    outline: none;
-
-    &::placeholder { color: #94a3b8; }
-  }
+  margin-bottom: 10px; display: flex; align-items: center;
+  background: var(--eni-surface); border: 1px solid var(--eni-border); border-radius: 10px; padding: 0 16px;
+  transition: border-color 0.2s ease;
+  &:focus-within { border-color: var(--eni-accent-border); }
+  ion-icon { color: var(--eni-text-4); font-size: 1.1rem; margin-right: 12px; flex-shrink: 0; }
+  input { width: 100%; background: transparent; border: none; padding: 15px 0; color: var(--eni-text); font-size: 0.95rem; outline: none;
+    &::placeholder { color: var(--eni-text-4); } }
 }
 
-/* =========================================
-   4. BUTTONS & ERRORS
-========================================= */
 .login-btn {
-  width: 100%;
-  padding: 18px;
-  background: #ffffff; // White button for high contrast on dark form
-  color: #1a2c4e;
-  border: none;
-  border-radius: 14px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  margin-top: 10px;
-  transition: all 0.2s ease;
+  width: 100%; padding: 15px; background: var(--eni-accent); color: var(--eni-accent-text); border: none;
+  border-radius: 10px; font-size: 0.88rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+  margin-top: 14px; cursor: pointer; transition: opacity 0.2s ease, transform 0.15s ease;
+  display: flex; justify-content: center; align-items: center; gap: 10px;
+  &:active { transform: scale(0.97); opacity: 0.9; }
+  &:disabled { opacity: 0.35; cursor: not-allowed; }
+}
 
-  &:active {
-    transform: scale(0.96);
-    background: rgba(255, 255, 255, 0.9);
+.alternatives { text-align: center; margin-top: 16px;
+  .forgot-link { color: var(--eni-text-3); font-size: 0.82rem; text-decoration: none; cursor: pointer; transition: color 0.2s;
+    &:hover { color: var(--eni-accent); } }
+}
+
+.register-section { margin-top: 36px; text-align: center;
+  p { color: var(--eni-text-4); font-size: 0.82rem; margin-bottom: 10px; }
+  .register-btn {
+    background: transparent; border: 1px solid var(--eni-border); color: var(--eni-text-3);
+    padding: 10px 24px; border-radius: 50px; font-size: 0.82rem; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px; transition: border-color 0.2s, color 0.2s;
+    &:hover { border-color: var(--eni-accent-border); color: var(--eni-text-2); }
+    ion-icon { font-size: 1rem; }
   }
 }
 
 .error-message {
-  color: #ff4d4d;
-  background: rgba(255, 77, 77, 0.1);
-  padding: 12px;
-  border-radius: 10px;
-  margin-bottom: 16px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border: 1px solid rgba(255, 77, 77, 0.2);
+  color: var(--eni-danger); background: var(--eni-danger-bg); padding: 11px 14px; border-radius: 8px;
+  margin-top: 12px; font-size: 0.82rem; font-weight: 500; border: 1px solid var(--eni-danger-border);
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  ion-icon { font-size: 1rem; flex-shrink: 0; }
 }
 
-.register-section {
-  margin-top: 32px;
-  p { color: rgba(255, 255, 255, 0.4); margin-bottom: 12px; }
-  .register-btn {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-    padding: 10px 24px;
-    border-radius: 50px;
-    font-size: 0.85rem;
-  }
+.spinner {
+  width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.15);
+  border-top: 2px solid var(--eni-accent-text); border-radius: 50%; display: inline-block;
+  animation: spin 0.75s linear infinite;
 }
-
-/* =========================================
-   5. ALTERNATIVES (Forgot Password)
-========================================= */
-.alternatives {
-  text-align: center; /* Changed from right to center */
-  margin-top: 16px;
-  margin-bottom: 8px;
-
-  .forgot-link {
-    color: #94a3b8; 
-    font-size: 0.95rem;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    transition: color 0.2s ease;
-
-   
-  }
-}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

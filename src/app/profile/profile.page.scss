@@ -1,225 +1,76 @@
-// Page Background 
-ion-content {
-  --background: #0a0e14;
-  --color: #ffffff;
-}
+// PROFILE PAGE
+ion-content { --background: var(--eni-bg); --color: var(--eni-text); }
+ion-toolbar { --background: var(--eni-toolbar-bg); --border-color: var(--eni-border-faint); --color: var(--eni-text); }
+ion-back-button { --color: var(--eni-text-2); }
+ion-title { color: var(--eni-text); font-weight: 600; font-size: 1rem; }
 
-ion-toolbar {
-  --background: #0a0e14;
-  --color: #ffffff;
-}
-
-// Loading Spinner for full page
 .loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 60vh;
-  color: rgba(255, 255, 255, 0.6);
-
-  ion-spinner {
-    color: #5b8cff;
-    margin-bottom: 15px;
-  }
+  display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; color: var(--eni-text-3);
+  ion-spinner { color: var(--eni-accent); margin-bottom: 15px; }
+  p { font-size: 0.85rem; }
 }
 
-// User Info Card
+.profile-wrapper { padding: 8px 0 32px; }
+
+// ── Avatar card ───────────────────────────
 .profile-header-card {
-  background: #1a2c4e;
-  border-radius: 16px;
-  padding: 30px 20px;
-  text-align: center;
-  margin-bottom: 24px;
-  border: 1px solid rgba(91, 140, 255, 0.1);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  background: var(--eni-surface); border-radius: 14px; padding: 28px 20px;
+  text-align: center; margin-bottom: 16px; border: 1px solid var(--eni-border);
 
-  // --- NEW AVATAR STYLING ---
   .avatar-edit-container {
-    display: block;
-    position: relative;
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 15px;
-    cursor: pointer;
-    
-    // Circular border and clipping
-    border-radius: 50%;
-    border: 2px solid #5b8cff;
-    overflow: hidden; // Ensures image/overlay are circular
-    
-    background: rgba(91, 140, 255, 0.1);
-    transition: transform 0.2s ease;
-
-    &:active {
-      transform: scale(0.95); // Subtle pulse when clicked
-    }
-
-    // While loading, fade the image
-    &.loading .avatar-image {
-      opacity: 0.3;
-    }
-
-    // The Avatar Image (fills container)
-    .avatar-image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover; // Ensures the image doesn't stretch
-      display: block;
-    }
-
-    // Hover/Active Overlay
+    display: block; position: relative; width: 76px; height: 76px;
+    margin: 0 auto 14px; cursor: pointer; border-radius: 50%;
+    border: 2px solid var(--eni-accent-border); overflow: hidden;
+    background: var(--eni-accent-dim); transition: transform 0.2s ease;
+    &:active { transform: scale(0.95); }
+    &.loading .avatar-image { opacity: 0.3; }
+    .avatar-image { width: 100%; height: 100%; object-fit: cover; display: block; }
     .avatar-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7); // Frosted dark effect
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      
-      // Hidden by default, appears on hover/active
-      opacity: 0;
-      transition: opacity 0.2s ease;
-      color: #ffffff;
-
-      ion-icon {
-        font-size: 24px;
-        color: #ffffff;
-        margin-bottom: 2px;
-      }
-
-      p {
-        margin: 0;
-        font-size: 10px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-weight: bold;
-      }
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.65); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; color: #fff;
+      ion-icon { font-size: 20px; color: #fff; margin-bottom: 2px; }
+      p { margin: 0; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
     }
-
-    // On hover or while active, show the overlay
-    &:hover .avatar-overlay,
-    &:active .avatar-overlay {
-      opacity: 1;
-    }
-
-    // Spinner specific to the avatar box
-    .avatar-spinner {
-      position: absolute;
-      top: calc(50% - 14px); // Center spinner
-      left: calc(50% - 14px);
-      width: 28px;
-      height: 28px;
-      color: #5b8cff;
-    }
-  }
-  // --- END NEW AVATAR STYLING ---
-
-  h2 {
-    margin: 0 0 5px;
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    color: #ffffff;
+    &:hover .avatar-overlay, &:active .avatar-overlay { opacity: 1; }
+    .avatar-spinner { position: absolute; top: calc(50% - 12px); left: calc(50% - 12px); width: 24px; height: 24px; color: var(--eni-accent); }
   }
 
-  .email {
-    margin: 0 0 8px;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 14px;
-  }
-
-  .member-since {
-    margin: 0;
-    color: rgba(91, 140, 255, 0.8);
-    font-size: 12px;
-    font-weight: 500;
-  }
+  h2 { margin: 0 0 4px; font-size: 1.15rem; font-weight: 600; letter-spacing: 0.3px; color: var(--eni-text); }
+  .email { margin: 0 0 6px; color: var(--eni-text-3); font-size: 0.82rem; }
+  .member-since { margin: 0; color: var(--eni-accent); font-size: 0.72rem; font-weight: 500; opacity: 0.8; }
 }
 
-// Stats Grid
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 30px;
-
+// ── Stats ─────────────────────────────────
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;
   .stat-box {
-    background: #1a2c4e;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    border: 1px solid rgba(91, 140, 255, 0.1);
-
-    .stat-icon {
-      font-size: 28px;
-      margin-bottom: 10px;
-
-      &.primary { color: #5b8cff; }
-      &.success { color: #2dd36f; }
+    background: var(--eni-surface); border-radius: 10px; padding: 18px 16px;
+    text-align: center; border: 1px solid var(--eni-border);
+    .stat-icon { font-size: 1.5rem; margin-bottom: 8px;
+      &.primary { color: var(--eni-accent); }
+      &.success { color: var(--eni-accent); }
     }
-
-    h3 {
-      margin: 0 0 5px;
-      font-size: 26px;
-      font-weight: bold;
-      color: #ffffff;
-    }
-
-    p {
-      margin: 0;
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.6);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+    h3 { margin: 0 0 4px; font-size: 1.6rem; font-weight: 600; color: var(--eni-text); }
+    p { margin: 0; font-size: 0.65rem; color: var(--eni-text-3); text-transform: uppercase; letter-spacing: 1px; }
   }
 }
 
-// Action List
-.action-list {
-  background: transparent;
-
+// ── Action list ───────────────────────────
+.action-list { background: transparent;
   ion-item {
-    --background: #1a2c4e;
-    --border-radius: 12px;
-    --padding-start: 16px;
-    --inner-padding-end: 16px;
-    margin-bottom: 12px;
-    border: 1px solid rgba(91, 140, 255, 0.1);
-
-    ion-icon {
-      color: #5b8cff;
-      margin-right: 16px;
-    }
-
-    h3 {
-      font-weight: 500;
-      color: #ffffff;
-      margin-bottom: 4px;
-      font-size: 16px;
-    }
-
-    p {
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.5);
-    }
+    --background: var(--eni-surface);
+    --border-radius: 10px;
+    --padding-start: 16px; --inner-padding-end: 16px;
+    margin-bottom: 8px; border: 1px solid var(--eni-border);
+    &::part(native) { border-radius: 10px; }
+    ion-icon { color: var(--eni-accent); margin-right: 14px; }
+    h3 { font-weight: 500; color: var(--eni-text); margin-bottom: 3px; font-size: 0.95rem; }
+    p { font-size: 0.75rem; color: var(--eni-text-3); }
   }
-
   .logout-item {
-    margin-top: 24px;
-    border-color: rgba(235, 68, 90, 0.2);
-    
-    ion-icon {
-      color: var(--ion-color-danger);
-    }
-    
-    h3 {
-      color: var(--ion-color-danger);
-    }
+    margin-top: 20px; --background: var(--eni-danger-bg); border-color: var(--eni-danger-border);
+    &::part(native) { background: var(--eni-danger-bg); }
+    ion-icon { color: var(--eni-danger); }
+    h3 { color: var(--eni-danger); }
   }
 }

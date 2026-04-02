@@ -1,148 +1,55 @@
-ion-content {
-  --background: #0a0e14;
-  --color: #ffffff;
-}
-
-ion-toolbar {
-  --background: #0a0e14;
-  --color: #ffffff;
-}
+// MANAGE PROFILE PAGE
+ion-content { --background: var(--eni-bg); --color: var(--eni-text); }
+ion-toolbar { --background: var(--eni-toolbar-bg); --border-color: var(--eni-border-faint); --color: var(--eni-text); }
+ion-back-button { --color: var(--eni-text-2); }
+ion-title { color: var(--eni-text); font-weight: 600; font-size: 1rem; }
 
 .loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 60vh;
-  color: rgba(255, 255, 255, 0.6);
-
-  ion-spinner {
-    color: #5b8cff;
-    margin-bottom: 15px;
-  }
+  display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; color: var(--eni-text-3);
+  ion-spinner { color: var(--eni-accent); margin-bottom: 15px; }
+  p { font-size: 0.85rem; }
 }
 
-.form-container {
-  padding: 10px;
-}
+.form-container { padding: 8px 4px 32px; }
 
 .section-title {
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 15px;
-  margin-top: 10px;
-  
-  span {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.5);
-    font-weight: normal;
-  }
+  color: var(--eni-text-2); font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; margin-bottom: 12px; margin-top: 20px; padding-left: 2px;
+  span { font-size: 0.68rem; color: var(--eni-text-4); font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: 4px; }
 }
 
-.divider {
-  height: 1px;
-  background: rgba(91, 140, 255, 0.2);
-  margin: 25px 0;
-}
+.divider { height: 1px; background: var(--eni-border-faint); margin: 24px 0; }
 
-// Input Styling
 .input-group {
-  display: flex;
-  align-items: center;
-  background: #1a2c4e;
-  border-radius: 12px;
-  padding: 0 16px;
-  margin-bottom: 16px;
-  height: 56px;
-  border: 1px solid rgba(91, 140, 255, 0.2);
-  transition: border-color 0.3s ease;
-
-  ion-icon {
-    font-size: 20px;
-    color: #5b8cff;
-    margin-right: 12px;
+  display: flex; align-items: center; background: var(--eni-surface); border-radius: 10px;
+  padding: 0 16px; margin-bottom: 10px; height: 52px; border: 1px solid var(--eni-border);
+  transition: border-color 0.2s ease;
+  &:focus-within { border-color: var(--eni-accent-border); }
+  ion-icon { font-size: 1.1rem; color: var(--eni-text-4); margin-right: 12px; }
+  input { flex: 1; background: transparent; border: none; color: var(--eni-text); font-size: 0.95rem; height: 100%; outline: none;
+    &::placeholder { color: var(--eni-text-4); }
   }
-
-  input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: #ffffff;
-    font-size: 15px;
-    height: 100%;
-    outline: none;
-
-    &::placeholder {
-      color: rgba(255, 255, 255, 0.4);
-    }
-  }
-
-  &.invalid-group {
-    border-color: var(--ion-color-danger);
-    ion-icon {
-      color: var(--ion-color-danger);
-    }
+  &.invalid-group { border-color: var(--eni-danger-border);
+    ion-icon { color: var(--eni-danger); }
   }
 }
 
-.error-message {
-  color: var(--ion-color-danger);
-  font-size: 12px;
-  margin-top: -10px;
-  margin-bottom: 15px;
-  padding-left: 10px;
-}
+.error-message { color: var(--eni-danger); font-size: 0.75rem; margin-top: -6px; margin-bottom: 10px; padding-left: 4px; }
 
-// Forgot Password Link
-.forgot-password-container {
-  text-align: right;
-  margin-top: -5px;
-  margin-bottom: 25px;
-
-  .forgot-link {
-    color: #5b8cff;
-    font-size: 13px;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    transition: color 0.2s;
-
-    &:active {
-      color: #ffffff;
-    }
+.forgot-password-container { text-align: right; margin-top: -2px; margin-bottom: 22px;
+  .forgot-link { color: var(--eni-accent); font-size: 0.8rem; font-weight: 500; text-decoration: none; cursor: pointer; transition: opacity 0.2s;
+    &:active { opacity: 0.7; }
   }
 }
 
-// Save Button
 .save-btn {
-  width: 100%;
-  height: 54px;
-  background: #5b8cff;
-  color: white;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 14px rgba(91, 140, 255, 0.4);
-  margin-top: 10px;
-
-  &:disabled {
-    opacity: 0.6;
-    background: #4a6ec2;
-  }
-
-  .loading-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    .btn-spinner {
-      width: 20px;
-      height: 20px;
-      color: white;
-    }
+  width: 100%; height: 50px; background: var(--eni-accent); color: var(--eni-accent-text);
+  border-radius: 10px; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center;
+  justify-content: center; border: none; cursor: pointer; letter-spacing: 0.5px;
+  box-shadow: 0 4px 14px rgba(0, 212, 170, 0.2); margin-top: 8px; transition: opacity 0.2s, transform 0.15s;
+  &:active { transform: scale(0.98); opacity: 0.9; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  .loading-wrapper { display: flex; align-items: center; gap: 8px;
+    .btn-spinner { width: 18px; height: 18px; color: var(--eni-accent-text); }
   }
 }

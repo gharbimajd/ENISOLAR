@@ -1,96 +1,181 @@
-/* --- 1. MENU CONTAINER --- */
+// ═══════════════════════════════════════════
+//  APP COMPONENT — Side Menu
+// ═══════════════════════════════════════════
+
 ion-menu {
-    
-  --width: 280px; /* nice comfortable width */
+  --width: 272px;
 }
 
-/* The Deep Space Background */
-ion-content {
-  /* Vertical gradient from black to deep blue-grey */
-  --background: linear-gradient(180deg, rgb(24, 27, 60),rgba(24, 27, 60, 0.867) 50%,  rgb(24, 27, 60));
+// ── Menu background ───────────────────────
+ion-content.menu-content {
+  --background: var(--eni-menu-bg);
 }
 
-/* --- 2. HEADER (The "MENU" Title) --- */
-.menu-header {
-  --background: transparent;
-  --border-style: none;
-  padding-top: 30px; /* Push it down a bit from status bar */
-  padding-bottom: 10px;
+// ── Menu toolbar ──────────────────────────
+.menu-toolbar {
+  --background: var(--eni-menu-bg);
+  --border-color: transparent;
+  padding-top: env(safe-area-inset-top);
 
-  ion-title {
-    color:  rgb(24, 27, 60); /* Neon Green */
-    font-size: 24px;
-    font-weight: 800; /* Extra Bold */
-    letter-spacing: 1.5px; /* Spaced out letters */
-    text-transform: uppercase;
-    padding-left: 24px; /* Align with list items */
+  .menu-brand {
+    padding: 28px 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .menu-wordmark {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--eni-text);
+      letter-spacing: 5px;
+      text-transform: uppercase;
+    }
+
+    .menu-tagline {
+      font-size: 0.6rem;
+      color: var(--eni-text-4);
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+    }
   }
 }
 
-/* --- 3. LIST CONTAINER --- */
+// Thin accent rule below brand
+.menu-toolbar::after {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 1.5px;
+  background: var(--eni-accent);
+  margin: 0 20px 8px;
+  border-radius: 1px;
+}
+
+// ── Menu list ─────────────────────────────
 .menu-list {
   background: transparent;
-  padding-top: 10px;
+  padding: 8px 0;
 }
 
-/* --- 4. MENU ITEMS (Default State) --- */
 ion-item {
-  /* Transparent so the gradient shows through */
   --background: transparent;
-  --color: #ffffff; /* White Text */
-  
-  /* Sizing & Spacing */
-  --min-height: 56px;
-  --padding-start: 24px;
-  margin-bottom: 8px; /* Space between items */
-  
-  /* The "Tab" Shape (Rounded on the right only) */
-  margin-right: 16px; 
-  border-radius: 0 50px 50px 0; 
-  
-  cursor: pointer;
+  --background-activated: var(--eni-menu-selected-bg);
+  --color: var(--eni-text-3);
+  --min-height: 52px;
+  --padding-start: 20px;
+  --inner-padding-end: 20px;
+  margin: 2px 12px 2px 0;
+  border-radius: 0 10px 10px 0;
+  transition: background 0.15s ease, color 0.15s ease;
 
-  /* Icon Default Style */
   ion-icon {
-    font-size: 22px;
-    margin-right: 20px;
-    color: rgba(255, 255, 255, 0.4); /* Dimmed/Ghosted when not active */
-    transition: all 0.3s ease;
+    font-size: 1.2rem;
+    margin-right: 14px;
+    color: var(--eni-text-4);
+    transition: color 0.15s ease;
   }
 
   ion-label {
+    font-size: 0.9rem;
     font-weight: 500;
-    font-size: 15px;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.2px;
+    color: var(--eni-text-3);
   }
+
+  --ripple-color: var(--eni-accent);
 }
 
-/* --- 5. ACTIVE STATE (The "Selected" Class) --- */
-/* This works because you added routerLinkActive="selected" in HTML */
+// ── Active / selected ─────────────────────
 .selected {
-  /* The Green Glow Background */
-  --background: rgba(45, 211, 111, 0.15); 
-  
-  /* The Green Text */
-  --color: #2dd36f; 
-  
-  /* The Green Icon */
+  --background: var(--eni-menu-selected-bg) !important;
+  border-left: 2.5px solid var(--eni-accent);
+
   ion-icon {
-    color: #2dd36f;
-    opacity: 1;
-    transform: scale(1.1); /* Slight pop effect */
+    color: var(--eni-accent) !important;
   }
 
   ion-label {
-    font-weight: 700; /* Bold text for active page */
+    color: var(--eni-accent) !important;
+    font-weight: 600 !important;
   }
-
-  /* Optional: A solid green bar on the left edge */
-  border-left: 4px solid #2dd36f;
 }
 
-/* --- 6. RIPPLE EFFECT OVERRIDE --- */
-/* Makes the click animation green instead of default grey */
-ion-item {
-  --ripple-color: #2dd36f;
+// ── Menu footer — theme toggle ─────────────
+.menu-footer {
+  position: absolute;
+  bottom: calc(env(safe-area-inset-bottom) + 24px);
+  left: 0;
+  right: 0;
+  padding: 0 16px;
+}
+
+.theme-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--eni-border);
+  background: var(--eni-surface);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  user-select: none;
+
+  &:active {
+    border-color: var(--eni-accent-border);
+  }
+
+  .theme-toggle-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: var(--eni-accent-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    ion-icon {
+      font-size: 1rem;
+      color: var(--eni-accent);
+      margin: 0;
+    }
+  }
+
+  .theme-toggle-label {
+    flex: 1;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--eni-text-2);
+  }
+
+  // Custom pill toggle
+  .theme-pill {
+    width: 38px;
+    height: 22px;
+    border-radius: 11px;
+    background: var(--eni-accent);
+    position: relative;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+
+    &.light {
+      background: var(--eni-border);
+    }
+
+    .theme-pill-handle {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.2s ease;
+    }
+
+    &:not(.light) .theme-pill-handle {
+      transform: translateX(16px);
+    }
+  }
 }

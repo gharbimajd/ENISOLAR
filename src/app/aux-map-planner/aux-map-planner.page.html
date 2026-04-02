@@ -1,4 +1,4 @@
-<!-- NO ion-header / ion-toolbar at all -->
+<!-- NO ion-header / ion-toolbar -->
 
 <ion-content [fullscreen]="true" class="planner-content">
 
@@ -7,62 +7,174 @@
     <ion-spinner name="crescent"></ion-spinner>
   </div>
 
-  <!-- Map -->
+  <!-- Map (always full screen behind everything) -->
   <div id="aux-map" class="map-container"></div>
 
+  <!-- ═══════════════════════════════════════════════════════
+       PORTRAIT LAYOUT
+       ═══════════════════════════════════════════════════════ -->
 
-  <!-- ── FLOATING TOP-RIGHT: back + 3D + sidebar toggle ─────────────── -->
-  <div class="fab-top-right">
+  <!-- Top bar: back | mode pill | 3D -->
+  <div class="top-bar" *ngIf="!isLandscape">
     <button class="fab-btn" (click)="router.navigate(['/home'])">
       <ion-icon name="arrow-back"></ion-icon>
     </button>
+    <div class="mode-pill" *ngIf="isReady()">
+      <button class="mode-option" [class.active]="flightMode() === 'matrix'" (click)="setMode('matrix')">
+        <ion-icon name="grid-outline"></ion-icon> Matrix
+      </button>
+      <button class="mode-option" [class.active]="flightMode() === 'linear'" (click)="setMode('linear')">
+        <ion-icon name="navigate-outline"></ion-icon> Linear
+      </button>
+    </div>
     <button class="fab-btn" [class.active]="is3DMode()" (click)="toggle3DMode()">
       <ion-icon name="cube-outline"></ion-icon>
     </button>
-    <button class="fab-btn" [class.active]="sidebarOpen()" (click)="toggleSidebar()">
-      <ion-icon name="options-outline"></ion-icon>
-    </button>
   </div>
 
-  <!-- ── LEFT SIDEBAR ──────────────────────────────────────────────────── -->
-  <div class="sidebar" [class.open]="sidebarOpen()" *ngIf="isReady()">
+  <!-- Stats badge — hangs below top bar, centered -->
+  <div class="stats-badge"
+       *ngIf="!isLandscape && isReady() && (mission()?.polygonPoints?.length || 0) >= 3">
+    <span class="val">{{ mission()?.areaSize?.toFixed(1) }}<span class="unit"> ha</span></span>
+    <span class="sep"></span>
+    <span class="val">{{ mission()?.estimatedTime ? formatTime(mission()!.estimatedTime) : '0m' }}</span>
+    <span class="sep"></span>
+    <span class="val">{{ mission()?.waypointCount || 0 }}<span class="unit"> pts</span></span>
+  </div>
 
-    <!-- Mode pills at the top of sidebar -->
-    <div class="sidebar-mode">
-      <button class="pill" [class.active]="flightMode() === 'matrix'" (click)="setMode('matrix')">
-        <ion-icon name="grid-outline"></ion-icon>
-        <span>Matrix</span>
-      </button>
-      <button class="pill" [class.active]="flightMode() === 'linear'" (click)="setMode('linear')">
-        <ion-icon name="navigate-outline"></ion-icon>
-        <span>Linear</span>
-      </button>
-    </div>
+  <!-- Portrait toggle FAB — bottom-right corner -->
+  <button class="panel-toggle"
+          *ngIf="!isLandscape && isReady()"
+          (click)="isSheetOpen = !isSheetOpen"
+          [class.panel-open]="isSheetOpen"
+          aria-label="Toggle mission panel">
+    <ion-icon [name]="isSheetOpen ? 'chevron-down-outline' : 'chevron-up-outline'"></ion-icon>
+  </button>
 
-    <!-- Mission name -->
-    <div class="sidebar-name">
-      <ion-input
-        class="glass-input"
-        placeholder="Enter Mission Name..."
+  <!-- Bottom sheet (portrait) -->
+  <div class="bottom-sheet"
+   #bottomSheet
+       *ngIf="!isLandscape && isReady()"
+       [class.sheet-collapsed]="!isSheetOpen"
+       (touchstart)="onSheetTouchStart($event)"
+       (touchmove)="onSheetTouchMove($event)"
+       (touchend)="onSheetTouchEnd($event)">
+
+    <div class="sheet-name-row">
+      <ion-input class="glass-input" placeholder="Mission name…"
         [value]="mission()?.name"
         (ionChange)="updateMissionName($any($event).detail.value)">
       </ion-input>
       <div class="mission-id-badge"
            *ngIf="mission()?.id && !mission()?.id?.startsWith('draft_')">
         <ion-icon name="checkmark-done-outline"></ion-icon>
-        {{ mission()?.id }}
       </div>
     </div>
 
-    <!-- Stats row -->
-    <div class="stats-row" *ngIf="(mission()?.polygonPoints?.length || 0) >= 3">
+    <ng-container *ngIf="flightMode() === 'matrix'">
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-label"><ion-icon name="grid-outline"></ion-icon> H. Spacing</span>
+          <span class="slider-value">{{ matrixSpacingX }}m</span>
+        </div>
+        <ion-range [min]="5" [max]="100" [step]="1" [(ngModel)]="matrixSpacingX" (ionChange)="onMatrixSpacingChange()"></ion-range>
+      </div>
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-label"><ion-icon name="grid-outline"></ion-icon> V. Spacing</span>
+          <span class="slider-value">{{ matrixSpacingY }}m</span>
+        </div>
+        <ion-range [min]="5" [max]="100" [step]="1" [(ngModel)]="matrixSpacingY" (ionChange)="onMatrixSpacingChange()"></ion-range>
+      </div>
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-label"><ion-icon name="airplane-outline"></ion-icon> Altitude</span>
+          <span class="slider-value">{{ mission()?.config?.altitude }}m</span>
+        </div>
+        <ion-range [min]="10" [max]="120" [step]="1" [(ngModel)]="currentMission!.config.altitude" (ionChange)="onConfigChange()"></ion-range>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="flightMode() === 'linear'">
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-label"><ion-icon name="airplane-outline"></ion-icon> Altitude</span>
+          <span class="slider-value">{{ mission()?.config?.altitude }}m</span>
+        </div>
+        <ion-range [min]="10" [max]="120" [step]="1" [(ngModel)]="currentMission!.config.altitude" (ionChange)="onConfigChange()"></ion-range>
+      </div>
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-label"><ion-icon name="speedometer-outline"></ion-icon> Speed</span>
+          <span class="slider-value">{{ mission()?.config?.speed }}m/s</span>
+        </div>
+        <ion-range [min]="1" [max]="15" [step]="0.5" [(ngModel)]="currentMission!.config.speed" (ionChange)="onConfigChange()"></ion-range>
+      </div>
+    </ng-container>
+
+    <div class="sheet-actions">
+      <button class="icon-btn" (click)="undoLastPoint()" [disabled]="!mission()?.polygonPoints?.length">
+        <ion-icon name="arrow-undo-outline"></ion-icon>
+      </button>
+      <button class="icon-btn danger" (click)="clearPolygon()" [disabled]="!mission()?.polygonPoints?.length">
+        <ion-icon name="trash-outline"></ion-icon>
+      </button>
+      <button class="save-btn"
+              [disabled]="isSaving() || (mission()?.polygonPoints?.length || 0) < 3"
+              (click)="saveMission()">
+        <ion-spinner *ngIf="isSaving()" name="crescent" class="btn-spinner"></ion-spinner>
+        <ion-icon *ngIf="!isSaving()" name="save-outline"></ion-icon>
+        {{ isSaving() ? 'Saving…' : 'Save Mission' }}
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       LANDSCAPE LAYOUT — left sidebar (wider, collapsible)
+       ═══════════════════════════════════════════════════════ -->
+
+  <!-- Landscape sidebar tab toggle -->
+  <button class="sidebar-tab"
+          *ngIf="isLandscape && isReady()"
+          [class.sidebar-open]="isSidebarOpen"
+          (click)="isSidebarOpen = !isSidebarOpen"
+          aria-label="Toggle sidebar">
+    <ion-icon [name]="isSidebarOpen ? 'chevron-back-outline' : 'chevron-forward-outline'"></ion-icon>
+  </button>
+
+  <div class="left-sidebar"
+       *ngIf="isLandscape && isReady()"
+       [class.sidebar-collapsed]="!isSidebarOpen">
+
+    <!-- back + mode + 3D -->
+    <div class="sidebar-top-row">
+      <button class="fab-btn sm" (click)="router.navigate(['/home'])">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </button>
+      <div class="mode-pill compact">
+        <button class="mode-option" [class.active]="flightMode() === 'matrix'" (click)="setMode('matrix')">
+          <ion-icon name="grid-outline"></ion-icon> Grid
+        </button>
+        <button class="mode-option" [class.active]="flightMode() === 'linear'" (click)="setMode('linear')">
+          <ion-icon name="navigate-outline"></ion-icon> Line
+        </button>
+      </div>
+      <button class="fab-btn sm" [class.active]="is3DMode()" (click)="toggle3DMode()">
+        <ion-icon name="cube-outline"></ion-icon>
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="sidebar-stats" *ngIf="(mission()?.polygonPoints?.length || 0) >= 3">
       <div class="stat-item">
-        <span class="val">{{ mission()?.areaSize?.toFixed(1) || '0.0' }}</span>
+        <span class="val">{{ mission()?.areaSize?.toFixed(1) }}</span>
         <span class="unit">ha</span>
       </div>
       <div class="stat-sep"></div>
       <div class="stat-item">
-        <span class="val">{{ mission()?.estimatedTime ? formatTime(mission()!.estimatedTime) : '0m 0s' }}</span>
+        <span class="val">{{ mission()?.estimatedTime ? formatTime(mission()!.estimatedTime) : '0m' }}</span>
+        <span class="unit">time</span>
       </div>
       <div class="stat-sep"></div>
       <div class="stat-item">
@@ -71,95 +183,74 @@
       </div>
     </div>
 
-    <!-- ── MATRIX rows ──────────────────────────────────────────────── -->
-    <ng-container *ngIf="flightMode() === 'matrix'">
+    <!-- Mission name -->
+    <ion-input class="glass-input" placeholder="Mission name…"
+      [value]="mission()?.name"
+      (ionChange)="updateMissionName($any($event).detail.value)">
+    </ion-input>
 
-      <div class="control-row">
-        <div class="row-header">
-          <span class="row-label"><ion-icon name="grid-outline"></ion-icon> H. SPACING</span>
-          <span class="row-value">{{ matrixSpacingX }}m</span>
+    <!-- Sliders -->
+    <div class="sidebar-sliders">
+      <ng-container *ngIf="flightMode() === 'matrix'">
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-label"><ion-icon name="grid-outline"></ion-icon> H. Spacing</span>
+            <span class="slider-value">{{ matrixSpacingX }}m</span>
+          </div>
+          <ion-range [min]="5" [max]="100" [step]="1" [(ngModel)]="matrixSpacingX" (ionChange)="onMatrixSpacingChange()"></ion-range>
         </div>
-        <ion-range [min]="5" [max]="100" [step]="1"
-          [(ngModel)]="matrixSpacingX"
-          (ionChange)="onMatrixSpacingChange()">
-        </ion-range>
-      </div>
-
-      <div class="control-row">
-        <div class="row-header">
-          <span class="row-label"><ion-icon name="grid-outline"></ion-icon> V. SPACING</span>
-          <span class="row-value">{{ matrixSpacingY }}m</span>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-label"><ion-icon name="grid-outline"></ion-icon> V. Spacing</span>
+            <span class="slider-value">{{ matrixSpacingY }}m</span>
+          </div>
+          <ion-range [min]="5" [max]="100" [step]="1" [(ngModel)]="matrixSpacingY" (ionChange)="onMatrixSpacingChange()"></ion-range>
         </div>
-        <ion-range [min]="5" [max]="100" [step]="1"
-          [(ngModel)]="matrixSpacingY"
-          (ionChange)="onMatrixSpacingChange()">
-        </ion-range>
-      </div>
-
-      <div class="control-row">
-        <div class="row-header">
-          <span class="row-label"><ion-icon name="airplane-outline"></ion-icon> ALTITUDE</span>
-          <span class="row-value">{{ mission()?.config?.altitude }}m</span>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-label"><ion-icon name="airplane-outline"></ion-icon> Altitude</span>
+            <span class="slider-value">{{ mission()?.config?.altitude }}m</span>
+          </div>
+          <ion-range [min]="10" [max]="120" [step]="1" [(ngModel)]="currentMission!.config.altitude" (ionChange)="onConfigChange()"></ion-range>
         </div>
-        <ion-range [min]="10" [max]="120" [step]="1"
-          [(ngModel)]="currentMission!.config.altitude"
-          (ionChange)="onConfigChange()">
-        </ion-range>
-      </div>
+      </ng-container>
 
-    </ng-container>
-
-    <!-- ── LINEAR rows ──────────────────────────────────────────────── -->
-    <ng-container *ngIf="flightMode() === 'linear'">
-
-      <div class="control-row">
-        <div class="row-header">
-          <span class="row-label"><ion-icon name="airplane-outline"></ion-icon> ALTITUDE</span>
-          <span class="row-value">{{ mission()?.config?.altitude }}m</span>
+      <ng-container *ngIf="flightMode() === 'linear'">
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-label"><ion-icon name="airplane-outline"></ion-icon> Altitude</span>
+            <span class="slider-value">{{ mission()?.config?.altitude }}m</span>
+          </div>
+          <ion-range [min]="10" [max]="120" [step]="1" [(ngModel)]="currentMission!.config.altitude" (ionChange)="onConfigChange()"></ion-range>
         </div>
-        <ion-range [min]="10" [max]="120" [step]="1"
-          [(ngModel)]="currentMission!.config.altitude"
-          (ionChange)="onConfigChange()">
-        </ion-range>
-      </div>
-
-      <div class="control-row">
-        <div class="row-header">
-          <span class="row-label"><ion-icon name="speedometer"></ion-icon> SPEED</span>
-          <span class="row-value">{{ mission()?.config?.speed }}m/s</span>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-label"><ion-icon name="speedometer-outline"></ion-icon> Speed</span>
+            <span class="slider-value">{{ mission()?.config?.speed }}m/s</span>
+          </div>
+          <ion-range [min]="1" [max]="15" [step]="0.5" [(ngModel)]="currentMission!.config.speed" (ionChange)="onConfigChange()"></ion-range>
         </div>
-        <ion-range [min]="1" [max]="15" [step]="0.5"
-          [(ngModel)]="currentMission!.config.speed"
-          (ionChange)="onConfigChange()">
-        </ion-range>
-      </div>
+      </ng-container>
+    </div>
 
-    </ng-container>
+    <div class="sidebar-spacer"></div>
 
-  </div><!-- /sidebar -->
-
-  <!-- ── BOTTOM-RIGHT ACTIONS ──────────────────────────────────────────── -->
-  <div class="bottom-actions" *ngIf="isReady()">
-
-    <button class="icon-btn" (click)="undoLastPoint()"
-            [disabled]="!mission()?.polygonPoints?.length">
-      <ion-icon name="arrow-undo-outline"></ion-icon>
-    </button>
-
-    <button class="icon-btn danger" (click)="clearPolygon()"
-            [disabled]="!mission()?.polygonPoints?.length">
-      <ion-icon name="trash-outline"></ion-icon>
-    </button>
-
-   
-
-    <button class="save-btn"
-            [disabled]="isSaving() || (mission()?.polygonPoints?.length || 0) < 3"
-            (click)="saveMission()">
-      <ion-spinner *ngIf="isSaving()" name="crescent" class="btn-spinner"></ion-spinner>
-      <ion-icon *ngIf="!isSaving()" name="save-outline"></ion-icon>
-      {{ isSaving() ? 'Saving…' : 'Save' }}
-    </button>
+    <!-- Actions -->
+    <div class="sheet-actions">
+      <button class="icon-btn" (click)="undoLastPoint()" [disabled]="!mission()?.polygonPoints?.length">
+        <ion-icon name="arrow-undo-outline"></ion-icon>
+      </button>
+      <button class="icon-btn danger" (click)="clearPolygon()" [disabled]="!mission()?.polygonPoints?.length">
+        <ion-icon name="trash-outline"></ion-icon>
+      </button>
+      <button class="save-btn"
+              [disabled]="isSaving() || (mission()?.polygonPoints?.length || 0) < 3"
+              (click)="saveMission()">
+        <ion-spinner *ngIf="isSaving()" name="crescent" class="btn-spinner"></ion-spinner>
+        <ion-icon *ngIf="!isSaving()" name="save-outline"></ion-icon>
+        {{ isSaving() ? 'Saving…' : 'Save' }}
+      </button>
+    </div>
 
   </div>
 

@@ -1,13 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-
-// 1. CHANGE: Import UI components from '@ionic/angular/standalone'
-// DO NOT use 'IonicModule' here.
-import { 
+import {
   IonApp,
   IonRouterOutlet,
-  IonMenu,         // <--- The magic fixer
+  IonMenu,
   IonHeader,
   IonToolbar,
   IonTitle,
@@ -16,21 +13,17 @@ import {
   IonItem,
   IonIcon,
   IonLabel,
-  IonMenuToggle    // <--- Required for the menu logic
+  IonMenuToggle
 } from '@ionic/angular/standalone';
-
-// 2. Import addIcons
 import { addIcons } from 'ionicons';
-
-// 3. Import Icons
-import { 
-  homeOutline, 
-  mapOutline, 
-  albumsOutline, 
-  settingsOutline, 
+import {
+  homeOutline,
+  mapOutline,
+  albumsOutline,
+  settingsOutline,
   planetOutline,
-  play, 
-  stop, 
+  play,
+  stop,
   menuOutline,
   resizeOutline,
   navigateOutline,
@@ -51,22 +44,24 @@ import {
   saveOutline,
   informationCircleOutline,
   logInOutline,
-  personCircleOutline
+  personCircleOutline,
+  moonOutline,
+  sunnyOutline
 } from 'ionicons/icons';
+import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   standalone: true,
-  // 4. CHANGE: Register the specific components here
   imports: [
-    CommonModule, 
-    RouterLink, 
+    CommonModule,
+    RouterLink,
     RouterLinkActive,
-    IonApp,           // Required
-    IonRouterOutlet,  // Required
-    IonMenu,          // <--- This fixes the "stuck" menu
+    IonApp,
+    IonRouterOutlet,
+    IonMenu,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -75,27 +70,27 @@ import {
     IonItem,
     IonIcon,
     IonLabel,
-    IonMenuToggle     // Required
+    IonMenuToggle
   ],
 })
 export class AppComponent {
   public appPages = [
-    { title: 'My Profile', url: '/profile', icon: 'person-outline' },
-    { title: 'Home', url: '/home', icon: 'home-outline' },
-     { title: 'Mode', url: '/mission-select', icon: 'settings-outline' },
-    { title: 'Map Planner', url: '/map-planner', icon: 'map-outline' },
-    { title: 'settings', url: '/settings', icon: 'settings-outline' },
-
-
+    { title: 'Home',            url: '/home',             icon: 'home-outline' },
+    { title: 'My Profile',      url: '/profile',          icon: 'person-outline' },
+    { title: 'New Mission',     url: '/mission-select',   icon: 'map-outline' },
+    { title: 'Manage Missions', url: '/manage-missions',  icon: 'albums-outline' },
+    { title: 'Settings',        url: '/settings',         icon: 'settings-outline' },
   ];
 
-  constructor() {
-    // 5. Register ALL icons
-    addIcons({ 
-      'home-outline': homeOutline, 
-      'map-outline': mapOutline, 
-      'albums-outline': albumsOutline, 
-      'settings-outline': settingsOutline, 
+  constructor(public theme: ThemeService) {
+    // Initialise theme on startup (applies saved or system preference)
+    this.theme.init();
+
+    addIcons({
+      'home-outline': homeOutline,
+      'map-outline': mapOutline,
+      'albums-outline': albumsOutline,
+      'settings-outline': settingsOutline,
       'planet-outline': planetOutline,
       'play': play,
       'stop': stop,
@@ -118,8 +113,10 @@ export class AppComponent {
       'checkmark-done-outline': checkmarkDoneOutline,
       'save-outline': saveOutline,
       'information-circle-outline': informationCircleOutline,
-      'log-in-outline':logInOutline,
-      'person-outline':personCircleOutline
+      'log-in-outline': logInOutline,
+      'person-outline': personCircleOutline,
+      'moon-outline': moonOutline,
+      'sunny-outline': sunnyOutline,
     });
   }
 }

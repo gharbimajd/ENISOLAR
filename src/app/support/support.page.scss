@@ -1,0 +1,27 @@
+// SUPPORT PAGE
+ion-content { --background: var(--eni-bg); --color: var(--eni-text); }
+ion-toolbar { --background: var(--eni-toolbar-bg); --border-color: var(--eni-border-faint); --color: var(--eni-text); }
+ion-title { color: var(--eni-text); font-weight: 600; font-size: 1rem; text-transform: capitalize; }
+ion-back-button { --color: var(--eni-text-2); }
+
+.support-wrapper { padding: 8px 0 40px; }
+
+.support-section { margin-bottom: 28px;
+  .section-title { font-size: 0.68rem; font-weight: 700; color: var(--eni-text-3); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; padding-left: 4px; }
+}
+
+.support-card {
+  background: var(--eni-surface); border-radius: 12px; border: 1px solid var(--eni-border); overflow: hidden;
+  ion-item {
+    --background: transparent; --padding-start: 16px; --inner-padding-end: 16px; --min-height: 58px; --color: var(--eni-text);
+    border-bottom: 1px solid var(--eni-border-faint);
+    &:last-child { border-bottom: none; }
+    .icon-wrapper { width: 34px; height: 34px; border-radius: 8px; background: var(--eni-accent-dim); display: flex; align-items: center; justify-content: center; margin-right: 14px;
+      ion-icon { color: var(--eni-accent); font-size: 1.1rem; margin: 0; }
+    }
+    ion-label {
+      h3 { font-weight: 500; color: var(--eni-text); font-size: 0.9rem; margin-bottom: 2px; }
+      p { font-size: 0.75rem; color: var(--eni-text-3); }
+    }
+  }
+}

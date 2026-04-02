@@ -1,288 +1,120 @@
-// ── Background ───────────────────────────────────────────────
-ion-content {
-  --background: radial-gradient(circle at 50% 0%, #1a2c4e 0%, #000000 70%);
-}
+// HOME PAGE
+ion-content { --background: var(--eni-bg); }
 
-.content-wrapper {
-  padding: 12px;
-}
-
-// ── Header & Toolbar ─────────────────────────────────────────
 ion-toolbar {
-  --background: transparent;
-  --border-color: transparent;
-  --color: rgb(24, 27, 60);
+  --background: var(--eni-toolbar-bg);
+  --border-color: var(--eni-border-faint);
+  --color: var(--eni-text);
 }
 
-ion-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
+ion-title { font-size: 1rem; font-weight: 600; letter-spacing: 0.4px; color: var(--eni-text); }
 
-// ── Search ───────────────────────────────────────────────────
+// ── Search ────────────────────────────────
 .custom-search {
-  width: 100%;
-  --background: rgb(24, 27, 60) !important;
-  --color: #fff;
-  --placeholder-color: #94a3b8;
-  --icon-color: #94a3b8;
-  --border-radius: 20px;
-  padding-top: 0;
-  padding-bottom: 0;
+  --background: var(--eni-surface) !important;
+  --color: var(--eni-text);
+  --placeholder-color: var(--eni-text-4);
+  --icon-color: var(--eni-text-4);
+  --border-radius: 10px;
+  padding-top: 0; padding-bottom: 0;
 }
 
-// ── Category toolbar ─────────────────────────────────────────
+// ── Category toolbar ──────────────────────
 .category-toolbar {
-  --background: rgba(10, 14, 26, 0.95) !important;
+  --background: var(--eni-toolbar-bg) !important;
   --border-color: transparent;
   padding: 0 12px 8px;
 }
 
-.category-tabs {
-  display: flex;
-  gap: 8px;
-  width: 100%;
-}
+.category-tabs { display: flex; gap: 6px; width: 100%; }
 
 .cat-tab {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 8px 6px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgba(255, 255, 255, 0.04);
-  color: #64748b;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: all 0.18s ease;
-  white-space: nowrap;
-
-  ion-icon { font-size: 13px; pointer-events: none; }
-
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px;
+  padding: 8px 6px; border-radius: 8px; border: 1px solid var(--eni-border-faint);
+  background: var(--eni-surface); color: var(--eni-text-3); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.02em; cursor: pointer; transition: all 0.18s ease; white-space: nowrap;
+  ion-icon { font-size: 12px; pointer-events: none; }
   .cat-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 5px;
-    border-radius: 9px;
-    background: rgba(255, 255, 255, 0.08);
-    font-size: 10px;
-    font-weight: 700;
-    color: #64748b;
-    line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+    background: var(--eni-border); font-size: 10px; font-weight: 700; color: var(--eni-text-3); line-height: 1;
   }
-
-  // Active states per category
-  &.active {
-    color: #fff;
-
-    .cat-count {
-      color: #000;
-    }
-  }
-
-  // Polygon tab — blue
-  &:nth-child(1).active {
-    background: rgba(91, 140, 255, 0.15);
-    border-color: rgba(91, 140, 255, 0.35);
-    color: #5b8cff;
-    box-shadow: 0 0 12px rgba(91, 140, 255, 0.15);
-
-    ion-icon { color: #5b8cff; }
-    .cat-count { background: #5b8cff; color: #000; }
-  }
-
-  // Matrix tab — green
-  &:nth-child(2).active {
-    background: rgba(74, 222, 128, 0.12);
-    border-color: rgba(74, 222, 128, 0.35);
-    color: #4ade80;
-    box-shadow: 0 0 12px rgba(74, 222, 128, 0.12);
-
-    ion-icon { color: #4ade80; }
-    .cat-count { background: #4ade80; color: #000; }
-  }
-
-  // Linear tab — cyan
-  &:nth-child(3).active {
-    background: rgba(0, 229, 255, 0.1);
-    border-color: rgba(0, 229, 255, 0.3);
-    color: #00e5ff;
-    box-shadow: 0 0 12px rgba(0, 229, 255, 0.1);
-
-    ion-icon { color: #00e5ff; }
-    .cat-count { background: #00e5ff; color: #000; }
+  &.active { color: var(--eni-accent); background: var(--eni-accent-dim); border-color: var(--eni-accent-border);
+    ion-icon { color: var(--eni-accent); }
+    .cat-count { background: var(--eni-accent); color: var(--eni-accent-text); }
   }
 }
 
-// ── Glass card ───────────────────────────────────────────────
+// ── Content ───────────────────────────────
+.content-wrapper { padding: 12px; }
+
+// ── Mission card ──────────────────────────
 .glass-card {
-  background: rgba(13, 22, 40, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 12px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
+  border-radius: 14px; padding: 12px; height: 100%;
+  display: flex; flex-direction: column; gap: 10px;
   transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-  position: relative;
-  overflow: hidden;
-
-  &:active {
-    transform: scale(0.98);
-    background: rgba(30, 45, 70, 0.9);
-    border-color: rgba(74, 222, 128, 0.3);
-  }
+  position: relative; overflow: hidden;
+  &:active { transform: scale(0.98); border-color: var(--eni-accent-border); }
 }
 
-// ── Card header ──────────────────────────────────────────────
 .card-header-compact {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display: flex; align-items: center; gap: 6px;
 
-  // Status badge
   .status-indicator {
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-
-    &[data-status="ready"]   { color: #4ade80; background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.2); }
-    &[data-status="draft"]   { color: #94a3b8; background: rgba(148,163,184,0.1); border: 1px solid rgba(148,163,184,0.15); }
-    &[data-status="pending"] { color: #fbbf24; background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.2); }
+    padding: 3px 8px; border-radius: 5px; font-size: 0.62rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    &[data-status="ready"]   { color: var(--eni-ready);   background: var(--eni-ready-bg);   border: 1px solid var(--eni-ready-border); }
+    &[data-status="draft"]   { color: var(--eni-draft);   background: var(--eni-draft-bg);   border: 1px solid var(--eni-draft-border); }
+    &[data-status="pending"] { color: var(--eni-pending); background: var(--eni-pending-bg); border: 1px solid var(--eni-pending-border); }
   }
 
-  // Mission type badge
   .type-badge {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    padding: 3px 7px;
-    border-radius: 6px;
-    font-size: 0.6rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-
+    display: flex; align-items: center; gap: 3px; padding: 3px 7px;
+    border-radius: 5px; font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
     ion-icon { font-size: 10px; }
-
-    &[data-type="polygon"] {
-      background: rgba(91,140,255,0.12);
-      border: 1px solid rgba(91,140,255,0.2);
-      color: #5b8cff;
-    }
-    &[data-type="matrix"] {
-      background: rgba(74,222,128,0.1);
-      border: 1px solid rgba(74,222,128,0.2);
-      color: #4ade80;
-    }
-    &[data-type="linear"] {
-      background: rgba(0,229,255,0.08);
-      border: 1px solid rgba(0,229,255,0.18);
-      color: #00e5ff;
-    }
+    &[data-type="polygon"] { background: var(--eni-polygon-bg); border: 1px solid var(--eni-polygon-border); color: var(--eni-polygon); }
+    &[data-type="matrix"]  { background: var(--eni-accent-dim); border: 1px solid var(--eni-accent-border);  color: var(--eni-accent); }
+    &[data-type="linear"]  { background: var(--eni-pending-bg); border: 1px solid var(--eni-pending-border); color: var(--eni-pending); }
   }
 
-  // Delete — pushed to the right
   .delete-btn-mini {
-    margin-left: auto;
-    background: transparent;
-    color: #ef4444;
-    padding: 4px;
-    font-size: 1.1rem;
-    opacity: 0.65;
-    transition: opacity 0.2s;
-    border: none;
-    cursor: pointer;
-
+    margin-left: auto; background: transparent; color: var(--eni-danger); padding: 4px;
+    font-size: 1rem; opacity: 0.5; transition: opacity 0.2s; border: none; cursor: pointer;
     &:active { opacity: 1; }
   }
 }
 
-// ── Title ────────────────────────────────────────────────────
 .title-section {
-  h3 {
-    margin: 0 0 4px 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #fff;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .date {
-    margin: 0;
-    font-size: 0.75rem;
-    color: #94a3b8;
-  }
+  h3 { margin: 0 0 3px; font-size: 0.95rem; font-weight: 600; color: var(--eni-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .date { margin: 0; font-size: 0.72rem; color: var(--eni-text-3); }
 }
 
-// ── Stats ────────────────────────────────────────────────────
-.mission-stats {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 10px;
-  margin-top: auto;
-}
+.mission-stats { border-top: 1px solid var(--eni-border-faint); padding-top: 9px; margin-top: auto; }
 
-.stat-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 6px;
-  &:last-child { margin-bottom: 0; }
-}
+.stat-row { display: flex; justify-content: space-between; margin-bottom: 5px; &:last-child { margin-bottom: 0; } }
 
 .stat {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
-  color: #cbd5e1;
-
-  ion-icon { font-size: 0.9rem; color: #4ade80; }
+  display: flex; align-items: center; gap: 5px; font-size: 0.72rem; color: var(--eni-text-2);
+  ion-icon { font-size: 0.85rem; color: var(--eni-accent); }
 }
 
-// ── Empty state ───────────────────────────────────────────────
+// ── Empty state ───────────────────────────
 .empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-top: 80px;
-  color: #64748b;
-  text-align: center;
-
-  .empty-icon {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 50%;
-    padding: 20px;
-    margin-bottom: 16px;
-
-    ion-icon { font-size: 3rem; color: #94a3b8; }
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  margin-top: 80px; color: var(--eni-text-3); text-align: center;
+  .empty-icon { background: var(--eni-surface); border-radius: 50%; padding: 20px; margin-bottom: 16px;
+    ion-icon { font-size: 3rem; color: var(--eni-text-3); }
   }
-
-  ion-icon[size="large"] { font-size: 3rem; margin-bottom: 12px; color: #94a3b8; }
-
-  h2 { font-size: 1.1rem; font-weight: 500; margin: 0 0 6px; color: #fff; }
-  p  { font-size: 0.85rem; color: #64748b; margin: 0; }
+  ion-icon[size="large"] { font-size: 3rem; margin-bottom: 12px; color: var(--eni-text-3); }
+  h2 { font-size: 1rem; font-weight: 500; margin: 0 0 6px; color: var(--eni-text); }
+  p { font-size: 0.82rem; color: var(--eni-text-3); margin: 0; }
 }
 
-// ── FAB ──────────────────────────────────────────────────────
+// ── FAB ───────────────────────────────────
 .custom-fab {
-  --background: #4ade80;
-  --color: #000;
-  --box-shadow: 0 0 24px rgba(74, 222, 128, 0.45);
+  --background: var(--eni-accent);
+  --color: var(--eni-accent-text);
+  --box-shadow: 0 0 20px rgba(0, 212, 170, 0.35);
 }

@@ -3,14 +3,15 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { 
-  moonOutline, 
-  earthOutline, 
-  speedometerOutline, 
-  notificationsOutline, 
+import {
+  moonOutline,
+  earthOutline,
+  speedometerOutline,
+  notificationsOutline,
   trashOutline,
   saveOutline
 } from 'ionicons/icons';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-settings',
@@ -21,7 +22,6 @@ import {
 })
 export class SettingsPage implements OnInit {
 
-  // Settings State
   settings = {
     darkMode: true,
     notifications: true,
@@ -29,7 +29,10 @@ export class SettingsPage implements OnInit {
     distanceUnit: 'metric'
   };
 
-  constructor(private toastController: ToastController) {
+  constructor(
+    private toastController: ToastController,
+    public theme: ThemeService
+  ) {
     addIcons({
       'moon-outline': moonOutline,
       'earth-outline': earthOutline,
@@ -41,19 +44,26 @@ export class SettingsPage implements OnInit {
   }
 
   ngOnInit() {
-    // Here you could load saved settings from localStorage
+    // Sync toggle to current theme state
+    this.settings.darkMode = this.theme.isDark();
+
+    // Load other saved settings
     const saved = localStorage.getItem('enisolar_settings');
     if (saved) {
-      this.settings = JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      this.settings = { ...this.settings, ...parsed, darkMode: this.theme.isDark() };
     }
   }
 
+  onDarkModeToggle(event: any) {
+    this.theme.setDark(event.detail.checked);
+  }
+
   async saveSettings() {
-    // Save to local storage
     localStorage.setItem('enisolar_settings', JSON.stringify(this.settings));
-    
+
     const toast = await this.toastController.create({
-      message: 'Settings saved successfully.',
+      message: 'Settings saved.',
       duration: 2000,
       color: 'success',
       position: 'bottom'
@@ -62,7 +72,6 @@ export class SettingsPage implements OnInit {
   }
 
   async clearCache() {
-    // Example: Clear map tiles or temporary flight data
     const toast = await this.toastController.create({
       message: 'Application cache cleared.',
       duration: 2000,

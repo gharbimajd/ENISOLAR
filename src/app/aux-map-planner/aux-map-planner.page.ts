@@ -1,5 +1,5 @@
 import {
-  Component, OnDestroy, signal, ChangeDetectorRef, NgZone, ChangeDetectionStrategy
+  Component, OnDestroy, signal, ChangeDetectorRef,HostListener, NgZone, ChangeDetectionStrategy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -539,4 +539,33 @@ export class AuxMapPlannerPage implements ViewWillEnter, ViewDidEnter, OnDestroy
       this.isSaving.set(false);
     }
   }
+  get isLandscape(): boolean {
+  return window.innerWidth > window.innerHeight;
+}
+
+@HostListener('window:resize')
+onResize() {}
+  isSheetOpen   = true;   // portrait bottom sheet
+isSidebarOpen = true;   // landscape sidebar
+ 
+// ─── SWIPE-TO-CLOSE (portrait bottom sheet) ───────────────────
+private _touchStartY = 0;
+private _touchDeltaY = 0;
+ 
+onSheetTouchStart(e: TouchEvent): void {
+  this._touchStartY = e.touches[0].clientY;
+  this._touchDeltaY = 0;
+}
+ 
+onSheetTouchMove(e: TouchEvent): void {
+  this._touchDeltaY = e.touches[0].clientY - this._touchStartY;
+}
+ 
+onSheetTouchEnd(_e: TouchEvent): void {
+  // Swipe down ≥ 60px → collapse
+  if (this._touchDeltaY > 60) {
+    this.isSheetOpen = false;
+  }
+  this._touchDeltaY = 0;
+}
 }

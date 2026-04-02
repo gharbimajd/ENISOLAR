@@ -1,34 +1,46 @@
 <ion-app>
 
   <ion-menu contentId="main-content" type="overlay">
-    
+
     <ion-header class="ion-no-border">
-      <ion-toolbar class="menu-header">
-        <ion-title>Menu</ion-title>
+      <ion-toolbar class="menu-toolbar">
+        <div class="menu-brand">
+          <span class="menu-wordmark">ENISOLAR</span>
+          <span class="menu-tagline">Drone Mission Control</span>
+        </div>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content>
+    <ion-content class="menu-content">
       <ion-list class="menu-list">
-        
+
         <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages">
-          
-          <ion-item 
-            button 
-            [routerLink]="[p.url]" 
-            routerDirection="root" 
-            lines="none" 
-            detail="false" 
+          <ion-item
+            button
+            [routerLink]="[p.url]"
+            routerDirection="root"
+            lines="none"
+            detail="false"
             routerLinkActive="selected">
-            
             <ion-icon slot="start" [name]="p.icon"></ion-icon>
             <ion-label>{{ p.title }}</ion-label>
-          
           </ion-item>
-        
         </ion-menu-toggle>
-      
+
       </ion-list>
+
+      <!-- Theme toggle at bottom of menu -->
+      <div class="menu-footer">
+        <div class="theme-toggle-row" (click)="theme.toggle()">
+          <div class="theme-toggle-icon">
+            <ion-icon [name]="theme.isDark() ? 'moon-outline' : 'sunny-outline'"></ion-icon>
+          </div>
+          <span class="theme-toggle-label">{{ theme.isDark() ? 'Dark mode' : 'Light mode' }}</span>
+          <div class="theme-pill" [class.light]="!theme.isDark()">
+            <div class="theme-pill-handle"></div>
+          </div>
+        </div>
+      </div>
     </ion-content>
 
   </ion-menu>
