@@ -226,3 +226,101 @@ ion-content, .planner-content {
   }
 }
 .sidebar-spacer { flex: 1; }
+// 1. The wrapper to anchor the widget
+.save-action-container {
+  position: relative;
+  display: flex; // Changed to flex to align properly with your other buttons
+  justify-content: center;
+}
+
+// 2. The Pop-up Widget
+// 1. The wrapper (can just be normal now)
+.save-action-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+// 2. The Pop-up Widget (Now FIXED to the center of the screen)
+.save-widget-pop {
+  position: fixed; // This breaks it out of the sidebar!
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  
+  width: 280px; 
+  padding: 20px;
+  border-radius: 16px; 
+  
+  // Theming
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4); // Stronger shadow for depth
+  
+  z-index: 99999; // Goes over the map and the sidebars
+  
+  // Snappy spring animation
+  animation: widgetPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+
+  .widget-header {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--eni-text);
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .widget-actions {
+    display: flex;
+    gap: 12px;
+
+    button {
+      flex: 1;
+      padding: 12px 0;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .btn-cancel {
+      background: var(--eni-surface-2);
+      color: var(--eni-text-2);
+      border: 1px solid var(--eni-border);
+
+      &:hover, &:active {
+        background: var(--eni-danger-bg);
+        color: var(--eni-danger);
+        border-color: var(--eni-danger-border);
+      }
+    }
+
+    .btn-confirm {
+      background: var(--eni-ready-bg);
+      color: var(--eni-ready);
+      border: 1px solid var(--eni-ready-border);
+
+      &:hover, &:active {
+        background: var(--eni-ready);
+        color: var(--eni-surface);
+        transform: translateY(-2px);
+      }
+    }
+  }
+}
+
+// 3. The Spring Animation (Adjusted for center screen)
+@keyframes widgetPop {
+  0% { 
+    opacity: 0; 
+    transform: translate(-50%, -40%) scale(0.85); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translate(-50%, -50%) scale(1); 
+  }
+}

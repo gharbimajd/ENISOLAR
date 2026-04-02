@@ -395,12 +395,25 @@ export class MapPlannerPage implements ViewWillEnter, ViewDidEnter, OnDestroy {
     }
   }
 
+showSaveWidget: boolean = false;
+
+  // 2. Replace your OLD saveMission() with this NEW one
   saveMission() {
     if (!this.currentMission || this.isSaving()) return;
-    const withHeight = window.confirm('Include flight altitude in saved coordinates?\nOK = With Height  |  Cancel = Without Height');
-    this.zone.run(() => this.executeSave(withHeight));
+    
+    // Instead of window.confirm, this just flips the switch to show our custom HTML widget!
+    this.showSaveWidget = !this.showSaveWidget;
   }
 
+
+
+  // 3. The function attached to the "With Height" / "Without Height" widget buttons
+  executeSaveChoice(withHeight: boolean) {
+    this.showSaveWidget = false; // Hides the widget
+    this.zone.run(() => this.executeSave(withHeight)); // Runs your saving logic
+  }
+
+  // 4. Your exact saving logic (untouched)
   private executeSave(includeHeight: boolean) {
     this.isSaving.set(true);
 

@@ -210,4 +210,12 @@
     </div>
   </div>
 
+  <div class="save-widget-pop" *ngIf="showSaveWidget">
+    <div class="widget-header">Include flight altitude?</div>
+    <div class="widget-actions">
+      <button class="btn-cancel" (click)="executeSaveChoice(false)">Without Height</button>
+      <button class="btn-confirm" (click)="executeSaveChoice(true)">With Height</button>
+    </div>
+  </div>
+
 </ion-content>

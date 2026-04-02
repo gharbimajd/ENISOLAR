@@ -18,10 +18,10 @@
   --eni-border-faint: #141820;
 
   // Text
-  --eni-text:         #e2e8f0;
-  --eni-text-2:       #9ca3af;
-  --eni-text-3:       #4b5563;
-  --eni-text-4:       #2a3548;
+--eni-text:        #f1f5f9; // Pulled closer to pure white for crisp primary text
+  --eni-text-2:      #cbd5e1; // Light silver-blue: Great for secondary text
+  --eni-text-3:      #94a3b8; // Soft mid-grey: Perfect for unselected icons/menu items
+  --eni-text-4:      #64748b;
 
   // Accent — teal-mint
   --eni-accent:       #00d4aa;
@@ -71,10 +71,10 @@
   --eni-border-faint: #eaecf0;
 
   // Text
-  --eni-text:         #0f1117;
-  --eni-text-2:       #4b5563;
-  --eni-text-3:       #9ca3af;
-  --eni-text-4:       #c4cad4;
+--eni-text:        #050608; // Basically pure black, but keeps a micro-drop of coolness
+  --eni-text-2:      #1E293B; // Deep slate: Noticeably darker than before, extremely sharp
+  --eni-text-3:      #475569; // Mid-dark slate: Previously your text-2, perfect for strong icons
+  --eni-text-4:      #64748B;
 
   // Accent — slightly richer in light mode
   --eni-accent:       #00b899;
