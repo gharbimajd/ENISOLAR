@@ -1,0 +1,57 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/drone-manager"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Link a Drone</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="link-wrap">
+
+    <!-- Icon -->
+    <div class="link-icon-wrap">
+      <ion-icon name="hardware-chip-outline"></ion-icon>
+    </div>
+
+    <h2 class="link-title">Connect Your Drone</h2>
+    <p class="link-subtitle">Enter the MAC address printed on your drone's label</p>
+
+    <!-- MAC Input -->
+    <div class="input-wrap">
+      <ion-item lines="none" class="mac-item" [class.error]="errorMessage">
+        <ion-input
+          [value]="macInput"
+          (ionInput)="onMacInput($event)"
+          placeholder="AA:BB:CC:DD:EE:FF"
+          maxlength="17"
+          [clearInput]="true"
+          class="mac-input"
+        ></ion-input>
+      </ion-item>
+
+      <!-- Error -->
+      <p class="error-text" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </p>
+
+      <!-- Helper -->
+      <p class="helper-text" *ngIf="!errorMessage">
+        The code is printed on your drone's label
+      </p>
+    </div>
+
+    <!-- Submit -->
+    <ion-button
+      expand="block"
+      class="submit-btn"
+      [disabled]="!isValid || isSubmitting"
+      (click)="submitLink()"
+    >
+      <ion-icon name="link-outline" slot="start"></ion-icon>
+      {{ isSubmitting ? 'Linking…' : 'Link Drone' }}
+    </ion-button>
+
+  </div>
+</ion-content>

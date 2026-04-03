@@ -1,0 +1,97 @@
+ion-toolbar {
+  --background: var(--eni-surface);
+  --color: var(--eni-text);
+  --border-color: var(--eni-border);
+  ion-title { color: var(--eni-text); font-weight: 700; }
+  ion-back-button { --color: var(--eni-accent); }
+}
+
+ion-content { --background: var(--eni-bg); }
+
+.link-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 40px;
+
+  .link-icon-wrap {
+    width: 80px;
+    height: 80px;
+    border-radius: 24px;
+    background: var(--eni-surface);
+    border: 1px solid var(--eni-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+
+    ion-icon {
+      font-size: 40px;
+      color: var(--eni-accent);
+    }
+  }
+
+  .link-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--eni-text);
+    margin: 0 0 8px;
+    text-align: center;
+  }
+
+  .link-subtitle {
+    font-size: 14px;
+    color: var(--eni-text-3);
+    text-align: center;
+    margin: 0 0 32px;
+    line-height: 1.5;
+  }
+
+  .input-wrap {
+    width: 100%;
+    margin-bottom: 24px;
+
+    .mac-item {
+      --background: var(--eni-surface);
+      --color: var(--eni-text);
+      --placeholder-color: var(--eni-text-4);
+      border: 1px solid var(--eni-border);
+      border-radius: 14px;
+      margin-bottom: 8px;
+      transition: border-color 0.2s;
+
+      &.error { border-color: var(--eni-danger-border); }
+
+      .mac-input {
+        font-family: monospace;
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-align: center;
+      }
+    }
+
+    .error-text {
+      font-size: 13px;
+      color: var(--eni-danger);
+      margin: 0;
+      text-align: center;
+    }
+
+    .helper-text {
+      font-size: 12px;
+      color: var(--eni-text-4);
+      margin: 0;
+      text-align: center;
+    }
+  }
+
+  .submit-btn {
+    width: 100%;
+    --background: var(--eni-accent);
+    --color: #000;
+    --border-radius: 14px;
+    font-weight: 700;
+    font-size: 16px;
+  }
+}

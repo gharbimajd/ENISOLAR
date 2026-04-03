@@ -1,0 +1,197 @@
+ion-toolbar {
+  --background: var(--eni-surface);
+  --color: var(--eni-text);
+  --border-color: var(--eni-border);
+  ion-title { color: var(--eni-text); font-weight: 700; }
+  ion-back-button { --color: var(--eni-accent); }
+}
+
+ion-content { --background: var(--eni-bg); }
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  ion-spinner { --color: var(--eni-accent); margin-bottom: 12px; }
+  p { color: var(--eni-text-3); font-size: 14px; }
+}
+
+.link-btn {
+  --background: var(--eni-accent);
+  --color: #000;
+  --border-radius: 14px;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.drones-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+// ── Drone Card ─────────────────────────────────────────
+.drone-card {
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
+  border-radius: 16px;
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+
+  &:active { border-color: var(--eni-accent); }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .drone-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--eni-surface-2);
+    border: 1px solid var(--eni-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    ion-icon { font-size: 24px; color: var(--eni-accent); }
+  }
+
+  .drone-info {
+    flex: 1;
+    min-width: 0;
+
+    .drone-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--eni-text);
+      margin: 0 0 3px;
+    }
+
+    .drone-mac {
+      font-size: 12px;
+      color: var(--eni-text-3);
+      font-family: monospace;
+      margin: 0 0 2px;
+    }
+
+    .drone-date {
+      font-size: 11px;
+      color: var(--eni-text-4);
+      margin: 0;
+    }
+  }
+
+  .online-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--eni-border);
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+}
+
+// ── Inline Actions ─────────────────────────────────────
+.inline-action {
+  background: var(--eni-surface-2);
+  border: 1px solid var(--eni-border);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+
+  .rename-item {
+    --background: var(--eni-bg);
+    --color: var(--eni-text);
+    --placeholder-color: var(--eni-text-4);
+    border: 1px solid var(--eni-border);
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+
+  .confirm-text {
+    font-size: 14px;
+    color: var(--eni-text);
+    font-weight: 600;
+    margin: 0 0 10px;
+    text-align: center;
+  }
+
+  .action-btns {
+    display: flex;
+    gap: 8px;
+
+    ion-button { flex: 1; margin: 0; }
+  }
+
+  .cancel-btn {
+    --border-color: var(--eni-border);
+    --color: var(--eni-text-3);
+    --border-radius: 10px;
+  }
+
+  .confirm-btn {
+    --background: var(--eni-accent);
+    --color: #000;
+    --border-radius: 10px;
+  }
+
+  .danger-btn {
+    --background: var(--eni-danger-bg);
+    --color: var(--eni-danger);
+    --border-radius: 10px;
+    border: 1px solid var(--eni-danger-border);
+  }
+}
+
+// ── Card Actions ───────────────────────────────────────
+.card-actions {
+  display: flex;
+  gap: 8px;
+
+  .action-btn {
+    flex: 1;
+    margin: 0;
+    --border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+
+    &.rename {
+      --border-color: var(--eni-accent);
+      --color: var(--eni-accent);
+    }
+
+    &.disconnect {
+      --border-color: var(--eni-danger-border);
+      --color: var(--eni-danger);
+    }
+  }
+}
+
+// ── Empty State ────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 24px;
+  color: var(--eni-text-3);
+
+  ion-icon {
+    font-size: 64px;
+    color: var(--eni-text-4);
+    margin-bottom: 16px;
+  }
+
+  p {
+    text-align: center;
+    font-size: 15px;
+    line-height: 1.6;
+    strong { color: var(--eni-accent); }
+  }
+}

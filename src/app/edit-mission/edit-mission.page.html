@@ -1,0 +1,70 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/manage-missions"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Edit Mission</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <div class="mission-card">
+    <div class="mission-card-label">Editing</div>
+    <div class="mission-card-name">{{ mission?.name }}</div>
+    <ion-badge [color]="getStatusColor(mission?.status)">
+      {{ mission?.status | uppercase }}
+    </ion-badge>
+  </div>
+
+  <form [formGroup]="editForm" (ngSubmit)="save()">
+
+    <div class="field-group">
+      <ion-item fill="outline" class="field-item">
+        <ion-label position="stacked">Mission Name</ion-label>
+        <ion-input
+          type="text"
+          formControlName="name"
+          placeholder="Enter unique name"
+          aria-label="Mission Name">
+        </ion-input>
+      </ion-item>
+      <div class="field-error" *ngIf="editForm.errors?.['nameExists'] && editForm.get('name')?.touched">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <small>This name is already in use.</small>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">Status</div>
+      <div class="status-pills">
+        <button type="button" class="pill draft"
+          [class.active]="editForm.get('status')?.value === 'draft'"
+          (click)="editForm.get('status')?.setValue('draft')">
+          <ion-icon name="create-outline"></ion-icon> Draft
+        </button>
+        <button type="button" class="pill ready"
+          [class.active]="editForm.get('status')?.value === 'ready'"
+          (click)="editForm.get('status')?.setValue('ready')">
+          <ion-icon name="checkmark-circle-outline"></ion-icon> Ready
+        </button>
+        <button type="button" class="pill done"
+          [class.active]="editForm.get('status')?.value === 'done'"
+          (click)="editForm.get('status')?.setValue('done')">
+          <ion-icon name="archive-outline"></ion-icon> Done
+        </button>
+      </div>
+    </div>
+
+    <ion-button
+      expand="block"
+      type="submit"
+      [disabled]="editForm.invalid"
+      class="save-btn">
+      <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+      Save Changes
+    </ion-button>
+
+  </form>
+
+</ion-content>

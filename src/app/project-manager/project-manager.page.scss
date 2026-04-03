@@ -1,0 +1,231 @@
+ion-toolbar {
+  --background: var(--eni-surface);
+  --color: var(--eni-text);
+  --border-color: var(--eni-border);
+  ion-title { color: var(--eni-text); font-weight: 700; }
+  ion-button { --color: var(--eni-accent); }
+  ion-back-button { --color: var(--eni-accent); }
+}
+
+ion-content {
+  --background: var(--eni-bg);
+}
+
+// ── Loading ────────────────────────────────────────────
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  ion-spinner { --color: var(--eni-accent); margin-bottom: 12px; }
+  p { color: var(--eni-text-3); font-size: 14px; }
+}
+
+// ── Create Form Card ───────────────────────────────────
+.create-form-card {
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+
+  .form-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--eni-text-3);
+    margin: 0 0 10px;
+  }
+
+  .form-item {
+    --background: var(--eni-surface-2);
+    --color: var(--eni-text);
+    --placeholder-color: var(--eni-text-4);
+    border: 1px solid var(--eni-border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+  }
+
+  .submit-btn {
+    --background: var(--eni-accent);
+    --color: #000;
+    --border-radius: 10px;
+    font-weight: 700;
+    margin: 0;
+  }
+}
+
+// ── Stats Grid ─────────────────────────────────────────
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-box {
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
+  border-radius: 16px;
+  padding: 18px 12px;
+  text-align: center;
+
+  ion-icon.stat-icon {
+    font-size: 28px;
+    color: var(--eni-accent);
+    display: block;
+    margin-bottom: 6px;
+
+    &.success { color: var(--eni-ready); }
+  }
+
+  h3 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--eni-text);
+    margin: 0 0 2px;
+  }
+
+  p {
+    font-size: 12px;
+    color: var(--eni-text-3);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+// ── Project Cards ──────────────────────────────────────
+.projects-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.project-card {
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
+  border-radius: 16px;
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+
+  &:active {
+    border-color: var(--eni-accent);
+    transform: scale(0.99);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .card-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--eni-surface-2);
+    border: 1px solid var(--eni-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    ion-icon {
+      font-size: 22px;
+      color: var(--eni-accent);
+    }
+  }
+
+  .card-title-wrap {
+    flex: 1;
+    min-width: 0;
+
+    .project-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--eni-text);
+      margin: 0 0 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mission-count {
+      font-size: 12px;
+      color: var(--eni-text-3);
+      margin: 0;
+    }
+  }
+
+  .delete-btn {
+    --color: var(--eni-text-4);
+    --padding-start: 4px;
+    --padding-end: 4px;
+    margin: 0;
+    flex-shrink: 0;
+
+    &:hover { --color: #ff4444; }
+  }
+
+  .card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .card-empty-badges {
+    margin-bottom: 12px;
+  }
+
+  .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+
+    &.ready   { color: var(--eni-ready);   background: var(--eni-ready-bg);   border: 1px solid var(--eni-ready-border); }
+    &.pending { color: var(--eni-pending); background: var(--eni-pending-bg); border: 1px solid var(--eni-pending-border); }
+    &.draft   { color: var(--eni-draft);   background: var(--eni-draft-bg);   border: 1px solid var(--eni-draft-border); }
+    &.done    { color: var(--eni-text-3);  background: var(--eni-surface-2);  border: 1px solid var(--eni-border); }
+    &.empty   { color: var(--eni-text-4);  background: var(--eni-surface-2);  border: 1px solid var(--eni-border); }
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: flex-end;
+
+    .arrow-icon {
+      font-size: 18px;
+      color: var(--eni-text-4);
+    }
+  }
+}
+
+// ── Empty State ────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 24px;
+  color: var(--eni-text-3);
+
+  ion-icon {
+    font-size: 64px;
+    color: var(--eni-text-4);
+    margin-bottom: 16px;
+  }
+
+  p {
+    text-align: center;
+    font-size: 15px;
+    line-height: 1.6;
+    strong { color: var(--eni-accent); }
+  }
+}

@@ -1,0 +1,90 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/project-manager"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ project?.name }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleAddPanel()">
+        <ion-icon [name]="showAddPanel ? 'close-outline' : 'add-outline'" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading missions...</p>
+  </div>
+
+  <div *ngIf="!isLoading">
+
+    <!-- Add Mission Panel -->
+    <div class="add-panel" *ngIf="showAddPanel">
+      <p class="panel-label">Available Missions</p>
+
+      <div class="panel-loading" *ngIf="isLoadingMissions">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+
+      <div class="available-empty" *ngIf="!isLoadingMissions && availableMissions.length === 0">
+        <p>All missions are already in this project.</p>
+      </div>
+
+      <div
+        class="available-row"
+        *ngFor="let m of availableMissions"
+        (click)="addMission(m)"
+      >
+        <div class="avail-info">
+          <span class="avail-name">{{ m.name }}</span>
+          <span class="badge" [ngClass]="getStatusClass(m.status)">{{ m.status | uppercase }}</span>
+        </div>
+        <ion-icon name="add-outline" class="avail-add-icon"></ion-icon>
+      </div>
+    </div>
+
+    <!-- Mission Cards -->
+    <div class="missions-wrap" *ngIf="project && project.missions.length > 0">
+      <div
+        class="mission-card"
+        *ngFor="let mission of project.missions"
+        [class.selected]="isSelected(mission)"
+        (click)="toggleSelect(mission)"
+      >
+        <div class="mission-card-left">
+          <div class="select-indicator" [class.active]="isSelected(mission)">
+            <ion-icon name="checkmark-circle-outline" *ngIf="isSelected(mission)"></ion-icon>
+          </div>
+          <div class="mission-info">
+            <span class="mission-name">{{ mission.name }}</span>
+            <span class="badge" [ngClass]="getStatusClass(mission.status)">
+              {{ mission.status | uppercase }}
+            </span>
+          </div>
+        </div>
+        <ion-button fill="clear" class="remove-btn" (click)="removeMission(mission, $event)">
+          <ion-icon name="close-circle-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="project && project.missions.length === 0 && !showAddPanel">
+      <ion-icon name="map-outline"></ion-icon>
+      <p>No missions in this project.<br/>Tap <strong>+</strong> to add one.</p>
+    </div>
+
+    <!-- Send Selected -->
+    <div class="send-wrap" *ngIf="selectedIds.size > 0">
+      <ion-button expand="block" class="send-btn" (click)="sendSelected()">
+        <ion-icon name="paper-plane-outline" slot="start"></ion-icon>
+        Send {{ selectedIds.size }} Selected Mission{{ selectedIds.size !== 1 ? 's' : '' }}
+      </ion-button>
+    </div>
+
+  </div>
+</ion-content>

@@ -1,0 +1,215 @@
+ion-toolbar {
+  --background: var(--eni-surface);
+  --color: var(--eni-text);
+  --border-color: var(--eni-border);
+  ion-title { color: var(--eni-text); font-weight: 700; }
+  ion-button { --color: var(--eni-accent); }
+  ion-back-button { --color: var(--eni-accent); }
+}
+
+ion-content {
+  --background: var(--eni-bg);
+}
+
+// ── Loading ────────────────────────────────────────────
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  ion-spinner { --color: var(--eni-accent); margin-bottom: 12px; }
+  p { color: var(--eni-text-3); font-size: 14px; }
+}
+
+// ── Add Panel ──────────────────────────────────────────
+.add-panel {
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-accent);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+
+  .panel-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--eni-accent);
+    margin: 0 0 12px;
+    font-weight: 600;
+  }
+
+  .panel-loading {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+    ion-spinner { --color: var(--eni-accent); }
+  }
+
+  .available-empty p {
+    color: var(--eni-text-4);
+    font-size: 13px;
+    text-align: center;
+    padding: 8px 0;
+    margin: 0;
+  }
+}
+
+.available-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--eni-surface-2);
+  border: 1px solid var(--eni-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+
+  &:last-child { margin-bottom: 0; }
+  &:active { border-color: var(--eni-accent); }
+
+  .avail-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .avail-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--eni-text);
+  }
+
+  .avail-add-icon {
+    font-size: 20px;
+    color: var(--eni-accent);
+  }
+}
+
+// ── Mission Cards ──────────────────────────────────────
+.missions-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 100px;
+}
+
+.mission-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
+  border-radius: 14px;
+  padding: 14px 10px 14px 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+
+  &.selected {
+    border-color: var(--eni-accent);
+    background: var(--eni-surface-2);
+  }
+
+  .mission-card-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .select-indicator {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--eni-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: border-color 0.2s, background 0.2s;
+
+    &.active {
+      border-color: var(--eni-accent);
+      background: var(--eni-accent);
+      ion-icon { color: #000; font-size: 16px; }
+    }
+  }
+
+  .mission-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .mission-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--eni-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .remove-btn {
+    --color: var(--eni-text-4);
+    margin: 0;
+    flex-shrink: 0;
+    &:hover { --color: #ff4444; }
+  }
+}
+
+// ── Status Badges ──────────────────────────────────────
+.badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  width: fit-content;
+
+  &.ready   { color: var(--eni-ready);   background: var(--eni-ready-bg);   border: 1px solid var(--eni-ready-border); }
+  &.pending { color: var(--eni-pending); background: var(--eni-pending-bg); border: 1px solid var(--eni-pending-border); }
+  &.draft   { color: var(--eni-draft);   background: var(--eni-draft-bg);   border: 1px solid var(--eni-draft-border); }
+  &.done    { color: var(--eni-text-3);  background: var(--eni-surface-2);  border: 1px solid var(--eni-border); }
+}
+
+// ── Empty State ────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 24px;
+  color: var(--eni-text-3);
+
+  ion-icon {
+    font-size: 64px;
+    color: var(--eni-text-4);
+    margin-bottom: 16px;
+  }
+
+  p {
+    text-align: center;
+    font-size: 15px;
+    line-height: 1.6;
+    strong { color: var(--eni-accent); }
+  }
+}
+
+// ── Send Button ────────────────────────────────────────
+.send-wrap {
+  padding: 16px 0 0;
+
+  .send-btn {
+    --background: var(--eni-accent);
+    --color: #000;
+    --border-radius: 14px;
+    font-weight: 700;
+    font-size: 15px;
+  }
+}

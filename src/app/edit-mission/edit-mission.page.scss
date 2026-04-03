@@ -1,0 +1,122 @@
+ion-content { --background: var(--eni-bg); }
+ion-header ion-toolbar { --background: var(--eni-toolbar-bg); --color: var(--eni-text); }
+ion-title { color: var(--eni-text); font-weight: 600; }
+ion-back-button { --color: var(--eni-text-2); }
+
+// ─── MISSION PREVIEW CARD ────────────────────────────────────────────────────
+.mission-card {
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .mission-card-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--eni-text-3);
+  }
+
+  .mission-card-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--eni-text);
+  }
+
+  ion-badge {
+    width: fit-content;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    &[color="success"] { background: var(--eni-ready-bg); color: var(--eni-ready); border: 1px solid var(--eni-ready-border); }
+    &[color="warning"] { background: var(--eni-pending-bg); color: var(--eni-pending); border: 1px solid var(--eni-pending-border); }
+    &[color="medium"]  { background: var(--eni-draft-bg); color: var(--eni-draft); border: 1px solid var(--eni-draft-border); }
+    &[color="primary"] { background: var(--eni-draft-bg); color: var(--eni-draft); border: 1px solid var(--eni-draft-border); }
+  }
+}
+
+// ─── FORM ────────────────────────────────────────────────────────────────────
+.field-group { margin-bottom: 20px; }
+
+.field-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--eni-text-3);
+  margin-bottom: 10px;
+  display: block;
+}
+
+.field-item {
+  --background: var(--eni-surface);
+  --color: var(--eni-text);
+  --border-color: var(--eni-border);
+  --border-radius: 12px;
+  --highlight-color-focused: var(--eni-accent);
+  --padding-start: 16px;
+  border-radius: 12px;
+
+  ion-label { color: var(--eni-text-3) !important; font-size: 12px; font-weight: 600; }
+  ion-input { --color: var(--eni-text); --placeholder-color: var(--eni-text-4); font-size: 15px; }
+}
+
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--ion-color-danger);
+  font-size: 12px;
+  padding-left: 4px;
+}
+
+// ─── STATUS PILLS ────────────────────────────────────────────────────────────
+.status-pills {
+  display: flex;
+  gap: 10px;
+
+  .pill {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 14px 0;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid var(--eni-border);
+    background: var(--eni-surface);
+    color: var(--eni-text-3);
+    transition: all 0.2s ease;
+
+    ion-icon { font-size: 16px; }
+    &:active { transform: scale(0.96); }
+
+    &.draft.active  { background: var(--eni-pending-bg); color: var(--eni-pending); border-color: var(--eni-pending-border); }
+    &.ready.active  { background: var(--eni-ready-bg); color: var(--eni-ready); border-color: var(--eni-ready-border); }
+    &.done.active   { background: var(--eni-draft-bg); color: var(--eni-draft); border-color: var(--eni-draft-border); }
+  }
+}
+
+// ─── SAVE BUTTON ─────────────────────────────────────────────────────────────
+.save-btn {
+  --background: var(--eni-accent);
+  --background-activated: var(--eni-accent);
+  --color: var(--eni-accent-text);
+  --border-radius: 14px;
+  --box-shadow: 0 6px 20px rgba(0, 212, 170, 0.3);
+  height: 54px;
+  font-weight: 700;
+  font-size: 15px;
+  margin-top: 12px;
+}

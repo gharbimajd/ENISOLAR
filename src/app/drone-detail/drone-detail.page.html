@@ -1,0 +1,134 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/drone-manager"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ drone?.name }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="drone">
+
+    <!-- Drone Header Card -->
+    <div class="detail-header-card">
+      <div class="detail-icon-wrap">
+        <ion-icon name="hardware-chip-outline"></ion-icon>
+      </div>
+      <h2 class="detail-name">{{ drone.name }}</h2>
+      <p class="detail-mac">{{ drone.mac }}</p>
+      <p class="detail-date">
+        <ion-icon name="calendar-outline"></ion-icon>
+        Paired {{ drone.paired_at | date:'mediumDate' }}
+      </p>
+    </div>
+
+    <!-- Storage / Buffer Section -->
+    <div class="section-card buffer-card">
+      <div class="section-header">
+        <ion-icon name="layers-outline"></ion-icon>
+        <span>Mission Storage</span>
+      </div>
+
+      <!-- Slot visual bar -->
+      <div class="slot-bar">
+        <div
+          *ngFor="let slot of slotArray"
+          class="slot-block"
+          [class.used]="slot.used"
+          [class.empty]="!slot.used">
+          <ion-icon [name]="slot.used ? 'rocket-outline' : 'ellipse-outline'"></ion-icon>
+        </div>
+        <!-- Locked slots up to 5 -->
+        <div *ngFor="let _ of lockedArray" class="slot-block locked">
+          <ion-icon name="lock-closed-outline"></ion-icon>
+        </div>
+      </div>
+
+      <div class="slot-legend">
+        <span class="legend-item">
+          <span class="dot used"></span> {{ usedSlots }} active
+        </span>
+        <span class="legend-item">
+          <span class="dot empty"></span> {{ emptySlots }} free
+        </span>
+        <span class="legend-item">
+          <span class="dot locked"></span> {{ lockedSlots }} locked
+        </span>
+      </div>
+
+      <div class="slot-count-row">
+        <span class="slot-count-label">Total slots</span>
+        <span class="slot-count-value">{{ totalSlots }} / 5</span>
+      </div>
+
+      <ion-button
+        expand="block"
+        class="expand-btn"
+        (click)="goToBufferManager()"
+        [disabled]="totalSlots >= 5">
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        {{ totalSlots >= 5 ? 'Max Storage Reached' : 'Expand Storage' }}
+      </ion-button>
+    </div>
+
+    <!-- Rename Section -->
+    <div class="section-card">
+      <div class="section-header">
+        <ion-icon name="pencil-outline"></ion-icon>
+        <span>Rename Drone</span>
+      </div>
+
+      <div *ngIf="!isRenaming">
+        <p class="current-name">{{ drone.name }}</p>
+        <ion-button expand="block" fill="outline" class="rename-trigger-btn" (click)="startRename()">
+          <ion-icon name="pencil-outline" slot="start"></ion-icon>
+          Rename
+        </ion-button>
+      </div>
+
+      <div *ngIf="isRenaming">
+        <ion-item lines="none" class="rename-item">
+          <ion-input
+            [(ngModel)]="newName"
+            placeholder="New drone name"
+            [clearInput]="true">
+          </ion-input>
+        </ion-item>
+        <div class="inline-btns">
+          <ion-button fill="outline" class="cancel-btn" (click)="cancelRename()">Cancel</ion-button>
+          <ion-button class="confirm-btn" [disabled]="!newName.trim()" (click)="submitRename()">Save</ion-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Status Placeholder -->
+    <div class="section-card status-card">
+      <div class="section-header">
+        <ion-icon name="wifi-outline"></ion-icon>
+        <span>Live Status</span>
+        <span class="coming-soon-badge">Coming Soon</span>
+      </div>
+      <p class="coming-soon-text">Real-time drone telemetry will appear here once connected.</p>
+    </div>
+
+    <!-- Disconnect -->
+    <div class="disconnect-card" *ngIf="!showDisconnectConfirm">
+      <ion-button expand="block" class="disconnect-btn" (click)="startDisconnect()">
+        Disconnect Drone
+      </ion-button>
+    </div>
+
+    <div class="disconnect-confirm-card" *ngIf="showDisconnectConfirm">
+      <p class="confirm-title">Are you sure?</p>
+      <p class="confirm-sub">This drone will be unlinked. Extra slots will be refunded.</p>
+      <div class="inline-btns">
+        <ion-button fill="outline" class="cancel-btn" (click)="cancelDisconnect()">Cancel</ion-button>
+        <ion-button class="danger-btn" [disabled]="isLoading" (click)="confirmDisconnect()">
+          {{ isLoading ? 'Disconnecting…' : 'Yes, Disconnect' }}
+        </ion-button>
+      </div>
+    </div>
+
+  </div>
+</ion-content>

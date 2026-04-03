@@ -84,6 +84,34 @@ export const routes: Routes = [
   {
     path: 'manage-missions',
     loadComponent: () => import('./manage-missions/manage-missions.page').then( m => m.ManageMissionsPage)
+  },
+  {
+    path: 'edit-mission',
+    loadComponent: () => import('./edit-mission/edit-mission.page').then( m => m.EditMissionPage)
+  },
+  {
+    path: 'project-manager',
+    loadComponent: () => import('./project-manager/project-manager.page').then( m => m.ProjectManagerPage)
+  },
+  {
+    path: 'project-detail',
+    loadComponent: () => import('./project-detail/project-detail.page').then( m => m.ProjectDetailPage)
+  },
+  {
+    path: 'drone-manager',
+    loadComponent: () => import('./drone-manager/drone-manager.page').then( m => m.DroneManagerPage)
+  },
+  {
+    path: 'link-drone',
+    loadComponent: () => import('./link-drone/link-drone.page').then( m => m.LinkDronePage)
+  },
+  {
+    path: 'drone-detail',
+    loadComponent: () => import('./drone-detail/drone-detail.page').then( m => m.DroneDetailPage)
+  },
+  {
+    path: 'buffer-manager',
+    loadComponent: () => import('./buffer-manager/buffer-manager.page').then( m => m.BufferManagerPage)
   }
 ];
 

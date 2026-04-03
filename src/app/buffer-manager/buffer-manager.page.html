@@ -1,0 +1,97 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/drone-manager"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Mission Storage</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- Credits Card -->
+  <div class="credits-card">
+    <div class="credits-left">
+      <span class="credits-label">Your Credits</span>
+      <span class="credits-value">{{ credits }}</span>
+    </div>
+    <ion-button class="get-credits-btn" (click)="getCredits()">
+      <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+      Get Credits
+    </ion-button>
+  </div>
+
+  <!-- Current Storage Card -->
+  <div class="section-card">
+    <div class="section-header">
+      <ion-icon name="layers-outline"></ion-icon>
+      <span>Current Storage</span>
+      <span class="slot-badge">{{ totalSlots }} / 5</span>
+    </div>
+
+    <div class="slot-bar">
+      <div *ngFor="let slot of slotArray" class="slot-block" [class.used]="slot.used" [class.empty]="!slot.used">
+        <ion-icon [name]="slot.used ? 'rocket-outline' : 'ellipse-outline'"></ion-icon>
+      </div>
+      <div *ngFor="let _ of lockedArray" class="slot-block locked">
+        <ion-icon name="lock-closed-outline"></ion-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- Purchase Card -->
+  <div class="section-card" *ngIf="totalSlots < 5">
+    <div class="section-header">
+      <ion-icon name="cart-outline"></ion-icon>
+      <span>Add Slots</span>
+    </div>
+
+    <p class="purchase-info">Each slot costs <strong>500 credits</strong>. You can add up to <strong>{{ 5 - totalSlots }}</strong> more slot(s).</p>
+
+    <!-- Slot picker -->
+    <div class="slot-picker">
+      <button class="picker-btn" (click)="decrementSlots()" [disabled]="slotsToAdd <= 1">
+        <ion-icon name="remove-outline"></ion-icon>
+      </button>
+      <div class="picker-value">
+        <span class="picker-number">{{ slotsToAdd }}</span>
+        <span class="picker-unit">slot{{ slotsToAdd > 1 ? 's' : '' }}</span>
+      </div>
+      <button class="picker-btn" (click)="incrementSlots()" [disabled]="slotsToAdd >= (5 - totalSlots)">
+        <ion-icon name="add-outline"></ion-icon>
+      </button>
+    </div>
+
+    <!-- Cost summary -->
+    <div class="cost-row">
+      <span class="cost-label">Total cost</span>
+      <span class="cost-value">{{ slotsToAdd * 500 }} credits</span>
+    </div>
+    <div class="cost-row" [class.insufficient]="credits < slotsToAdd * 500">
+      <span class="cost-label">After purchase</span>
+      <span class="cost-value">{{ credits - (slotsToAdd * 500) }} credits</span>
+    </div>
+
+    <div class="insufficient-msg" *ngIf="credits < slotsToAdd * 500">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <span>Insufficient credits</span>
+    </div>
+
+    <ion-button
+      expand="block"
+      class="purchase-btn"
+      [disabled]="credits < slotsToAdd * 500 || isPurchasing"
+      (click)="purchaseSlots()">
+      <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+      {{ isPurchasing ? 'Processing…' : 'Confirm Purchase' }}
+    </ion-button>
+  </div>
+
+  <!-- Max reached -->
+  <div class="max-card" *ngIf="totalSlots >= 5">
+    <ion-icon name="checkmark-circle-outline"></ion-icon>
+    <p>Maximum storage reached</p>
+    <span>Your drone has the maximum of 5 mission slots.</span>
+  </div>
+
+</ion-content>

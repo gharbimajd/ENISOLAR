@@ -1,0 +1,63 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>My Drones</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading drones...</p>
+  </div>
+
+  <div *ngIf="!isLoading">
+
+    <!-- Link Button -->
+    <ion-button expand="block" class="link-btn" (click)="goToLink()">
+      <ion-icon name="add-outline" slot="start"></ion-icon>
+      Link New Drone
+    </ion-button>
+
+    <!-- Drone Cards -->
+    <div class="drones-wrap" *ngIf="drones.length > 0">
+      <div class="drone-card" *ngFor="let drone of drones" (click)="openDetail(drone)">
+
+        <!-- Card Top -->
+        <div class="card-top">
+          <div class="drone-icon-wrap">
+            <ion-icon name="hardware-chip-outline"></ion-icon>
+          </div>
+          <div class="drone-info">
+            <h3 class="drone-name">{{ drone.name }}</h3>
+            <p class="drone-mac">{{ drone.mac }}</p>
+            <p class="drone-date">Paired {{ drone.paired_at | date:'mediumDate' }}</p>
+          </div>
+          <div class="online-dot"></div>
+        </div>
+
+        <!-- Rename Inline -->
+        <div class="inline-action rename-action" *ngIf="renamingId === drone.id" (click)="$event.stopPropagation()">
+          <ion-item lines="none" class="rename-item">
+            <ion-input
+              [(ngModel)]="newName"
+              placeholder="New drone name"
+              [clearInput]="true"
+            ></ion-input>
+          </ion-item>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="drones.length === 0">
+      <ion-icon name="hardware-chip-outline"></ion-icon>
+      <p>No drones linked yet.<br/>Tap <strong>Link New Drone</strong> to get started.</p>
+    </div>
+
+  </div>
+</ion-content>

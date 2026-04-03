@@ -1,0 +1,235 @@
+ion-toolbar {
+  --background: var(--eni-surface);
+  --color: var(--eni-text);
+  --border-color: var(--eni-border);
+  ion-title { color: var(--eni-text); font-weight: 700; }
+  ion-back-button { --color: var(--eni-accent); }
+}
+
+ion-content { --background: var(--eni-bg); }
+
+// ── Credits Card ───────────────────────────────────────
+.credits-card {
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-accent-border);
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .credits-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .credits-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--eni-text-4);
+    }
+
+    .credits-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--eni-accent);
+      line-height: 1;
+    }
+  }
+
+  .get-credits-btn {
+    --background: var(--eni-accent-dim);
+    --color: var(--eni-accent);
+    --border-radius: 12px;
+    --box-shadow: none;
+    border: 1px solid var(--eni-accent-border);
+    font-weight: 700;
+    font-size: 13px;
+    height: 40px;
+  }
+}
+
+// ── Section Cards ──────────────────────────────────────
+.section-card {
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 14px;
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--eni-text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+    ion-icon { font-size: 16px; color: var(--eni-accent); }
+
+    .slot-badge {
+      margin-left: auto;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--eni-accent);
+      background: var(--eni-accent-dim);
+      border: 1px solid var(--eni-accent-border);
+      border-radius: 20px;
+      padding: 2px 10px;
+    }
+  }
+}
+
+// ── Slot Bar ───────────────────────────────────────────
+.slot-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.slot-block {
+  flex: 1;
+  height: 52px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--eni-border);
+
+  ion-icon { font-size: 20px; }
+
+  &.used {
+    background: var(--eni-accent-dim);
+    border-color: var(--eni-accent-border);
+    ion-icon { color: var(--eni-accent); }
+  }
+
+  &.empty {
+    background: var(--eni-surface-2);
+    border-style: dashed;
+    ion-icon { color: var(--eni-text-4); }
+  }
+
+  &.locked {
+    background: transparent;
+    border-style: dashed;
+    opacity: 0.3;
+    ion-icon { color: var(--eni-text-4); font-size: 16px; }
+  }
+}
+
+// ── Purchase section ───────────────────────────────────
+.purchase-info {
+  font-size: 13px;
+  color: var(--eni-text-3);
+  margin: 0 0 16px;
+  line-height: 1.5;
+  strong { color: var(--eni-text); }
+}
+
+.slot-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 18px;
+
+  .picker-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1.5px solid var(--eni-border);
+    background: var(--eni-surface-2);
+    color: var(--eni-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    ion-icon { font-size: 20px; }
+
+    &:active { background: var(--eni-accent-dim); border-color: var(--eni-accent-border); }
+    &[disabled] { opacity: 0.35; pointer-events: none; }
+  }
+
+  .picker-value {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .picker-number {
+      font-size: 40px;
+      font-weight: 800;
+      color: var(--eni-text);
+      line-height: 1;
+    }
+
+    .picker-unit {
+      font-size: 12px;
+      color: var(--eni-text-4);
+      font-weight: 500;
+    }
+  }
+}
+
+.cost-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--eni-surface-2);
+  border: 1px solid var(--eni-border);
+  border-radius: 10px;
+  margin-bottom: 8px;
+
+  .cost-label { font-size: 13px; color: var(--eni-text-3); }
+  .cost-value { font-size: 14px; font-weight: 700; color: var(--eni-text); }
+
+  &.insufficient .cost-value { color: var(--eni-danger); }
+}
+
+.insufficient-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--eni-danger);
+  font-size: 13px;
+  margin-bottom: 12px;
+  padding-left: 4px;
+  ion-icon { font-size: 16px; }
+}
+
+.purchase-btn {
+  --background: var(--eni-accent);
+  --color: var(--eni-accent-text);
+  --border-radius: 12px;
+  --box-shadow: 0 4px 16px rgba(0, 212, 170, 0.2);
+  font-weight: 700;
+  margin: 8px 0 0;
+
+  &[disabled] {
+    --background: var(--eni-surface-2);
+    --color: var(--eni-text-4);
+    --box-shadow: none;
+  }
+}
+
+// ── Max reached ────────────────────────────────────────
+.max-card {
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-accent-border);
+  border-radius: 16px;
+  padding: 32px 20px;
+  text-align: center;
+  margin-bottom: 14px;
+
+  ion-icon { font-size: 48px; color: var(--eni-accent); margin-bottom: 12px; }
+  p { font-size: 16px; font-weight: 700; color: var(--eni-text); margin: 0 0 6px; }
+  span { font-size: 13px; color: var(--eni-text-4); }
+}
