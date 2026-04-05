@@ -1,0 +1,79 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/mission-picker"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Assign Slots</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" [disabled]="isSaving" class="save-btn">
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        {{ isSaving ? 'Saving…' : 'Save' }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- Drone bar -->
+  <div class="drone-bar">
+    <ion-icon name="hardware-chip-outline"></ion-icon>
+    <span>{{ drone?.name }}</span>
+  </div>
+
+  <p class="hint">Drag empty slots to reorder. Locked slots already have a mission.</p>
+
+  <!-- Slot list -->
+  <div class="slots-list">
+    <div
+      class="slot-card"
+      *ngFor="let slot of slotAssignments; let i = index"
+      [class.locked]="slot.locked"
+      [class.empty]="!slot.mission && !slot.locked"
+      [class.filled]="slot.mission && !slot.locked"
+      [draggable]="!slot.locked"
+      (dragstart)="onDragStart(i)"
+      (dragover)="onDragOver($event, i)"
+      (drop)="onDrop(i)"
+      (dragend)="onDragEnd()"
+    >
+      <!-- Slot index -->
+      <div class="slot-index">
+        <span>{{ slot.slot_index }}</span>
+      </div>
+
+      <!-- Content -->
+      <div class="slot-content">
+
+        <!-- Locked / pre-filled -->
+        <div class="slot-filled locked-fill" *ngIf="slot.locked">
+          <ion-icon name="lock-closed-outline" class="lock-icon"></ion-icon>
+          <div class="slot-mission-info">
+            <span class="slot-mission-name">{{ slot.mission?.name }}</span>
+            <span class="badge" [ngClass]="getStatusClass(slot.mission?.status)">{{ slot.mission?.status | uppercase }}</span>
+          </div>
+        </div>
+
+        <!-- Assigned mission (draggable) -->
+        <div class="slot-filled" *ngIf="slot.mission && !slot.locked">
+          <ion-icon name="reorder-three-outline" class="drag-icon"></ion-icon>
+          <div class="slot-mission-info">
+            <span class="slot-mission-name">{{ slot.mission.name }}</span>
+            <span class="badge" [ngClass]="getStatusClass(slot.mission.status)">{{ slot.mission.status | uppercase }}</span>
+          </div>
+          <ion-button fill="clear" class="clear-btn" (click)="clearSlot(i)">
+            <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <!-- Empty slot -->
+        <div class="slot-empty" *ngIf="!slot.mission && !slot.locked">
+          <ion-icon name="ellipse-outline"></ion-icon>
+          <span>Empty slot</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</ion-content>

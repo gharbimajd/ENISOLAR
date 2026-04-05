@@ -56,117 +56,189 @@ ion-content { --background: var(--eni-bg); }
   .current-name { font-size: 16px; font-weight: 600; color: var(--eni-text); margin: 0 0 12px; }
 
   .rename-trigger-btn {
-    --border-color: var(--eni-accent);
-    --color: var(--eni-accent);
-    --border-radius: 12px;
-    margin: 0;
+    --border-color: var(--eni-accent); --color: var(--eni-accent);
+    --border-radius: 12px; margin: 0;
   }
 
   .rename-item {
-    --background: var(--eni-surface-2);
-    --color: var(--eni-text);
+    --background: var(--eni-surface-2); --color: var(--eni-text);
     --placeholder-color: var(--eni-text-4);
-    border: 1px solid var(--eni-border);
-    border-radius: 10px;
-    margin-bottom: 10px;
+    border: 1px solid var(--eni-border); border-radius: 10px; margin-bottom: 10px;
   }
 }
 
-// ── Buffer / Storage Card ──────────────────────────────
+// ── Buffer Card ────────────────────────────────────────
 .buffer-card {
-
-  // Slot visual bar
   .slot-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
+    display: flex; gap: 8px; margin-bottom: 12px;
   }
 
   .slot-block {
-    flex: 1;
-    height: 52px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    flex: 1; height: 52px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
     border: 1.5px solid var(--eni-border);
-    transition: all 0.2s ease;
-
     ion-icon { font-size: 20px; }
 
-    &.used {
-      background: var(--eni-accent-dim);
-      border-color: var(--eni-accent-border);
-      ion-icon { color: var(--eni-accent); }
-    }
-
-    &.empty {
-      background: var(--eni-surface-2);
-      border-style: dashed;
-      ion-icon { color: var(--eni-text-4); }
-    }
-
-    &.locked {
-      background: transparent;
-      border-style: dashed;
-      opacity: 0.35;
-      ion-icon { color: var(--eni-text-4); font-size: 16px; }
-    }
+    &.used { background: var(--eni-accent-dim); border-color: var(--eni-accent-border); ion-icon { color: var(--eni-accent); } }
+    &.empty { background: var(--eni-surface-2); border-style: dashed; ion-icon { color: var(--eni-text-4); } }
+    &.locked { background: transparent; border-style: dashed; opacity: 0.35; ion-icon { color: var(--eni-text-4); font-size: 16px; } }
   }
 
-  // Legend
   .slot-legend {
-    display: flex;
-    gap: 14px;
-    margin-bottom: 14px;
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      color: var(--eni-text-4);
-    }
-
+    display: flex; gap: 14px; margin-bottom: 14px;
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--eni-text-4); }
     .dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-
+      width: 8px; height: 8px; border-radius: 50%;
       &.used { background: var(--eni-accent); }
       &.empty { background: var(--eni-surface-2); border: 1px solid var(--eni-border); }
       &.locked { background: transparent; border: 1px dashed var(--eni-border); }
     }
   }
 
-  // Slot count row
   .slot-count-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex; justify-content: space-between; align-items: center;
     padding: 10px 14px;
-    background: var(--eni-surface-2);
-    border: 1px solid var(--eni-border);
-    border-radius: 10px;
-    margin-bottom: 14px;
-
+    background: var(--eni-surface-2); border: 1px solid var(--eni-border);
+    border-radius: 10px; margin-bottom: 14px;
     .slot-count-label { font-size: 13px; color: var(--eni-text-3); font-weight: 500; }
     .slot-count-value { font-size: 15px; font-weight: 700; color: var(--eni-accent); }
   }
 
-  // Expand button
-  .expand-btn {
-    --background: var(--eni-accent);
-    --background-activated: var(--eni-accent);
-    --color: var(--eni-accent-text);
-    --border-radius: 12px;
-    --box-shadow: 0 4px 16px rgba(0, 212, 170, 0.2);
-    font-weight: 700;
-    margin: 0;
+  .buffer-actions {
+    display: flex; gap: 10px;
 
-    &[disabled] {
-      --background: var(--eni-surface-2);
-      --color: var(--eni-text-4);
-      --box-shadow: none;
+    ion-button { flex: 1; margin: 0; }
+
+    .expand-btn {
+      --background: var(--eni-accent);
+      --color: var(--eni-accent-text);
+      --border-radius: 12px;
+      --box-shadow: 0 4px 16px rgba(0, 212, 170, 0.2);
+      font-weight: 700;
+      &[disabled] { --background: var(--eni-surface-2); --color: var(--eni-text-4); --box-shadow: none; }
+    }
+
+    .manage-btn {
+      --border-color: var(--eni-border);
+      --color: var(--eni-text-3);
+      --border-radius: 12px;
+      font-weight: 600;
+    }
+  }
+}
+
+// ── Slot Manager Card ──────────────────────────────────
+.slot-manager-card {
+  border-color: var(--eni-accent-border);
+
+  .slot-manager-hint {
+    font-size: 12px;
+    color: var(--eni-text-4);
+    margin: 0 0 14px;
+    line-height: 1.5;
+  }
+
+  .slot-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px 0;
+    color: var(--eni-text-4);
+    font-size: 13px;
+    ion-spinner { color: var(--eni-accent); }
+  }
+
+  .slot-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--eni-border);
+    background: var(--eni-surface-2);
+    margin-bottom: 8px;
+    transition: border-color 0.2s ease;
+
+    &.has-mission {
+      border-color: var(--eni-accent-border);
+      background: var(--eni-accent-dim);
+    }
+
+    &.confirming {
+      border-color: var(--eni-danger-border);
+      background: var(--eni-danger-bg);
+    }
+
+    .slot-row-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+
+      .slot-index-badge {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        background: var(--eni-surface);
+        border: 1px solid var(--eni-border);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 12px; font-weight: 700;
+        color: var(--eni-text-3);
+        flex-shrink: 0;
+      }
+
+      .slot-row-info {
+        display: flex; flex-direction: column; gap: 2px;
+
+        .slot-mission-name {
+          font-size: 14px; font-weight: 600; color: var(--eni-text);
+        }
+
+        .slot-empty-label {
+          font-size: 13px; color: var(--eni-text-4); font-style: italic;
+        }
+
+        .slot-mission-id {
+          font-size: 11px; color: var(--eni-text-4);
+        }
+      }
+    }
+
+    .slot-row-right {
+      .free-btn {
+        --background: var(--eni-danger-bg);
+        --color: var(--eni-danger);
+        --border-radius: 8px;
+        --box-shadow: none;
+        border: 1px solid var(--eni-danger-border);
+        font-size: 12px; font-weight: 700;
+        height: 32px;
+      }
+
+      .confirm-inline {
+        display: flex; align-items: center; gap: 6px;
+
+        .confirm-question {
+          font-size: 12px; color: var(--eni-danger); font-weight: 600;
+        }
+
+        .yes-btn {
+          --background: var(--eni-danger);
+          --color: #fff;
+          --border-radius: 8px;
+          --box-shadow: none;
+          font-size: 12px; font-weight: 700;
+          height: 30px;
+        }
+
+        .no-btn {
+          --border-color: var(--eni-border);
+          --color: var(--eni-text-3);
+          --border-radius: 8px;
+          font-size: 12px;
+          height: 30px;
+        }
+      }
     }
   }
 }
@@ -174,13 +246,10 @@ ion-content { --background: var(--eni-bg); }
 // ── Status Card ────────────────────────────────────────
 .status-card {
   .coming-soon-badge {
-    margin-left: auto;
-    font-size: 10px; font-weight: 700;
+    margin-left: auto; font-size: 10px; font-weight: 700;
     padding: 2px 8px; border-radius: 20px;
-    background: var(--eni-surface-2);
-    border: 1px solid var(--eni-border);
-    color: var(--eni-text-4);
-    text-transform: uppercase; letter-spacing: 0.5px;
+    background: var(--eni-surface-2); border: 1px solid var(--eni-border);
+    color: var(--eni-text-4); text-transform: uppercase; letter-spacing: 0.5px;
   }
   .coming-soon-text { font-size: 13px; color: var(--eni-text-4); margin: 0; line-height: 1.5; }
 }
@@ -189,7 +258,6 @@ ion-content { --background: var(--eni-bg); }
 .inline-btns {
   display: flex; gap: 8px;
   ion-button { flex: 1; margin: 0; }
-
   .cancel-btn { --border-color: var(--eni-border); --color: var(--eni-text-3); --border-radius: 10px; }
   .confirm-btn { --background: var(--eni-accent); --color: #000; --border-radius: 10px; font-weight: 700; }
   .danger-btn { --background: var(--eni-danger-bg); --color: var(--eni-danger); --border-radius: 10px; border: 1px solid var(--eni-danger-border); font-weight: 700; }
@@ -199,21 +267,14 @@ ion-content { --background: var(--eni-bg); }
 .disconnect-card {
   margin-top: 8px;
   .disconnect-btn {
-    --background: var(--eni-danger-bg);
-    --color: var(--eni-danger);
-    --border-radius: 14px;
-    border: 1px solid var(--eni-danger-border);
-    font-weight: 700;
+    --background: var(--eni-danger-bg); --color: var(--eni-danger);
+    --border-radius: 14px; border: 1px solid var(--eni-danger-border); font-weight: 700;
   }
 }
 
 .disconnect-confirm-card {
-  background: var(--eni-surface);
-  border: 1px solid var(--eni-danger-border);
-  border-radius: 16px;
-  padding: 20px 16px;
-  margin-top: 8px;
-
+  background: var(--eni-surface); border: 1px solid var(--eni-danger-border);
+  border-radius: 16px; padding: 20px 16px; margin-top: 8px;
   .confirm-title { font-size: 16px; font-weight: 700; color: var(--eni-danger); margin: 0 0 6px; text-align: center; }
   .confirm-sub { font-size: 13px; color: var(--eni-text-3); margin: 0 0 16px; text-align: center; }
 }

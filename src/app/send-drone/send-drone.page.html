@@ -1,0 +1,50 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Send Mission</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <div class="page-intro">
+    <ion-icon name="paper-plane-outline" class="intro-icon"></ion-icon>
+    <h2 class="intro-title">Choose a Drone</h2>
+    <p class="intro-sub">Select the drone you want to assign missions to</p>
+  </div>
+
+  <div class="loading-container" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading drones...</p>
+  </div>
+
+  <div *ngIf="!isLoading">
+
+    <div class="drone-grid" *ngIf="drones.length > 0">
+      <div
+        class="drone-card"
+        *ngFor="let drone of drones"
+        (click)="selectDrone(drone)"
+        [class.loading]="loadingDroneId === drone.id"
+      >
+        <div class="drone-icon-wrap">
+          <ion-spinner *ngIf="loadingDroneId === drone.id" name="crescent"></ion-spinner>
+          <ion-icon *ngIf="loadingDroneId !== drone.id" name="hardware-chip-outline"></ion-icon>
+        </div>
+        <p class="drone-name">{{ drone.name }}</p>
+        <p class="drone-mac">{{ drone.mac }}</p>
+        <div class="select-arrow">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="drones.length === 0">
+      <ion-icon name="hardware-chip-outline"></ion-icon>
+      <p>No drones linked yet.<br/>Go to Drone Manager to add one.</p>
+    </div>
+
+  </div>
+</ion-content>

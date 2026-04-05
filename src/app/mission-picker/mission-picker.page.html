@@ -1,0 +1,121 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/send-drone"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Pick Missions</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="proceed()" [disabled]="selectedMissions.length === 0" class="proceed-btn">
+        Next ({{ selectedMissions.length }})
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- Drone + slot info -->
+  <div class="drone-info-bar">
+    <div class="drone-info-left">
+      <ion-icon name="hardware-chip-outline"></ion-icon>
+      <span class="drone-name">{{ drone?.name }}</span>
+    </div>
+    <span class="slots-badge">{{ emptySlotCount }} empty slot{{ emptySlotCount !== 1 ? 's' : '' }}</span>
+  </div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <ion-item lines="none" class="search-item">
+      <ion-icon name="search-outline" slot="start"></ion-icon>
+      <ion-input
+        [(ngModel)]="searchQuery"
+        placeholder="Search missions..."
+        [clearInput]="true"
+      ></ion-input>
+    </ion-item>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading projects...</p>
+  </div>
+
+  <div *ngIf="!isLoading">
+
+    <!-- Selected summary -->
+    <div class="selected-bar" *ngIf="selectedMissions.length > 0">
+      <p class="selected-label">Selected ({{ selectedMissions.length }}/{{ emptySlotCount }})</p>
+      <div class="selected-chips">
+        <div class="selected-chip" *ngFor="let m of selectedMissions; let i = index">
+          <span class="chip-index">{{ i + 1 }}</span>
+          <span class="chip-name">{{ m.name }}</span>
+          <ion-icon name="close-circle-outline" (click)="toggleMission(m)"></ion-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- Projects -->
+    <div class="projects-list">
+      <div class="project-block" *ngFor="let project of filteredProjects">
+
+        <!-- Project header -->
+        <div class="project-header" (click)="toggleProject(project.id)">
+          <div class="project-header-left">
+            <ion-icon name="folder-outline"></ion-icon>
+            <span class="project-name">{{ project.name }}</span>
+            <span class="mission-count-badge">{{ project.missions.length }}</span>
+          </div>
+          <ion-icon
+            [name]="isExpanded(project.id) ? 'chevron-down-outline' : 'chevron-forward-outline'"
+            class="expand-icon">
+          </ion-icon>
+        </div>
+
+        <!-- Missions -->
+        <div class="missions-list" *ngIf="isExpanded(project.id)">
+          <div
+            class="mission-row"
+            *ngFor="let mission of project.missions"
+            [class.selected]="isSelected(mission.id)"
+            (click)="toggleMission(mission)"
+          >
+            <div class="mission-row-left">
+              <div class="selection-badge" [class.active]="isSelected(mission.id)">
+                <span *ngIf="isSelected(mission.id)">{{ selectionIndex(mission.id) }}</span>
+              </div>
+              <div class="mission-info">
+                <span class="mission-name">{{ mission.name }}</span>
+                <span class="badge" [ngClass]="getStatusClass(mission.status)">{{ mission.status | uppercase }}</span>
+              </div>
+            </div>
+            <ion-icon
+              name="checkmark-circle-outline"
+              class="check-icon"
+              [class.visible]="isSelected(mission.id)">
+            </ion-icon>
+          </div>
+
+          <div class="no-missions" *ngIf="project.missions.length === 0">
+            <p>No missions in this project</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="filteredProjects.length === 0 && !isLoading">
+      <ion-icon name="map-outline"></ion-icon>
+      <p>No missions found</p>
+    </div>
+
+  </div>
+
+  <!-- Floating proceed button -->
+  <div class="fab-proceed" *ngIf="selectedMissions.length > 0" (click)="proceed()">
+    <ion-icon name="paper-plane-outline"></ion-icon>
+    <span>Assign to Slots ({{ selectedMissions.length }})</span>
+  </div>
+
+</ion-content>

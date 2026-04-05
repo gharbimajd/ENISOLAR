@@ -93,4 +93,18 @@ export class DroneService {
       map((res: HttpResponse) => res.data)
     );
   }
+freeSlot(droneId: number | string, userId: string, slotIndex: number): Observable<any> {
+  return from(CapacitorHttp.post({
+    url: `${this.base}/free_slot.php`,
+    data: {
+      drone_id: droneId.toString(),
+      user_id: userId,
+      slot_index: slotIndex
+    },
+    headers: { 'Content-Type': 'application/json' }
+  })).pipe(
+    map((res: HttpResponse) => res.data)
+  );
+}
+ 
 }

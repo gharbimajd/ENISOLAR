@@ -112,6 +112,18 @@ export const routes: Routes = [
   {
     path: 'buffer-manager',
     loadComponent: () => import('./buffer-manager/buffer-manager.page').then( m => m.BufferManagerPage)
+  },
+  {
+    path: 'send-drone',
+    loadComponent: () => import('./send-drone/send-drone.page').then( m => m.SendDronePage)
+  },
+  {
+    path: 'mission-picker',
+    loadComponent: () => import('./mission-picker/mission-picker.page').then( m => m.MissionPickerPage)
+  },
+  {
+    path: 'slot-assign',
+    loadComponent: () => import('./slot-assign/slot-assign.page').then( m => m.SlotAssignPage)
   }
 ];
 

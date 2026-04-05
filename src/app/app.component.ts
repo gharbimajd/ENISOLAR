@@ -23,6 +23,7 @@ import {
   folderOutline,
   settingsOutline,
   planetOutline,
+  paperPlaneOutline,
   play,
   stop,
   hardwareChipOutline,
@@ -83,6 +84,7 @@ export class AppComponent {
     { title: 'Manage Missions', url: '/manage-missions',  icon: 'albums-outline' },
     { title: 'Projects',        url: '/project-manager',  icon: 'folder-outline' },
     { title: 'My Drones', url: '/drone-manager', icon: 'hardware-chip-outline' },
+    { title: 'Send Drone',      url: '/send-drone',       icon: 'paper-plane-outline' },
     { title: 'Settings',        url: '/settings',         icon: 'settings-outline' },
   ];
 
@@ -97,6 +99,7 @@ export class AppComponent {
       'settings-outline': settingsOutline,
       'planet-outline': planetOutline,
       'play': play,
+      'paper-plane-outline': paperPlaneOutline,
       'stop': stop,
       'hardware-chip-outline': hardwareChipOutline,
       'folder-outline': folderOutline,

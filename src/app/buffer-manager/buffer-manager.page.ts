@@ -38,27 +38,33 @@ export class BufferManagerPage implements OnInit {
     this.drone = nav?.extras?.state?.['drone'];
   }
 
-  ngOnInit() {
-    this.loadData();
+ngOnInit() {
+  if (!this.drone) {
+    // Safety: if arrived without nav state, go back
+    this.router.navigateByUrl('/drone-manager');
+    return;
   }
-
-  loadData() {
+  this.loadData();
+}
+loadData(): Promise<void> {
+  return new Promise((resolve) => {
     const userId = localStorage.getItem('user_id');
-    if (!userId || !this.drone) return;
+    if (!userId || !this.drone) { resolve(); return; }
 
-    // Load slots
+    let done = 0;
+    const check = () => { if (++done === 2) resolve(); };
+
     this.droneService.getDroneSlots(this.drone.id, userId).subscribe({
-      next: (res: any) => { if (res.success) this.slots = res.slots; },
-      error: () => {}
+      next: (res: any) => { if (res.success) this.slots = res.slots; check(); },
+      error: () => check()
     });
 
-    // Load credits
     this.droneService.getUserCredits(userId).subscribe({
-      next: (res: any) => { if (res.success) this.credits = res.credits; },
-      error: () => {}
+      next: (res: any) => { if (res.success) this.credits = res.credits; check(); },
+      error: () => check()
     });
-  }
-
+  });
+}
   // ── Slot computed ─────────────────────────────────────
   get totalSlots(): number { return this.slots.length; }
 
@@ -80,26 +86,29 @@ export class BufferManagerPage implements OnInit {
   }
 
   // ── Purchase ──────────────────────────────────────────
-  purchaseSlots() {
-    const userId = localStorage.getItem('user_id');
-    if (!userId || !this.drone || this.isPurchasing) return;
-    this.isPurchasing = true;
+purchaseSlots() {
+  const userId = localStorage.getItem('user_id');
+  if (!userId || !this.drone || this.isPurchasing) return;
+  this.isPurchasing = true;
 
-    this.droneService.purchaseBuffer(this.drone.id, userId, this.slotsToAdd).subscribe({
-      next: (res: any) => {
-        this.isPurchasing = false;
-        if (res.success) {
-          this.credits = res.credits_remaining;
-          this.showToast(`${this.slotsToAdd} slot(s) added! ${res.credits_spent} credits spent.`, 'success');
-          this.slotsToAdd = 1;
-          this.loadData();
-        } else {
-          this.showToast(res.message, 'danger');
-        }
-      },
-      error: () => { this.isPurchasing = false; this.showToast('Purchase failed', 'danger'); }
-    });
-  }
+  this.droneService.purchaseBuffer(this.drone.id, userId, this.slotsToAdd).subscribe({
+    next: (res: any) => {
+      this.isPurchasing = false;
+      if (res.success) {
+        this.credits = res.credits_remaining;
+        this.showToast(`${this.slotsToAdd} slot(s) added! ${res.credits_spent} credits spent.`, 'success');
+        this.loadData().then(() => {
+          // ✅ Clamp slotsToAdd after slots are refreshed
+          const remaining = 5 - this.totalSlots;
+          this.slotsToAdd = remaining > 0 ? 1 : 0;
+        });
+      } else {
+        this.showToast(res.message, 'danger');
+      }
+    },
+    error: () => { this.isPurchasing = false; this.showToast('Purchase failed', 'danger'); }
+  });
+}
 
   // ── Get credits (no functionality yet) ───────────────
   getCredits() {
