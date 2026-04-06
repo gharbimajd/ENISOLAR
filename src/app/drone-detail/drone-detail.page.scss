@@ -278,3 +278,25 @@ ion-content { --background: var(--eni-bg); }
   .confirm-title { font-size: 16px; font-weight: 700; color: var(--eni-danger); margin: 0 0 6px; text-align: center; }
   .confirm-sub { font-size: 13px; color: var(--eni-text-3); margin: 0 0 16px; text-align: center; }
 }
+.live-control-card {
+  .mode-badge {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(var(--ion-color-primary-rgb), 0.12);
+    color: var(--ion-color-primary);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+ 
+  .live-desc {
+    font-size: 13px;
+    color: var(--ion-color-medium);
+    margin: 0 0 12px;
+    line-height: 1.5;
+  }
+ 
+  .live-btn {
+    --background: var(--ion-color-primary);
+  }
+}

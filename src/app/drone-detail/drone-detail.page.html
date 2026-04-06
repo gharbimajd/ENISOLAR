@@ -149,13 +149,18 @@
       </div>
     </div>
 
-    <div class="section-card status-card">
+    <div class="section-card live-control-card">
       <div class="section-header">
         <ion-icon name="wifi-outline"></ion-icon>
-        <span>Live Status</span>
-        <span class="coming-soon-badge">Coming Soon</span>
+        <span>Live Control</span>
+        <span class="mode-badge">MODE 2</span>
       </div>
-      <p class="coming-soon-text">Real-time drone telemetry will appear here once connected.</p>
+      <p class="live-desc">Connect directly to the HiveMQ broker to stream real-time telemetry and send commands.</p>
+      
+      <ion-button expand="block" class="live-btn" (click)="openCockpit()">
+        <ion-icon name="speedometer-outline" slot="start"></ion-icon>
+        Open Live Cockpit
+      </ion-button>
     </div>
 
     <div class="disconnect-card" *ngIf="!showDisconnectConfirm">

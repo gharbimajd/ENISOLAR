@@ -1,0 +1,223 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/drone-manager"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Live Cockpit</ion-title>
+    <ion-buttons slot="end">
+      <!-- Connection indicator -->
+      <div class="conn-indicator" [class.connected]="isConnected">
+        <ion-icon name="wifi-outline"></ion-icon>
+        <span>{{ isConnected ? 'Broker' : 'Offline' }}</span>
+      </div>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- Drone status bar -->
+  <div class="drone-status-bar">
+    <div class="drone-status-left">
+      <ion-icon name="hardware-chip-outline"></ion-icon>
+      <span class="drone-name">{{ drone?.name }}</span>
+    </div>
+    <div class="drone-online-badge" [class.online]="droneOnline" [class.offline]="!droneOnline">
+      <span class="online-dot"></span>
+      {{ droneOnline ? 'Online' : 'Offline' }}
+    </div>
+  </div>
+
+  <!-- Last seen -->
+  <p class="last-seen" *ngIf="lastSeen">Last telemetry: {{ lastSeen }}</p>
+
+  <!-- Flight State -->
+  <div class="flight-state-card">
+    <span class="state-label">Flight State</span>
+    <ion-badge [color]="flightStateColor" class="state-badge">{{ flightState }}</ion-badge>
+  </div>
+
+  <!-- ── EMERGENCY STOP ───────────────────────────────── -->
+  <button class="emergency-btn" (click)="emergencyStop()">
+    <ion-icon name="stop-circle-outline"></ion-icon>
+    EMERGENCY STOP
+  </button>
+
+  <!-- ── TELEMETRY GRID ──────────────────────────────── -->
+  <div class="telemetry-grid">
+
+    <!-- Battery -->
+    <div class="telem-card">
+      <div class="telem-icon-wrap" [class]="'bat-' + batteryColor">
+        <ion-icon name="battery-half-outline"></ion-icon>
+      </div>
+      <div class="telem-info">
+        <span class="telem-value">{{ telemetry.battery }}%</span>
+        <span class="telem-label">Battery</span>
+      </div>
+      <div class="battery-bar">
+        <div class="battery-fill" [style.width.%]="telemetry.battery" [class]="batteryColor"></div>
+      </div>
+    </div>
+
+    <!-- Altitude -->
+    <div class="telem-card">
+      <div class="telem-icon-wrap">
+        <ion-icon name="arrow-up-outline"></ion-icon>
+      </div>
+      <div class="telem-info">
+        <span class="telem-value">{{ telemetry.altitude | number:'1.1-1' }}m</span>
+        <span class="telem-label">Altitude</span>
+      </div>
+    </div>
+
+    <!-- Speed -->
+    <div class="telem-card">
+      <div class="telem-icon-wrap">
+        <ion-icon name="speedometer-outline"></ion-icon>
+      </div>
+      <div class="telem-info">
+        <span class="telem-value">{{ telemetry.speed | number:'1.1-1' }}m/s</span>
+        <span class="telem-label">Speed</span>
+      </div>
+    </div>
+
+    <!-- Heading -->
+    <div class="telem-card">
+      <div class="telem-icon-wrap">
+        <ion-icon name="compass-outline"></ion-icon>
+      </div>
+      <div class="telem-info">
+        <span class="telem-value">{{ telemetry.heading | number:'1.0-0' }}° {{ headingLabel }}</span>
+        <span class="telem-label">Heading</span>
+      </div>
+    </div>
+
+    <!-- GPS -->
+    <div class="telem-card wide">
+      <div class="telem-icon-wrap">
+        <ion-icon name="location-outline"></ion-icon>
+      </div>
+      <div class="telem-info">
+        <span class="telem-value gps">
+          {{ telemetry.lat !== null ? (telemetry.lat | number:'1.5-5') : '--' }},
+          {{ telemetry.lng !== null ? (telemetry.lng | number:'1.5-5') : '--' }}
+        </span>
+        <span class="telem-label">GPS Position</span>
+      </div>
+    </div>
+
+    <!-- Signal -->
+    <div class="telem-card wide">
+      <div class="telem-icon-wrap">
+        <ion-icon name="radio-outline"></ion-icon>
+      </div>
+      <div class="telem-info">
+        <span class="telem-value">{{ telemetry.signal_strength }} dBm</span>
+        <span class="telem-label">Signal Strength</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── QUICK COMMANDS ──────────────────────────────── -->
+  <div class="section-card commands-card">
+    <div class="section-header">
+      <ion-icon name="power-outline"></ion-icon>
+      <span>Quick Commands</span>
+    </div>
+
+    <div class="commands-grid">
+      <button class="cmd-btn arm" (click)="sendCommand('ARM')">
+        <ion-icon name="rocket-outline"></ion-icon>
+        <span>Arm</span>
+      </button>
+      <button class="cmd-btn disarm" (click)="sendCommand('DISARM')">
+        <ion-icon name="close-circle-outline"></ion-icon>
+        <span>Disarm</span>
+      </button>
+      <button class="cmd-btn takeoff" (click)="sendCommand('TAKEOFF')">
+        <ion-icon name="arrow-up-outline"></ion-icon>
+        <span>Take Off</span>
+      </button>
+      <button class="cmd-btn land" (click)="sendCommand('LAND')">
+        <ion-icon name="arrow-down-outline"></ion-icon>
+        <span>Land</span>
+      </button>
+      <button class="cmd-btn rth" (click)="sendCommand('RTH')">
+        <ion-icon name="home-outline"></ion-icon>
+        <span>Return Home</span>
+      </button>
+      <button class="cmd-btn loiter" (click)="sendCommand('LOITER')">
+        <ion-icon name="pause-outline"></ion-icon>
+        <span>Hold</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── MISSION SENDER ──────────────────────────────── -->
+  <div class="section-card mission-card">
+    <div class="section-header" (click)="showMissionPanel = !showMissionPanel">
+      <ion-icon name="paper-plane-outline"></ion-icon>
+      <span>Send Mission</span>
+      <ion-icon [name]="showMissionPanel ? 'chevron-up-outline' : 'chevron-down-outline'" class="toggle-icon"></ion-icon>
+    </div>
+
+    <div *ngIf="showMissionPanel">
+
+      <!-- Search -->
+      <ion-item lines="none" class="search-item">
+        <ion-icon name="search-outline" slot="start"></ion-icon>
+        <ion-input [(ngModel)]="searchQuery" (ionInput)="filterMissions()" placeholder="Search missions..." [clearInput]="true"></ion-input>
+      </ion-item>
+
+      <!-- Loading -->
+      <div class="missions-loading" *ngIf="isLoadingMissions">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+
+      <!-- Mission list -->
+      <div class="missions-list" *ngIf="!isLoadingMissions">
+        <div
+          class="mission-row"
+          *ngFor="let mission of filteredMissions"
+          [class.selected]="selectedMission?.id === mission.id"
+          (click)="selectMission(mission)"
+        >
+          <div class="mission-row-info">
+            <span class="mission-name">{{ mission.name }}</span>
+            <div class="mission-meta">
+              <span class="badge" [ngClass]="getStatusClass(mission.status)">{{ mission.status | uppercase }}</span>
+              <span class="meta-item">{{ mission.waypointCount }} waypoints</span>
+              <span class="meta-item">{{ mission.estimatedTime }}s</span>
+            </div>
+          </div>
+          <ion-icon name="checkmark-circle-outline" class="check-icon" [class.visible]="selectedMission?.id === mission.id"></ion-icon>
+        </div>
+
+        <div class="no-missions" *ngIf="filteredMissions.length === 0">
+          <p>No missions found</p>
+        </div>
+      </div>
+
+      <!-- Send button -->
+      <ion-button
+        expand="block"
+        class="send-mission-btn"
+        [disabled]="!selectedMission || !isConnected || isSendingMission"
+        (click)="sendMission()"
+      >
+        <ion-icon name="paper-plane-outline" slot="start"></ion-icon>
+        {{ isSendingMission ? 'Waiting for ACK…' : 'Send to Drone' }}
+      </ion-button>
+
+      <!-- ACK received -->
+      <div class="ack-banner" *ngIf="ackReceived">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+        <span>Drone confirmed mission received!</span>
+      </div>
+
+    </div>
+  </div>
+
+</ion-content>

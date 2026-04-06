@@ -1,6 +1,16 @@
 :host {
-  --card-bg: var(--ion-color-light);
+  // Use step-100 or item-background for cards so they turn dark in dark mode
+  --card-bg: var(--ion-item-background, var(--ion-background-color));
   --card-radius: 18px;
+  // Use a variable for the shadow so it's subtle in dark mode
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+// In Dark mode, we make the shadow even darker or transparent
+@media (prefers-color-scheme: dark) {
+  :host {
+    --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  }
 }
 
 .page-intro {
@@ -17,7 +27,8 @@
     font-size: 22px;
     font-weight: 700;
     margin: 0 0 6px;
-    color: var(--ion-color-dark);
+    // USE TEXT-COLOR instead of DARK
+    color: var(--ion-text-color);
   }
 
   .intro-sub {
@@ -47,6 +58,8 @@
 .drone-card {
   background: var(--card-bg);
   border-radius: var(--card-radius);
+  // Add a slight border for dark mode definition
+  border: 1px solid var(--ion-color-step-150, #c8c7cc);
   padding: 20px 14px 16px;
   display: flex;
   flex-direction: column;
@@ -54,12 +67,12 @@
   gap: 8px;
   cursor: pointer;
   position: relative;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  box-shadow: var(--card-shadow);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 
   &:active {
     transform: scale(0.97);
-    box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
 
   .drone-icon-wrap {
@@ -80,7 +93,8 @@
   .drone-name {
     font-size: 14px;
     font-weight: 700;
-    color: var(--ion-color-dark);
+    // USE TEXT-COLOR
+    color: var(--ion-text-color);
     margin: 0;
     text-align: center;
   }
@@ -90,6 +104,7 @@
     color: var(--ion-color-medium);
     margin: 0;
     text-align: center;
+    font-family: monospace;
   }
 
   .select-arrow {
@@ -98,7 +113,7 @@
     right: 12px;
     ion-icon {
       font-size: 16px;
-      color: var(--ion-color-medium);
+      color: var(--ion-color-step-400); // More subtle than medium
     }
   }
 }
@@ -114,8 +129,8 @@
 
   ion-icon {
     font-size: 56px;
-    color: var(--ion-color-medium);
-    opacity: 0.4;
+    color: var(--ion-color-step-300);
+    opacity: 0.5;
   }
 
   p {

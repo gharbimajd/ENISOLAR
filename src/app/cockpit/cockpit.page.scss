@@ -1,0 +1,360 @@
+.conn-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ion-color-danger);
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(var(--ion-color-danger-rgb), 0.1);
+
+  &.connected {
+    color: var(--ion-color-success);
+    background: rgba(var(--ion-color-success-rgb), 0.1);
+  }
+
+  ion-icon { font-size: 14px; }
+}
+
+.drone-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--ion-item-background, var(--ion-background-color));
+  border: 1px solid var(--ion-color-step-150, #c8c7cc);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 6px;
+
+  .drone-status-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    ion-icon { font-size: 20px; color: var(--ion-color-primary); }
+    .drone-name { font-size: 14px; font-weight: 700; color: var(--ion-text-color); }
+  }
+}
+
+.drone-online-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+
+  &.online {
+    color: var(--ion-color-success);
+    background: rgba(var(--ion-color-success-rgb), 0.12);
+    .online-dot { background: var(--ion-color-success); }
+  }
+
+  &.offline {
+    color: var(--ion-color-medium);
+    background: rgba(var(--ion-color-medium-rgb), 0.12);
+    .online-dot { background: var(--ion-color-medium); }
+  }
+
+  .online-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+}
+
+.last-seen {
+  font-size: 11px;
+  color: var(--ion-color-medium);
+  text-align: center;
+  margin: 0 0 10px;
+}
+
+.flight-state-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--ion-item-background, var(--ion-background-color));
+  border: 1px solid var(--ion-color-step-150, #c8c7cc);
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin-bottom: 14px;
+
+  .state-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ion-color-medium);
+  }
+
+  .state-badge {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+}
+
+// ── Emergency Stop ────────────────────────────────────
+.emergency-btn {
+  width: 100%;
+  background: var(--ion-color-danger);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(var(--ion-color-danger-rgb), 0.4);
+  transition: transform 0.1s ease;
+
+  &:active { transform: scale(0.98); }
+
+  ion-icon { font-size: 28px; }
+}
+
+// ── Telemetry Grid ────────────────────────────────────
+.telemetry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.telem-card {
+  background: var(--ion-item-background, var(--ion-background-color));
+  border: 1px solid var(--ion-color-step-150, #c8c7cc);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &.wide {
+    grid-column: span 2;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .telem-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(var(--ion-color-primary-rgb), 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    ion-icon { font-size: 20px; color: var(--ion-color-primary); }
+
+    &.bat-success { background: rgba(var(--ion-color-success-rgb), 0.1); ion-icon { color: var(--ion-color-success); } }
+    &.bat-warning { background: rgba(var(--ion-color-warning-rgb), 0.1); ion-icon { color: var(--ion-color-warning); } }
+    &.bat-danger  { background: rgba(var(--ion-color-danger-rgb), 0.1);  ion-icon { color: var(--ion-color-danger);  } }
+  }
+
+  .telem-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+
+    .telem-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ion-text-color);
+
+      &.gps { font-size: 13px; }
+    }
+
+    .telem-label {
+      font-size: 11px;
+      color: var(--ion-color-medium);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+  }
+
+  .battery-bar {
+    height: 4px;
+    background: var(--ion-color-step-150, #c8c7cc);
+    border-radius: 2px;
+    overflow: hidden;
+
+    .battery-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.5s ease;
+
+      &.success { background: var(--ion-color-success); }
+      &.warning { background: var(--ion-color-warning); }
+      &.danger  { background: var(--ion-color-danger);  }
+    }
+  }
+}
+
+// ── Section Card ──────────────────────────────────────
+.section-card {
+  background: var(--ion-item-background, var(--ion-background-color));
+  border: 1px solid var(--ion-color-step-150, #c8c7cc);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 14px;
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    cursor: pointer;
+
+    ion-icon { font-size: 20px; color: var(--ion-color-primary); }
+    span { font-size: 15px; font-weight: 700; color: var(--ion-text-color); flex: 1; }
+    .toggle-icon { font-size: 18px; color: var(--ion-color-medium); }
+  }
+}
+
+// ── Commands Grid ─────────────────────────────────────
+.commands-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.cmd-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--ion-color-step-100, #e6e6e6);
+  border-radius: 12px;
+  padding: 12px 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: transform 0.1s ease;
+
+  &:active { transform: scale(0.95); }
+
+  ion-icon { font-size: 22px; }
+
+  &.arm     { background: rgba(var(--ion-color-success-rgb), 0.12); color: var(--ion-color-success); border-color: rgba(var(--ion-color-success-rgb), 0.2); }
+  &.disarm  { background: rgba(var(--ion-color-medium-rgb), 0.12);  color: var(--ion-color-medium); border-color: rgba(var(--ion-color-medium-rgb), 0.2); }
+  &.takeoff { background: rgba(var(--ion-color-primary-rgb), 0.12); color: var(--ion-color-primary); border-color: rgba(var(--ion-color-primary-rgb), 0.2); }
+  &.land    { background: rgba(var(--ion-color-warning-rgb), 0.12); color: var(--ion-color-warning-shade); border-color: rgba(var(--ion-color-warning-rgb), 0.2); }
+  &.rth     { background: rgba(var(--ion-color-tertiary-rgb), 0.12); color: var(--ion-color-tertiary); border-color: rgba(var(--ion-color-tertiary-rgb), 0.2); }
+  &.loiter  { background: rgba(var(--ion-color-primary-rgb), 0.08); color: var(--ion-color-primary); border-color: rgba(var(--ion-color-primary-rgb), 0.2); }
+}
+
+// ── Mission Sender ────────────────────────────────────
+.search-item {
+  --background: var(--ion-color-step-50, #f2f2f2);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  border: 1px solid var(--ion-color-step-150, #c8c7cc);
+}
+
+.missions-loading {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.missions-list {
+  max-height: 280px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+.mission-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-bottom: 6px;
+  transition: background 0.15s ease;
+  background: var(--ion-color-step-50, #f2f2f2);
+  border: 1px solid var(--ion-color-step-100, #e6e6e6);
+
+  &.selected { 
+    background: rgba(var(--ion-color-primary-rgb), 0.08); 
+    border-color: rgba(var(--ion-color-primary-rgb), 0.3);
+  }
+
+  .mission-row-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+
+    .mission-name { font-size: 14px; font-weight: 600; color: var(--ion-text-color); }
+
+    .mission-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+
+      .meta-item { font-size: 11px; color: var(--ion-color-medium); }
+    }
+  }
+
+  .check-icon {
+    font-size: 22px;
+    color: var(--ion-color-primary);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    &.visible { opacity: 1; }
+  }
+}
+
+.no-missions {
+  text-align: center;
+  padding: 20px;
+  color: var(--ion-color-medium);
+  font-size: 14px;
+}
+
+.send-mission-btn {
+  --background: var(--ion-color-primary);
+  margin-top: 4px;
+}
+
+.ack-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(var(--ion-color-success-rgb), 0.12);
+  color: var(--ion-color-success);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid rgba(var(--ion-color-success-rgb), 0.2);
+
+  ion-icon { font-size: 20px; }
+}
+
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  text-transform: uppercase;
+
+  &.ready   { background: rgba(var(--ion-color-success-rgb), 0.15); color: var(--ion-color-success); }
+  &.pending { background: rgba(var(--ion-color-warning-rgb), 0.15); color: var(--ion-color-warning-shade); }
+  &.draft   { background: rgba(var(--ion-color-medium-rgb), 0.15);  color: var(--ion-color-medium); }
+  &.done    { background: rgba(var(--ion-color-primary-rgb), 0.15); color: var(--ion-color-primary); }
+}

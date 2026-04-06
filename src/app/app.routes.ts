@@ -124,6 +124,10 @@ export const routes: Routes = [
   {
     path: 'slot-assign',
     loadComponent: () => import('./slot-assign/slot-assign.page').then( m => m.SlotAssignPage)
+  },
+  {
+    path: 'cockpit',
+    loadComponent: () => import('./cockpit/cockpit.page').then( m => m.CockpitPage)
   }
 ];
 

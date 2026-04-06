@@ -10,7 +10,7 @@ import {
   hardwareChipOutline, pencilOutline, checkmarkOutline,
   closeOutline, wifiOutline, calendarOutline, bluetoothOutline,
   layersOutline, addCircleOutline, rocketOutline,
-  ellipseOutline, lockClosedOutline, trashOutline
+  ellipseOutline, lockClosedOutline, trashOutline,speedometerOutline
 } from 'ionicons/icons';
 import { environment } from 'src/environments/environment';
 
@@ -48,7 +48,7 @@ export class DroneDetailPage implements OnInit {
       hardwareChipOutline, pencilOutline, checkmarkOutline,
       closeOutline, wifiOutline, calendarOutline, bluetoothOutline,
       layersOutline, addCircleOutline, rocketOutline,
-      ellipseOutline, lockClosedOutline, trashOutline
+      ellipseOutline, lockClosedOutline, trashOutline,speedometerOutline
     });
     const nav = this.router.currentNavigation();
     this.drone = nav?.extras?.state?.['drone'];
@@ -223,5 +223,12 @@ export class DroneDetailPage implements OnInit {
   async showToast(message: string, color: string) {
     const toast = await this.toastCtrl.create({ message, duration: 2500, color, position: 'bottom' });
     toast.present();
+  }
+  openCockpit() {
+    if (!this.drone) return;
+    
+    this.router.navigateByUrl('/cockpit', {
+      state: { drone: this.drone }
+    });
   }
 }
