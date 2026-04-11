@@ -1,0 +1,395 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button *ngIf="currentView !== 'main'" (click)="goBack()">
+        <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-back-button *ngIf="currentView === 'main'" defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <span *ngIf="currentView === 'main'">SD Card</span>
+      <span *ngIf="currentView === 'mission_preview'">{{ selectedMission?.name }}</span>
+      <span *ngIf="currentView === 'queue_preview'">{{ selectedQueue?.name }}</span>
+      <span *ngIf="currentView === 'queue_edit'">{{ isCreatingNewQueue ? 'New Queue' : 'Edit Queue' }}</span>
+      <span *ngIf="currentView === 'add_from_db'">Add Mission</span>
+    </ion-title>
+    <ion-buttons slot="end">
+      <!-- Refresh -->
+      <ion-button *ngIf="currentView === 'main'" (click)="requestSdList()" [disabled]="!isConnected || isLoadingSd">
+        <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <!-- Connection badge -->
+      <div class="conn-dot" [class.on]="isConnected" [class.off]="!isConnected"></div>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Tabs — only on main view -->
+  <div class="tabs-bar" *ngIf="currentView === 'main'">
+    <button class="tab-btn" [class.active]="activeTab === 'missions'" (click)="activeTab = 'missions'">
+      <ion-icon name="document-outline"></ion-icon>
+      Missions
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'queues'" (click)="activeTab = 'queues'">
+      <ion-icon name="list-outline"></ion-icon>
+      Queues
+    </button>
+  </div>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- MAIN VIEW                                         -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <div *ngIf="currentView === 'main'">
+
+    <!-- Drone bar -->
+    <div class="drone-bar">
+      <ion-icon name="hardware-chip-outline"></ion-icon>
+      <span>{{ drone?.name }}</span>
+      <span class="sd-status" [class.online]="isConnected">{{ isConnected ? 'Connected' : 'Offline' }}</span>
+    </div>
+
+    <!-- Stop execution button (always visible when executing) -->
+    <button class="stop-btn" *ngIf="isExecuting" (click)="stopExecution()">
+      <ion-icon name="stop-outline"></ion-icon>
+      STOP EXECUTION
+    </button>
+
+    <!-- ── MISSIONS TAB ─────────────────────────────── -->
+    <div *ngIf="activeTab === 'missions'">
+
+      <!-- Loading -->
+      <div class="loading-row" *ngIf="isLoadingSd">
+        <ion-spinner name="crescent"></ion-spinner>
+        <span>Reading SD card...</span>
+      </div>
+
+      <!-- SD Mission list -->
+      <div *ngIf="!isLoadingSd">
+        <div class="section-label">
+          <span>On SD Card ({{ sdMissions.length }})</span>
+          <ion-button size="small" fill="outline" (click)="openAddFromDb()">
+            <ion-icon name="add-outline" slot="start"></ion-icon>
+            Add
+          </ion-button>
+        </div>
+
+        <div class="empty-state" *ngIf="sdMissions.length === 0">
+          <ion-icon name="document-outline"></ion-icon>
+          <p>No missions on SD card.<br/>Tap Add to send one from your library.</p>
+        </div>
+
+        <div
+          class="file-card"
+          *ngFor="let mission of sdMissions"
+          (click)="openMissionPreview(mission)"
+        >
+          <div class="file-icon mission-icon">
+            <ion-icon name="document-outline"></ion-icon>
+          </div>
+          <div class="file-info">
+            <span class="file-name">{{ mission.name }}</span>
+            <span class="file-meta">{{ mission.waypoint_count }} waypoints · {{ mission.estimated_time }}s</span>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="file-arrow"></ion-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── QUEUES TAB ───────────────────────────────── -->
+    <div *ngIf="activeTab === 'queues'">
+
+      <div class="section-label">
+        <span>Queues ({{ sdQueues.length }})</span>
+        <ion-button size="small" fill="outline" (click)="startCreateQueue()">
+          <ion-icon name="add-outline" slot="start"></ion-icon>
+          New Queue
+        </ion-button>
+      </div>
+
+      <div class="loading-row" *ngIf="isLoadingSd">
+        <ion-spinner name="crescent"></ion-spinner>
+        <span>Reading SD card...</span>
+      </div>
+
+      <div class="empty-state" *ngIf="!isLoadingSd && sdQueues.length === 0">
+        <ion-icon name="list-outline"></ion-icon>
+        <p>No queues yet.<br/>Create one to run multiple missions in order.</p>
+      </div>
+
+      <div
+        class="file-card queue-card"
+        *ngFor="let queue of sdQueues"
+        (click)="openQueuePreview(queue)"
+      >
+        <div class="file-icon queue-icon">
+          <ion-icon name="list-outline"></ion-icon>
+        </div>
+        <div class="file-info">
+          <span class="file-name">{{ queue.name }}</span>
+          <span class="file-meta">{{ queue.missions.length }} mission{{ queue.missions.length !== 1 ? 's' : '' }}</span>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="file-arrow"></ion-icon>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- MISSION PREVIEW                                   -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <div *ngIf="currentView === 'mission_preview' && selectedMission">
+
+    <div class="preview-icon-wrap mission">
+      <ion-icon name="document-outline"></ion-icon>
+    </div>
+
+    <h2 class="preview-title">{{ selectedMission.name }}</h2>
+
+    <div class="meta-grid">
+      <div class="meta-card">
+        <ion-icon name="navigate-outline"></ion-icon>
+        <span class="meta-val">{{ selectedMission.waypoint_count }}</span>
+        <span class="meta-lbl">Waypoints</span>
+      </div>
+      <div class="meta-card">
+        <ion-icon name="time-outline"></ion-icon>
+        <span class="meta-val">{{ selectedMission.estimated_time }}s</span>
+        <span class="meta-lbl">Est. Time</span>
+      </div>
+      <div class="meta-card">
+        <ion-icon name="rocket-outline"></ion-icon>
+        <span class="meta-val">{{ selectedMission.total_distance | number:'1.0-0' }}m</span>
+        <span class="meta-lbl">Distance</span>
+      </div>
+    </div>
+
+    <ion-button
+      expand="block"
+      class="execute-btn"
+      [disabled]="!isConnected || isExecuting"
+      (click)="executeMission(selectedMission)"
+    >
+      <ion-icon name="play-outline" slot="start"></ion-icon>
+      {{ isExecuting ? 'Executing...' : 'Execute Mission' }}
+    </ion-button>
+
+    <ion-button
+      expand="block"
+      fill="outline"
+      color="danger"
+      class="delete-btn"
+      [disabled]="deletingMissionId === selectedMission.id"
+      (click)="deleteMissionFromSd(selectedMission)"
+    >
+      <ion-icon name="trash-outline" slot="start"></ion-icon>
+      {{ deletingMissionId === selectedMission.id ? 'Deleting...' : 'Remove from SD' }}
+    </ion-button>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- QUEUE PREVIEW                                     -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <div *ngIf="currentView === 'queue_preview' && selectedQueue">
+
+    <div class="preview-icon-wrap queue">
+      <ion-icon name="list-outline"></ion-icon>
+    </div>
+
+    <h2 class="preview-title">{{ selectedQueue.name }}</h2>
+    <p class="preview-sub">{{ selectedQueue.missions.length }} mission{{ selectedQueue.missions.length !== 1 ? 's' : '' }} in queue</p>
+
+    <!-- Mission order list -->
+    <div class="queue-mission-list">
+      <div class="queue-mission-row" *ngFor="let m of selectedQueue.missions; let i = index">
+        <div class="queue-index">{{ i + 1 }}</div>
+        <div class="queue-mission-info">
+          <span class="queue-mission-name">{{ m.name }}</span>
+          <span class="queue-mission-meta">{{ m.waypoint_count }} waypoints</span>
+        </div>
+      </div>
+    </div>
+
+    <ion-button
+      expand="block"
+      class="execute-btn"
+      [disabled]="!isConnected || isExecuting"
+      (click)="executeQueue(selectedQueue)"
+    >
+      <ion-icon name="play-outline" slot="start"></ion-icon>
+      {{ isExecuting ? 'Executing Queue...' : 'Execute Queue' }}
+    </ion-button>
+
+    <ion-button expand="block" fill="outline" class="edit-btn" (click)="openQueueEdit(selectedQueue)">
+      <ion-icon name="create-outline" slot="start"></ion-icon>
+      Edit Queue
+    </ion-button>
+
+    <ion-button
+      expand="block"
+      fill="outline"
+      color="danger"
+      class="delete-btn"
+      [disabled]="deletingQueueName === selectedQueue.name"
+      (click)="deleteQueue(selectedQueue)"
+    >
+      <ion-icon name="trash-outline" slot="start"></ion-icon>
+      {{ deletingQueueName === selectedQueue.name ? 'Deleting...' : 'Delete Queue' }}
+    </ion-button>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- QUEUE EDIT / CREATE                               -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <div *ngIf="currentView === 'queue_edit' && editingQueue">
+
+    <!-- Queue name input -->
+    <ion-item lines="none" class="queue-name-item">
+      <ion-input
+        [(ngModel)]="newQueueName"
+        placeholder="Queue name (e.g. Morning Survey)"
+        [clearInput]="true"
+      ></ion-input>
+    </ion-item>
+
+    <!-- Missions in queue -->
+    <div class="section-label">
+      <span>Missions in Queue ({{ editingQueue.missions.length }})</span>
+    </div>
+
+    <div class="empty-state small" *ngIf="editingQueue.missions.length === 0">
+      <p>Add missions from SD card below</p>
+    </div>
+
+    <div
+      class="queue-edit-row"
+      *ngFor="let m of editingQueue.missions; let i = index"
+      [draggable]="true"
+      (dragstart)="onDragStart(i)"
+      (dragover)="onDragOver($event, i)"
+      (drop)="onDrop(i)"
+      (dragend)="onDragEnd()"
+    >
+      <div class="queue-index">{{ i + 1 }}</div>
+      <ion-icon name="reorder-three-outline" class="drag-handle"></ion-icon>
+      <span class="queue-edit-name">{{ m.name }}</span>
+      <ion-button fill="clear" color="danger" (click)="removeMissionFromQueue(i)">
+        <ion-icon name="close-circle-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+
+    <!-- Add from SD missions -->
+    <div class="section-label top-margin">
+      <span>Add from SD Card</span>
+    </div>
+
+    <div class="empty-state small" *ngIf="sdMissions.length === 0">
+      <p>No missions on SD card yet</p>
+    </div>
+
+    <div
+      class="add-mission-row"
+      *ngFor="let m of sdMissions"
+      (click)="addMissionToQueue(m)"
+      [class.in-queue]="isMissionInQueue(m.id)"
+    >
+      <ion-icon name="document-outline"></ion-icon>
+      <span>{{ m.name }}</span>
+      <ion-icon
+        name="checkmark-circle-outline"
+        class="in-queue-check"
+        *ngIf="isMissionInQueue(m.id)"
+      ></ion-icon>
+      <ion-icon
+        name="add-outline"
+        class="add-icon"
+        *ngIf="!isMissionInQueue(m.id)"
+      ></ion-icon>
+    </div>
+
+    <!-- Save button -->
+    <ion-button
+      expand="block"
+      class="save-queue-btn"
+      [disabled]="!isConnected || isSavingQueue || !newQueueName.trim() || editingQueue.missions.length === 0"
+      (click)="saveQueue()"
+    >
+      <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+      {{ isSavingQueue ? 'Saving to SD...' : 'Save Queue to SD' }}
+    </ion-button>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- ADD FROM DB                                       -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <div *ngIf="currentView === 'add_from_db'">
+
+    <ion-item lines="none" class="search-item">
+      <ion-icon name="search-outline" slot="start"></ion-icon>
+      <ion-input
+        [(ngModel)]="searchQuery"
+        (ionInput)="filterMissions()"
+        placeholder="Search your missions..."
+        [clearInput]="true"
+      ></ion-input>
+    </ion-item>
+
+    <div class="loading-row" *ngIf="isLoadingDb">
+      <ion-spinner name="crescent"></ion-spinner>
+      <span>Loading missions...</span>
+    </div>
+
+    <div *ngIf="!isLoadingDb">
+      <div
+        class="db-mission-row"
+        *ngFor="let mission of filteredDbMissions"
+        [class.on-sd]="isOnSd(mission.id)"
+      >
+        <div class="db-mission-info">
+          <span class="db-mission-name">{{ mission.name }}</span>
+          <div class="db-mission-meta">
+            <span class="badge" [ngClass]="getStatusClass(mission.status)">{{ mission.status | uppercase }}</span>
+            <span class="meta-text">{{ mission.waypointCount }} waypoints</span>
+          </div>
+        </div>
+
+        <div class="db-mission-action">
+          <span class="on-sd-label" *ngIf="isOnSd(mission.id)">
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            On SD
+          </span>
+          <ion-button
+            *ngIf="!isOnSd(mission.id)"
+            size="small"
+            [disabled]="sendingMissionId === mission.id || !isConnected"
+            (click)="sendMissionToSd(mission)"
+          >
+            <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+            {{ sendingMissionId === mission.id ? 'Sending...' : 'Send to SD' }}
+          </ion-button>
+          <ion-button
+            *ngIf="isOnSd(mission.id)"
+            size="small"
+            fill="outline"
+            [disabled]="sendingMissionId === mission.id || !isConnected"
+            (click)="sendMissionToSd(mission)"
+          >
+            <ion-icon name="refresh-outline" slot="start"></ion-icon>
+            {{ sendingMissionId === mission.id ? 'Updating...' : 'Update' }}
+          </ion-button>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="filteredDbMissions.length === 0">
+        <ion-icon name="document-outline"></ion-icon>
+        <p>No missions found</p>
+      </div>
+    </div>
+
+  </div>
+
+</ion-content>

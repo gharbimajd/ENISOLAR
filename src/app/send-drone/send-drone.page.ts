@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router'; // <-- Added ActivatedRoute
 import { DroneService, Drone } from '../services/drone.service';
 import { addIcons } from 'ionicons';
 import { hardwareChipOutline, paperPlaneOutline, chevronForwardOutline } from 'ionicons/icons';
@@ -21,18 +22,38 @@ export class SendDronePage implements OnInit {
   drones: Drone[] = [];
   isLoading = true;
   loadingDroneId: string | null = null;
+  mode: 'http' | 'sd' = 'http'; // <-- Variable to store where we came from
   private base = environment.apiUrl;
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute, // <-- Inject ActivatedRoute
     private droneService: DroneService,
     private toastCtrl: ToastController
   ) {
     addIcons({ hardwareChipOutline, paperPlaneOutline, chevronForwardOutline });
   }
 
-  ngOnInit() { this.loadDrones(); }
-  ionViewWillEnter() { this.loadDrones(); }
+ngOnInit() { 
+    // Remove the queryParams subscription from here!
+    this.loadDrones(); 
+  }
+
+  ionViewWillEnter() { 
+    // 1. Read the mode every time the view enters using snapshot
+    const currentMode = this.route.snapshot.queryParams['mode'];
+    
+    if (currentMode === 'sd') {
+      this.mode = 'sd';
+    } else {
+      this.mode = 'http';
+    }
+
+    console.log("Entered Send-Drone Page. Mode is set to:", this.mode); // <-- This will help us debug
+
+    // 2. Load drones
+    this.loadDrones(); 
+  }
 
   loadDrones() {
     const userId = localStorage.getItem('user_id');
@@ -45,6 +66,16 @@ export class SendDronePage implements OnInit {
   }
 
   selectDrone(drone: Drone) {
+    console.log("Clicked drone. Current mode is:", this.mode);
+    // === IF WE CAME FROM SD MANAGER ===
+    if (this.mode === 'sd') {
+      this.router.navigateByUrl('/sd-manager', {
+        state: { drone: drone }
+      });
+      return;
+    }
+
+    // === IF WE CAME FROM SEND MISSION (HTTP) ===
     const userId = localStorage.getItem('user_id');
     if (!userId) return;
     this.loadingDroneId = drone.id;

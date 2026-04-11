@@ -231,4 +231,10 @@ export class DroneDetailPage implements OnInit {
       state: { drone: this.drone }
     });
   }
+  openSdManager() {
+  if (!this.drone) return;
+  this.router.navigateByUrl('/sd-manager', {
+    state: { drone: this.drone }
+  });
+}
 }

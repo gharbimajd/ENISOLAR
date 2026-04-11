@@ -1,0 +1,417 @@
+.conn-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+  &.on  { background: var(--ion-color-success); }
+  &.off { background: var(--ion-color-medium); }
+}
+
+// ── Tabs ──────────────────────────────────────────────
+.tabs-bar {
+  display: flex;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  padding: 0 16px;
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 0;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ion-color-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  ion-icon { font-size: 18px; }
+
+  &.active {
+    color: var(--ion-color-primary);
+    border-bottom-color: var(--ion-color-primary);
+  }
+}
+
+// ── Drone bar ─────────────────────────────────────────
+.drone-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+
+  ion-icon { font-size: 20px; color: var(--ion-color-primary); }
+  span:first-of-type { font-size: 14px; font-weight: 700; color: var(--ion-color-dark); flex: 1; }
+
+  .sd-status {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    &.online { background: rgba(var(--ion-color-success-rgb), 0.12); color: var(--ion-color-success); }
+    &:not(.online) { background: rgba(var(--ion-color-medium-rgb), 0.12); color: var(--ion-color-medium); }
+  }
+}
+
+// ── Stop button ───────────────────────────────────────
+.stop-btn {
+  width: 100%;
+  background: var(--ion-color-danger);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  ion-icon { font-size: 22px; }
+}
+
+// ── Section label ─────────────────────────────────────
+.section-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 10px;
+
+  span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ion-color-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &.top-margin { margin-top: 16px; }
+}
+
+// ── Loading row ───────────────────────────────────────
+.loading-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 30px 0;
+  color: var(--ion-color-medium);
+  font-size: 14px;
+}
+
+// ── File cards (main view) ────────────────────────────
+.file-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--ion-color-light);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+
+  &:active { transform: scale(0.98); }
+
+  .file-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    ion-icon { font-size: 22px; }
+
+    &.mission-icon {
+      background: rgba(var(--ion-color-primary-rgb), 0.1);
+      ion-icon { color: var(--ion-color-primary); }
+    }
+
+    &.queue-icon {
+      background: rgba(var(--ion-color-tertiary-rgb), 0.1);
+      ion-icon { color: var(--ion-color-tertiary); }
+    }
+  }
+
+  .file-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    .file-name { font-size: 15px; font-weight: 600; color: var(--ion-color-dark); }
+    .file-meta { font-size: 12px; color: var(--ion-color-medium); }
+  }
+
+  .file-arrow { font-size: 18px; color: var(--ion-color-medium); }
+}
+
+// ── Preview ───────────────────────────────────────────
+.preview-icon-wrap {
+  width: 80px;
+  height: 80px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+
+  ion-icon { font-size: 40px; }
+
+  &.mission {
+    background: rgba(var(--ion-color-primary-rgb), 0.1);
+    ion-icon { color: var(--ion-color-primary); }
+  }
+
+  &.queue {
+    background: rgba(var(--ion-color-tertiary-rgb), 0.1);
+    ion-icon { color: var(--ion-color-tertiary); }
+  }
+}
+
+.preview-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ion-color-dark);
+  margin: 0 0 4px;
+}
+
+.preview-sub {
+  text-align: center;
+  font-size: 14px;
+  color: var(--ion-color-medium);
+  margin: 0 0 20px;
+}
+
+// ── Meta grid ─────────────────────────────────────────
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.meta-card {
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+
+  ion-icon { font-size: 20px; color: var(--ion-color-primary); }
+  .meta-val { font-size: 16px; font-weight: 700; color: var(--ion-color-dark); }
+  .meta-lbl { font-size: 10px; color: var(--ion-color-medium); text-transform: uppercase; }
+}
+
+// ── Execute / Delete buttons ──────────────────────────
+.execute-btn {
+  --background: var(--ion-color-success);
+  margin-bottom: 10px;
+}
+
+.edit-btn { margin-bottom: 10px; }
+.delete-btn { margin-bottom: 10px; }
+
+// ── Queue preview list ────────────────────────────────
+.queue-mission-list {
+  background: var(--ion-color-light);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.queue-mission-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+
+  &:last-child { border-bottom: none; }
+
+  .queue-index {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--ion-color-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .queue-mission-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    .queue-mission-name { font-size: 14px; font-weight: 600; color: var(--ion-color-dark); }
+    .queue-mission-meta { font-size: 11px; color: var(--ion-color-medium); }
+  }
+}
+
+// ── Queue edit ────────────────────────────────────────
+.queue-name-item {
+  --background: var(--ion-color-light);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.queue-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  cursor: grab;
+
+  .queue-index {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--ion-color-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .drag-handle { font-size: 22px; color: var(--ion-color-medium); }
+  .queue-edit-name { flex: 1; font-size: 14px; font-weight: 500; color: var(--ion-color-dark); }
+}
+
+.add-mission-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  ion-icon:first-child { font-size: 20px; color: var(--ion-color-primary); }
+  span { flex: 1; font-size: 14px; font-weight: 500; color: var(--ion-color-dark); }
+
+  .in-queue-check { font-size: 20px; color: var(--ion-color-success); }
+  .add-icon { font-size: 20px; color: var(--ion-color-primary); }
+
+  &.in-queue { background: rgba(var(--ion-color-success-rgb), 0.06); }
+}
+
+.save-queue-btn {
+  --background: var(--ion-color-primary);
+  margin-top: 16px;
+}
+
+// ── Add from DB ───────────────────────────────────────
+.search-item {
+  --background: var(--ion-color-light);
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
+.db-mission-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+
+  &.on-sd { background: rgba(var(--ion-color-success-rgb), 0.05); }
+
+  .db-mission-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+
+    .db-mission-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .db-mission-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      .meta-text { font-size: 11px; color: var(--ion-color-medium); }
+    }
+  }
+
+  .db-mission-action {
+    flex-shrink: 0;
+    margin-left: 10px;
+
+    .on-sd-label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ion-color-success);
+      ion-icon { font-size: 16px; }
+    }
+  }
+}
+
+// ── Empty state ───────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 50px 20px;
+  gap: 12px;
+  text-align: center;
+
+  ion-icon { font-size: 48px; color: var(--ion-color-medium); opacity: 0.4; }
+  p { font-size: 14px; color: var(--ion-color-medium); line-height: 1.5; margin: 0; }
+
+  &.small { padding: 20px; }
+}
+
+// ── Badges ────────────────────────────────────────────
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  text-transform: uppercase;
+
+  &.ready   { background: rgba(var(--ion-color-success-rgb), 0.15); color: var(--ion-color-success); }
+  &.pending { background: rgba(var(--ion-color-warning-rgb), 0.15); color: var(--ion-color-warning-shade); }
+  &.draft   { background: rgba(var(--ion-color-medium-rgb), 0.15);  color: var(--ion-color-medium); }
+  &.done    { background: rgba(var(--ion-color-primary-rgb), 0.15); color: var(--ion-color-primary); }
+}

@@ -162,6 +162,18 @@
         Open Live Cockpit
       </ion-button>
     </div>
+    <div class="section-card live-control-card">
+  <div class="section-header">
+    <ion-icon name="folder-outline"></ion-icon>
+    <span>SD Manager</span>
+  </div>
+  <p class="live-desc">Manage missions and queues stored on the drone's SD card.</p>
+  
+  <ion-button expand="block" class="live-btn" (click)="openSdManager()">
+    <ion-icon name="folder-outline" slot="start"></ion-icon>
+    Open SD Manager
+  </ion-button>
+</div>
 
     <div class="disconnect-card" *ngIf="!showDisconnectConfirm">
       <ion-button expand="block" class="disconnect-btn" (click)="startDisconnect()">

@@ -82,10 +82,11 @@ export class AppComponent {
     { title: 'Home',            url: '/home',             icon: 'home-outline' },
     { title: 'My Profile',      url: '/profile',          icon: 'person-outline' },
     { title: 'New Mission',     url: '/mission-select',   icon: 'map-outline' },
+    { title: 'SD Manager',      url: '/send-drone',       icon: 'paper-plane-outline',queryParams: { mode: 'sd' } },
     { title: 'Manage Missions', url: '/manage-missions',  icon: 'albums-outline' },
     { title: 'Projects',        url: '/project-manager',  icon: 'folder-outline' },
     { title: 'My Drones', url: '/drone-manager', icon: 'hardware-chip-outline' },
-    { title: 'Send Drone',      url: '/send-drone',       icon: 'paper-plane-outline' },
+    { title: 'Send Drone',      url: '/send-drone',       icon: 'paper-plane-outline',queryParams: { mode: 'http' } },
     { title: 'Settings',        url: '/settings',         icon: 'settings-outline' },
   ];
 

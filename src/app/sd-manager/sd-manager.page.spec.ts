@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { SendDronePage } from './send-drone.page';
+import { SdManagerPage } from './sd-manager.page';
 
-describe('SendDronePage', () => {
-  let component: SendDronePage;
-  let fixture: ComponentFixture<SendDronePage>;
+describe('SdManagerPage', () => {
+  let component: SdManagerPage;
+  let fixture: ComponentFixture<SdManagerPage>;
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(SendDronePage);
+    fixture = TestBed.createComponent(SdManagerPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

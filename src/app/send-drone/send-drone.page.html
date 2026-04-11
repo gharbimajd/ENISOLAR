@@ -3,16 +3,18 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/home"></ion-back-button>
     </ion-buttons>
-    <ion-title>Send Mission</ion-title>
+    <ion-title>{{ mode === 'sd' ? 'SD Manager' : 'Send Mission' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
 
   <div class="page-intro">
-    <ion-icon name="paper-plane-outline" class="intro-icon"></ion-icon>
+    <ion-icon [name]="mode === 'sd' ? 'hardware-chip-outline' : 'paper-plane-outline'" class="intro-icon"></ion-icon>
     <h2 class="intro-title">Choose a Drone</h2>
-    <p class="intro-sub">Select the drone you want to assign missions to</p>
+    <p class="intro-sub">
+      {{ mode === 'sd' ? 'Select the drone to manage its SD Card' : 'Select the drone you want to assign missions to' }}
+    </p>
   </div>
 
   <div class="loading-container" *ngIf="isLoading">

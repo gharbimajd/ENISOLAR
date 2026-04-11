@@ -128,6 +128,10 @@ export const routes: Routes = [
   {
     path: 'cockpit',
     loadComponent: () => import('./cockpit/cockpit.page').then( m => m.CockpitPage)
+  },
+  {
+    path: 'sd-manager',
+    loadComponent: () => import('./sd-manager/sd-manager.page').then( m => m.SdManagerPage)
   }
 ];
 
