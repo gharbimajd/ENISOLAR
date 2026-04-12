@@ -4,6 +4,7 @@ ion-toolbar {
   --border-color: var(--eni-border);
   ion-title { color: var(--eni-text); font-weight: 700; }
   ion-back-button { --color: var(--eni-accent); }
+  ion-button { --color: var(--eni-accent); }
 }
 
 ion-content { --background: var(--eni-bg); }
@@ -128,6 +129,256 @@ ion-content { --background: var(--eni-bg); }
   margin-bottom: 24px;
   ion-icon { font-size: 20px; color: var(--eni-ready); }
   span { font-size: 14px; font-weight: 600; color: var(--eni-ready); }
+}
+
+// ── Mode Cards ─────────────────────────────────────────
+.mode-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.mode-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
+  border-radius: 16px;
+  padding: 18px 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+
+  &:active {
+    background: var(--eni-accent-dim);
+    border-color: var(--eni-accent-border);
+  }
+
+  .mode-card-icon {
+    width: 48px; height: 48px;
+    border-radius: 13px;
+    background: var(--eni-accent-dim);
+    border: 1px solid var(--eni-accent-border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    ion-icon { font-size: 24px; color: var(--eni-accent); }
+  }
+
+  .mode-card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    .mode-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--eni-text);
+    }
+
+    .mode-card-desc {
+      font-size: 12px;
+      color: var(--eni-text-3);
+      line-height: 1.4;
+    }
+  }
+
+  .mode-card-chevron {
+    font-size: 16px;
+    color: var(--eni-text-4);
+  }
+}
+
+// ── Scanning Animation ─────────────────────────────────
+.scanning-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 48px;
+  text-align: center;
+
+  .step-title { margin: 24px 0 8px; }
+  .step-desc { max-width: 280px; }
+}
+
+.scan-animation {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scan-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid var(--eni-accent);
+  opacity: 0;
+  animation: pulse-ring 2s ease-out infinite;
+
+  &.ring-1 { width: 60px;  height: 60px;  animation-delay: 0s; }
+  &.ring-2 { width: 96px;  height: 96px;  animation-delay: 0.5s; }
+  &.ring-3 { width: 132px; height: 132px; animation-delay: 1s; }
+}
+
+@keyframes pulse-ring {
+  0%   { opacity: 0.7; transform: scale(0.8); }
+  100% { opacity: 0;   transform: scale(1); }
+}
+
+.scan-center {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: var(--eni-accent-dim);
+  border: 1px solid var(--eni-accent-border);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1;
+  ion-icon { font-size: 28px; color: var(--eni-accent); }
+}
+
+// ── WiFi Network List ──────────────────────────────────
+.wifi-list {
+  .list-label {
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    color: var(--eni-text-4); margin-bottom: 10px;
+  }
+}
+
+.wifi-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+
+  &:active {
+    background: var(--eni-accent-dim);
+    border-color: var(--eni-accent-border);
+  }
+
+  .wifi-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    .wifi-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--eni-text);
+    }
+
+    .wifi-meta {
+      font-size: 11px;
+      color: var(--eni-text-4);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .wifi-open-badge {
+      background: var(--eni-ready-bg);
+      border: 1px solid var(--eni-ready-border);
+      color: var(--eni-ready);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .wifi-lock {
+    font-size: 14px;
+    color: var(--eni-text-4);
+  }
+
+  .device-chevron { font-size: 16px; color: var(--eni-text-4); }
+}
+
+// ── Signal Bars ────────────────────────────────────────
+.wifi-signal {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+  height: 20px;
+  width: 20px;
+
+  .bar {
+    width: 4px;
+    border-radius: 2px;
+    background: var(--eni-border);
+    display: block;
+
+    &.b1 { height: 5px; }
+    &.b2 { height: 9px; }
+    &.b3 { height: 13px; }
+    &.b4 { height: 17px; }
+  }
+
+  &[data-bars="1"] .b1 { background: var(--eni-accent); }
+  &[data-bars="2"] .b1,
+  &[data-bars="2"] .b2 { background: var(--eni-accent); }
+  &[data-bars="3"] .b1,
+  &[data-bars="3"] .b2,
+  &[data-bars="3"] .b3 { background: var(--eni-accent); }
+  &[data-bars="4"] .b1,
+  &[data-bars="4"] .b2,
+  &[data-bars="4"] .b3,
+  &[data-bars="4"] .b4 { background: var(--eni-accent); }
+}
+
+// ── Selected Network Badge ─────────────────────────────
+.selected-network-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--eni-surface);
+  border: 1px solid var(--eni-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+
+  .selected-ssid {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--eni-text);
+  }
+}
+
+// ── Error Banner ───────────────────────────────────────
+.error-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(255, 80, 80, 0.08);
+  border: 1px solid rgba(255, 80, 80, 0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+
+  ion-icon {
+    font-size: 18px;
+    color: #ff5050;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  span {
+    font-size: 13px;
+    color: #ff5050;
+    line-height: 1.5;
+  }
 }
 
 // ── Form fields ────────────────────────────────────────
