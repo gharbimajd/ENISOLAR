@@ -1,0 +1,122 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/drone-manager"></ion-back-button>
+    </ion-buttons>
+    <ion-title>WiFi Setup</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- Step 1: Scan & Connect to drone via BLE -->
+  <div *ngIf="step === 'scan'">
+    <div class="step-header">
+      <div class="step-icon">
+        <ion-icon name="bluetooth-outline"></ion-icon>
+      </div>
+      <h2 class="step-title">Find Your Drone</h2>
+      <p class="step-desc">Make sure your drone is powered on with no WiFi configured yet. It will appear as <strong>ENISOLAR-XXXXXX</strong>.</p>
+    </div>
+
+    <ion-button expand="block" class="action-btn" (click)="startScan()" [disabled]="isScanning">
+      <ion-icon [name]="isScanning ? 'sync-outline' : 'search-outline'" slot="start" [class.spinning]="isScanning"></ion-icon>
+      {{ isScanning ? 'Scanning...' : 'Scan for Drone' }}
+    </ion-button>
+
+    <div class="devices-list" *ngIf="foundDevices.length > 0">
+      <div class="list-label">Found devices</div>
+      <div
+        *ngFor="let device of foundDevices"
+        class="device-row"
+        (click)="connectToDevice(device)">
+        <div class="device-icon">
+          <ion-icon name="hardware-chip-outline"></ion-icon>
+        </div>
+        <div class="device-info">
+          <span class="device-name">{{ device.localName || device.device.name || 'Unknown' }}</span>
+          
+          <span class="device-id">{{ device.device.deviceId }}</span>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="device-chevron"></ion-icon>
+      </div>
+    </div>
+
+    <div class="empty-scan" *ngIf="!isScanning && foundDevices.length === 0 && scanDone">
+      <ion-icon name="bluetooth-outline"></ion-icon>
+      <p>No drones found. Make sure it's powered on and in setup mode.</p>
+    </div>
+  </div>
+
+  <!-- Step 2: Connected — pick WiFi -->
+  <div *ngIf="step === 'configure'">
+    <div class="step-header">
+      <div class="step-icon success">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+      </div>
+      <h2 class="step-title">Drone Connected</h2>
+      <p class="step-desc">Now enter the WiFi network your drone should connect to.</p>
+    </div>
+
+    <div class="connected-badge">
+      <ion-icon name="hardware-chip-outline"></ion-icon>
+      <span>{{ connectedDeviceName }}</span>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">WiFi Network (SSID)</label>
+      <div class="field-input-wrap">
+        <ion-icon name="wifi-outline" class="field-icon"></ion-icon>
+        <input
+          type="text"
+          [(ngModel)]="ssid"
+          placeholder="Enter WiFi name"
+          class="field-input"
+          autocomplete="off"/>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Password</label>
+      <div class="field-input-wrap">
+        <ion-icon name="lock-closed-outline" class="field-icon"></ion-icon>
+        <input
+          [type]="showPassword ? 'text' : 'password'"
+          [(ngModel)]="password"
+          placeholder="Enter WiFi password"
+          class="field-input"/>
+        <ion-icon
+          [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
+          class="field-icon-right"
+          (click)="showPassword = !showPassword">
+        </ion-icon>
+      </div>
+    </div>
+
+    <ion-button
+      expand="block"
+      class="action-btn"
+      [disabled]="!ssid.trim() || isSending"
+      (click)="sendCredentials()">
+      <ion-icon name="send-outline" slot="start"></ion-icon>
+      {{ isSending ? 'Sending...' : 'Send to Drone' }}
+    </ion-button>
+
+    <ion-button expand="block" fill="outline" class="cancel-ble-btn" (click)="disconnect()">
+      Disconnect
+    </ion-button>
+  </div>
+
+  <!-- Step 3: Done -->
+  <div *ngIf="step === 'done'" class="done-state">
+    <div class="step-icon success large">
+      <ion-icon name="checkmark-circle-outline"></ion-icon>
+    </div>
+    <h2 class="step-title">WiFi Configured!</h2>
+    <p class="step-desc">Your drone received the WiFi credentials and is restarting. It will connect to <strong>{{ ssid }}</strong> automatically from now on.</p>
+    <ion-button expand="block" class="action-btn" routerLink="/drone-manager">
+      Back to Drones
+    </ion-button>
+  </div>
+
+</ion-content>

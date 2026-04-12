@@ -132,6 +132,10 @@ export const routes: Routes = [
   {
     path: 'sd-manager',
     loadComponent: () => import('./sd-manager/sd-manager.page').then( m => m.SdManagerPage)
+  },
+  {
+    path: 'wifi-setup',
+    loadComponent: () => import('./wifi-setup/wifi-setup.page').then( m => m.WifiSetupPage)
   }
 ];
 
