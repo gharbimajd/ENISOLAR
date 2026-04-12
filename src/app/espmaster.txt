@@ -11,6 +11,7 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
+#include <esp_now.h>
 
 // ── BLE UUIDs ─────────────────────────────────────────
 #define BLE_SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
@@ -22,23 +23,76 @@
 #define SLOT_URL      "http://enisolardienicar.atwebpages.com/esp_slot.php"
 
 // ── MQTT ──────────────────────────────────────────────
-#define MQTT_HOST     "529b5f97aca54d828dbef5ebe85f00cd.s1.eu.hivemq.cloud"
-#define MQTT_PORT     8883
-#define MQTT_USER     "majdgha"
-#define MQTT_PASS     "552003Ssl"
+#define MQTT_HOST "529b5f97aca54d828dbef5ebe85f00cd.s1.eu.hivemq.cloud"
+#define MQTT_PORT 8883
+#define MQTT_USER "majdgha"
+#define MQTT_PASS "552003Ssl"
 
 // ── SD Card ───────────────────────────────────────────
-#define SD_CS_PIN     5
+#define SD_CS_PIN 5
 
 // ── Button ────────────────────────────────────────────
-#define BOOT_BUTTON_PIN   0
-#define CLICK_WINDOW_MS   2000
-#define TELEMETRY_MS      3000
-#define DEBOUNCE_MS       200
+#define BOOT_BUTTON_PIN  0
+#define CLICK_WINDOW_MS  2000
+#define TELEMETRY_MS     3000
+#define DEBOUNCE_MS      200
+
+// ── MQTT buffer size ──────────────────────────────────
+// Must stay large — controls BOTH incoming and outgoing messages.
+// Incoming mission payloads (with flight_path) can be several KB.
+// Shrinking this causes PubSubClient to silently drop large messages.
+#define MQTT_BUFFER_SIZE 16384
+
+// ── ESP-NOW Telemetry Packet ──────────────────────────
+// Must match ESP #2 struct exactly
+typedef struct {
+  float   lat;
+  float   lng;
+  float   altitude;
+  float   speed;
+  float   heading;
+  uint8_t battery;
+  int     signal_strength;
+} TelemetryPacket;
+
+volatile TelemetryPacket latestTelemetry = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 100, 0};
+volatile bool            telemetryReady  = false;
+
+// ESP-NOW receive callback — runs in ISR context, keep it minimal
+void OnDataRecv(const esp_now_recv_info_t* info, const uint8_t* data, int len) {
+  if (len == sizeof(TelemetryPacket)) {
+    memcpy((void*)&latestTelemetry, data, sizeof(TelemetryPacket));
+    telemetryReady = true;
+  }
+}
 
 // ── State ─────────────────────────────────────────────
 String userID  = "";
 String droneID = "";
+
+// [OPT] Single base string replaces 14 persistent topic Strings (~1.5 KB heap saved)
+String mqttBase = "";
+
+// Topic suffixes in flash (PROGMEM) — never copied to RAM
+const char SUFFIX_TELEMETRY[]       PROGMEM = "/telemetry";
+const char SUFFIX_COMMAND[]         PROGMEM = "/command";
+const char SUFFIX_MISSION[]         PROGMEM = "/mission";
+const char SUFFIX_STATUS[]          PROGMEM = "/status";
+const char SUFFIX_ACK[]             PROGMEM = "/ack";
+const char SUFFIX_SD_LIST[]         PROGMEM = "/sd/list";
+const char SUFFIX_SD_LIST_RESP[]    PROGMEM = "/sd/list_response";
+const char SUFFIX_SD_SAVE_MISSION[] PROGMEM = "/sd/save_mission";
+const char SUFFIX_SD_DEL_MISSION[]  PROGMEM = "/sd/delete_mission";
+const char SUFFIX_SD_SAVE_QUEUE[]   PROGMEM = "/sd/save_queue";
+const char SUFFIX_SD_DEL_QUEUE[]    PROGMEM = "/sd/delete_queue";
+const char SUFFIX_SD_EXEC_MISSION[] PROGMEM = "/sd/execute_mission";
+const char SUFFIX_SD_EXEC_QUEUE[]   PROGMEM = "/sd/execute_queue";
+const char SUFFIX_SD_ACK[]          PROGMEM = "/sd/ack";
+
+// Builds full topic on the fly — no 14 persistent Strings in RAM
+inline String topic(const char* suffix_P) {
+  return mqttBase + String((__FlashStringHelper*)suffix_P);
+}
 
 int           clickCount        = 0;
 bool          buttonWasPressed  = false;
@@ -47,18 +101,18 @@ bool          windowOpen        = false;
 unsigned long lastTelemetryTime = 0;
 
 // ── Hold-to-reset state ───────────────────────────────
-unsigned long buttonPressStart  = 0;
-bool          holdTriggered     = false;
+unsigned long buttonPressStart = 0;
+bool          holdTriggered    = false;
 
 // ── BLE State ─────────────────────────────────────────
-BLEServer*         bleServer         = nullptr;
-BLECharacteristic* bleCharacteristic = nullptr;
-bool               bleClientConnected = false;
+BLEServer*         bleServer               = nullptr;
+BLECharacteristic* bleCharacteristic       = nullptr;
+bool               bleClientConnected      = false;
 bool               wifiCredentialsReceived = false;
-String             receivedSSID     = "";
-String             receivedPassword = "";
+String             receivedSSID            = "";
+String             receivedPassword        = "";
 
-// ── Preferences (flash storage) ───────────────────────
+// ── Preferences ───────────────────────────────────────
 Preferences preferences;
 
 // ── MQTT ──────────────────────────────────────────────
@@ -66,39 +120,20 @@ WiFiClientSecure secureClient;
 PubSubClient     mqttClient(secureClient);
 bool             mqttConnected = false;
 
-String telemetryTopic;
-String commandTopic;
-String missionTopic;
-String statusTopic;
-String ackTopic;
-String sdListTopic;
-String sdListResponseTopic;
-String sdSaveMissionTopic;
-String sdDeleteMissionTopic;
-String sdSaveQueueTopic;
-String sdDeleteQueueTopic;
-String sdExecuteMissionTopic;
-String sdExecuteQueueTopic;
-String sdAckTopic;
-
 // ── SD ────────────────────────────────────────────────
 bool sdReady = false;
 
 // ─────────────────────────────────────────────────────
 // BLE Callbacks
 // ─────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────
-// BLE Callbacks
-// ─────────────────────────────────────────────────────
 class MyServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer* server) override {
     bleClientConnected = true;
-    Serial.println("BLE: App connected");
+    Serial.println(F("BLE: App connected"));
   }
   void onDisconnect(BLEServer* server) override {
     bleClientConnected = false;
-    Serial.println("BLE: App disconnected");
-    // Restart advertising so app can reconnect if needed
+    Serial.println(F("BLE: App disconnected"));
     BLEDevice::startAdvertising();
   }
 };
@@ -106,12 +141,12 @@ class MyServerCallbacks : public BLEServerCallbacks {
 class MyCharacteristicCallbacks : public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic* characteristic) override {
     String value = characteristic->getValue().c_str();
-    Serial.println("BLE received: " + value);
+    Serial.print(F("BLE received: ")); Serial.println(value);
 
     JsonDocument doc;
     DeserializationError err = deserializeJson(doc, value);
     if (err) {
-      Serial.println("BLE JSON parse error");
+      Serial.println(F("BLE JSON parse error"));
       characteristic->setValue("ERROR:invalid_json");
       characteristic->notify();
       return;
@@ -120,28 +155,22 @@ class MyCharacteristicCallbacks : public BLECharacteristicCallbacks {
     // ── Command: scan_wifi ────────────────────────────
     String command = doc["command"].as<String>();
     if (command == "scan_wifi") {
-      Serial.println("BLE: WiFi scan requested");
-
-      // BLE and WiFi share the same radio — we need WiFi in STA mode to scan
+      Serial.println(F("BLE: WiFi scan requested"));
       WiFi.mode(WIFI_STA);
       WiFi.disconnect();
       delay(100);
 
       int n = WiFi.scanNetworks();
-      Serial.println("Scan done. Found: " + String(n));
+      Serial.print(F("Scan done. Found: ")); Serial.println(n);
 
-      // Build JSON: WIFI_LIST:[{"ssid":"...","rssi":-60,"open":false},...]
       String json = "WIFI_LIST:[";
       int added = 0;
       for (int i = 0; i < n; i++) {
         String ssidVal = WiFi.SSID(i);
-        if (ssidVal.length() == 0) continue; // skip hidden networks
+        if (ssidVal.length() == 0) continue;
         bool isOpen = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN);
         int  rssi   = WiFi.RSSI(i);
-
-        // Escape quotes in SSID just in case
         ssidVal.replace("\"", "\\\"");
-
         if (added > 0) json += ",";
         json += "{\"ssid\":\"" + ssidVal + "\",";
         json += "\"rssi\":"   + String(rssi) + ",";
@@ -149,24 +178,20 @@ class MyCharacteristicCallbacks : public BLECharacteristicCallbacks {
         added++;
       }
       json += "]";
-
       WiFi.scanDelete();
 
-      // BLE MTU is usually 20 bytes — chunk the response if needed
-      int  total     = json.length();
-      int  chunkSize = 180; // safe BLE payload size
-      int  offset    = 0;
-
+      int chunkSize = 180;
+      int offset    = 0;
+      int total     = json.length();
       while (offset < total) {
         int    end   = min(offset + chunkSize, total);
         String chunk = json.substring(offset, end);
         characteristic->setValue(chunk.c_str());
         characteristic->notify();
-        delay(50); // give stack time to send
+        delay(50);
         offset = end;
       }
-
-      Serial.println("WiFi list sent (" + String(added) + " networks)");
+      Serial.print(F("WiFi list sent (")); Serial.print(added); Serial.println(F(" networks)"));
       return;
     }
 
@@ -180,46 +205,37 @@ class MyCharacteristicCallbacks : public BLECharacteristicCallbacks {
       return;
     }
 
-    Serial.println("BLE: Testing WiFi connection to: " + receivedSSID);
+    Serial.print(F("BLE: Testing WiFi connection to: ")); Serial.println(receivedSSID);
     characteristic->setValue("INFO:connecting");
     characteristic->notify();
 
-    // Attempt connection BEFORE saving or confirming
     WiFi.mode(WIFI_STA);
     WiFi.begin(receivedSSID.c_str(), receivedPassword.c_str());
 
     int tries = 0;
-    while (WiFi.status() != WL_CONNECTED && tries < 24) { // 12s timeout
+    while (WiFi.status() != WL_CONNECTED && tries < 24) {
       delay(500);
       tries++;
     }
 
     if (WiFi.status() == WL_CONNECTED) {
-      Serial.println("WiFi connected! Saving credentials.");
-
-      // Save to flash only after confirmed connection
+      Serial.println(F("WiFi connected! Saving credentials."));
       preferences.begin("wifi", false);
       preferences.putString("ssid", receivedSSID);
       preferences.putString("password", receivedPassword);
       preferences.end();
-
       characteristic->setValue("OK:wifi_connected");
       characteristic->notify();
-      delay(800); // give BLE time to deliver the notify
-
-      wifiCredentialsReceived = true; // triggers restart in startBLESetup()
+      delay(800);
+      wifiCredentialsReceived = true;
     } else {
-      Serial.println("WiFi connection failed. Credentials NOT saved.");
+      Serial.println(F("WiFi connection failed. Credentials NOT saved."));
       WiFi.disconnect();
-
-      // Make sure we don't keep bad credentials in flash
       preferences.begin("wifi", false);
       preferences.clear();
       preferences.end();
-
       characteristic->setValue("ERROR:wifi_failed");
       characteristic->notify();
-      // Stay in BLE mode — app will let user retry
     }
   }
 };
@@ -228,11 +244,11 @@ class MyCharacteristicCallbacks : public BLECharacteristicCallbacks {
 // BLE Setup Mode
 // ─────────────────────────────────────────────────────
 void startBLESetup() {
-  Serial.println("Starting BLE setup mode...");
+  Serial.println(F("Starting BLE setup mode..."));
 
   String mac = WiFi.macAddress();
   mac.replace(":", "");
-  String bleName = "ENISOLAR-" + mac.substring(6); // Last 6 chars of MAC
+  String bleName = "ENISOLAR-" + mac.substring(6);
 
   BLEDevice::init(bleName.c_str());
   bleServer = BLEDevice::createServer();
@@ -241,7 +257,7 @@ void startBLESetup() {
   BLEService* service = bleServer->createService(BLE_SERVICE_UUID);
   bleCharacteristic = service->createCharacteristic(
     BLE_CHARACTERISTIC_UUID,
-    BLECharacteristic::PROPERTY_READ |
+    BLECharacteristic::PROPERTY_READ  |
     BLECharacteristic::PROPERTY_WRITE |
     BLECharacteristic::PROPERTY_NOTIFY
   );
@@ -255,25 +271,25 @@ void startBLESetup() {
   advertising->setScanResponse(true);
   BLEDevice::startAdvertising();
 
-  Serial.println("BLE advertising as: " + bleName);
-  Serial.println("Waiting for app to send WiFi credentials...");
+  Serial.print(F("BLE advertising as: ")); Serial.println(bleName);
+  Serial.println(F("Waiting for app to send WiFi credentials..."));
 
-  // Wait until credentials received (scan_wifi handler will temporarily
-  // enable WiFi STA mode for scanning, then we come back here)
   while (!wifiCredentialsReceived) {
     delay(100);
   }
 
-  // Turn WiFi off before stopping BLE (radio conflict prevention)
   WiFi.disconnect(true);
   WiFi.mode(WIFI_OFF);
   delay(200);
 
-  // Stop BLE
+  // [OPT] Full BLE shutdown before restart — frees 60-90 KB of heap.
+  // BLE is only needed during first-time WiFi provisioning.
+  // After ESP.restart(), setup() takes the WiFi path and never inits BLE again.
   BLEDevice::stopAdvertising();
+  BLEDevice::deinit(true); // true = release all BLE memory
   delay(500);
 
-  Serial.println("BLE setup done. Restarting...");
+  Serial.println(F("BLE setup done. Restarting..."));
   delay(1000);
   ESP.restart();
 }
@@ -284,7 +300,7 @@ void startBLESetup() {
 String postJSON(const char* url, String body) {
   HTTPClient http;
   http.begin(url);
-  http.addHeader("Content-Type", "application/json");
+  http.addHeader(F("Content-Type"), F("application/json"));
   int code = http.POST(body);
   String response = "";
   if (code == 200) response = http.getString();
@@ -292,9 +308,12 @@ String postJSON(const char* url, String body) {
   return response;
 }
 
-void publishAck(bool success, String message) {
-  String payload = "{\"success\":" + String(success ? "true" : "false") + ",\"message\":\"" + message + "\"}";
-  mqttClient.publish(sdAckTopic.c_str(), payload.c_str());
+// [OPT] Fixed stack buffer — no heap String allocation for ack messages
+void publishAck(bool success, const String& message) {
+  char buf[128];
+  snprintf(buf, sizeof(buf), "{\"success\":%s,\"message\":\"%s\"}",
+           success ? "true" : "false", message.c_str());
+  mqttClient.publish(topic(SUFFIX_SD_ACK).c_str(), buf);
 }
 
 void ensureDir(const char* path) {
@@ -302,9 +321,9 @@ void ensureDir(const char* path) {
 }
 
 // ─────────────────────────────────────────────────────
-// SD Functions (unchanged)
+// SD Functions
 // ─────────────────────────────────────────────────────
-void saveMissionToSd(String jsonPayload) {
+void saveMissionToSd(const String& jsonPayload) {
   JsonDocument doc;
   deserializeJson(doc, jsonPayload);
   String id   = doc["id"].as<String>();
@@ -321,11 +340,11 @@ void saveMissionToSd(String jsonPayload) {
     offset += chunkSize;
   }
   file.close();
-  Serial.println("Mission saved: " + path);
+  Serial.print(F("Mission saved: ")); Serial.println(path);
   publishAck(true, "Mission " + name + " saved to SD");
 }
 
-void deleteMissionFromSd(String id) {
+void deleteMissionFromSd(const String& id) {
   String path = "/missions/m_" + id + ".json";
   if (SD.exists(path.c_str())) {
     SD.remove(path.c_str());
@@ -335,10 +354,10 @@ void deleteMissionFromSd(String id) {
   }
 }
 
-void saveQueueToSd(String jsonPayload) {
+void saveQueueToSd(const String& jsonPayload) {
   JsonDocument doc;
   deserializeJson(doc, jsonPayload);
-  String name = doc["name"].as<String>();
+  String name     = doc["name"].as<String>();
   String filename = doc["filename"].as<String>();
   ensureDir("/queues");
   String path = "/queues/" + filename;
@@ -348,15 +367,16 @@ void saveQueueToSd(String jsonPayload) {
   else { publishAck(false, "Failed to save queue " + name); }
 }
 
-void deleteQueueFromSd(String filename) {
+void deleteQueueFromSd(const String& filename) {
   String path = "/queues/" + filename;
   if (SD.exists(path.c_str())) { SD.remove(path.c_str()); publishAck(true, "Queue deleted from SD"); }
   else { publishAck(false, "Queue file not found on SD"); }
 }
 
 void sendSdList() {
-  String response = "{\"missions\":[],\"queues\":[]}";
-  if (!sdReady) { mqttClient.publish(sdListResponseTopic.c_str(), response.c_str()); return; }
+  String response = F("{\"missions\":[],\"queues\":[]}");
+  if (!sdReady) { mqttClient.publish(topic(SUFFIX_SD_LIST_RESP).c_str(), response.c_str()); return; }
+
   String missionsJson = "", queuesJson = "";
   JsonDocument filter;
   filter["id"] = true; filter["name"] = true;
@@ -372,8 +392,8 @@ void sendSdList() {
         DeserializationError err = deserializeJson(doc, entry, DeserializationOption::Filter(filter));
         if (err == DeserializationError::Ok) {
           if (missionsJson.length() > 0) missionsJson += ",";
-          missionsJson += "{\"id\":\"" + doc["id"].as<String>() + "\",";
-          missionsJson += "\"name\":\"" + doc["name"].as<String>() + "\",";
+          missionsJson += "{\"id\":\""          + doc["id"].as<String>()             + "\",";
+          missionsJson += "\"name\":\""         + doc["name"].as<String>()           + "\",";
           missionsJson += "\"waypoint_count\":" + doc["waypoint_count"].as<String>() + ",";
           missionsJson += "\"estimated_time\":" + doc["estimated_time"].as<String>() + ",";
           missionsJson += "\"total_distance\":" + doc["total_distance"].as<String>() + "}";
@@ -393,9 +413,9 @@ void sendSdList() {
         JsonDocument doc;
         deserializeJson(doc, entry, DeserializationOption::Filter(filter));
         if (queuesJson.length() > 0) queuesJson += ",";
-        queuesJson += "{\"name\":\"" + doc["name"].as<String>() + "\",";
+        queuesJson += "{\"name\":\""    + doc["name"].as<String>()    + "\",";
         queuesJson += "\"filename\":\"" + doc["filename"].as<String>() + "\",";
-        queuesJson += "\"missions\":" + doc["missions"].as<String>() + "}";
+        queuesJson += "\"missions\":"   + doc["missions"].as<String>() + "}";
       }
       entry.close();
       entry = queuesDir.openNextFile();
@@ -404,24 +424,26 @@ void sendSdList() {
   }
 
   response = "{\"missions\":[" + missionsJson + "],\"queues\":[" + queuesJson + "]}";
-  mqttClient.publish(sdListResponseTopic.c_str(), response.c_str());
-  Serial.println("SD list sent");
+  mqttClient.publish(topic(SUFFIX_SD_LIST_RESP).c_str(), response.c_str());
+  Serial.println(F("SD list sent"));
 }
 
-void executeMissionFromSd(String missionId) {
+void executeMissionFromSd(const String& missionId) {
   String path = "/missions/m_" + missionId + ".json";
   if (!SD.exists(path.c_str())) { publishAck(false, "Mission not found: " + missionId); return; }
+
   File file = SD.open(path.c_str());
   String content = "";
   while (file.available()) content += (char)file.read();
   file.close();
+
   JsonDocument doc;
   deserializeJson(doc, content);
-  Serial.println("Executing mission: " + doc["name"].as<String>());
+  Serial.print(F("Executing mission: ")); Serial.println(doc["name"].as<String>());
   publishAck(true, "Mission " + doc["name"].as<String>() + " executing");
 }
 
-void executeQueueFromSd(String filename) {
+void executeQueueFromSd(const String& filename) {
   String path = "/queues/" + filename;
   if (!SD.exists(path.c_str())) { publishAck(false, "Queue not found: " + filename); return; }
   File file = SD.open(path.c_str());
@@ -430,61 +452,87 @@ void executeQueueFromSd(String filename) {
   file.close();
   JsonDocument doc;
   deserializeJson(doc, content);
-  String queueName = doc["name"].as<String>();
+  String queueName   = doc["name"].as<String>();
   JsonArray missions = doc["missions"].as<JsonArray>();
   for (JsonObject m : missions) { executeMissionFromSd(m["id"].as<String>()); delay(1000); }
   publishAck(true, "Queue " + queueName + " execution started");
 }
 
 // ─────────────────────────────────────────────────────
-// Telemetry
+// Telemetry  ← only these two functions changed
 // ─────────────────────────────────────────────────────
 void pushTelemetryHTTP() {
-  int signal = WiFi.RSSI();
-  String body = "{\"drone_id\":" + droneID + ",\"user_id\":" + userID + ",";
-  body += "\"lat\":0.0,\"lng\":0.0,\"altitude\":0.0,\"speed\":0.0,\"heading\":0.0,";
-  body += "\"battery\":100,\"signal_strength\":" + String(signal) + "}";
-  postJSON(TELEMETRY_URL, body);
+  // [OPT] Fixed stack buffer — values now sourced from ESP-NOW latestTelemetry
+  char body[220];
+  snprintf(body, sizeof(body),
+    "{\"drone_id\":%s,\"user_id\":%s,"
+    "\"lat\":%.6f,\"lng\":%.6f,\"altitude\":%.2f,\"speed\":%.2f,\"heading\":%.2f,"
+    "\"battery\":%d,\"signal_strength\":%d}",
+    droneID.c_str(), userID.c_str(),
+    (float)latestTelemetry.lat,
+    (float)latestTelemetry.lng,
+    (float)latestTelemetry.altitude,
+    (float)latestTelemetry.speed,
+    (float)latestTelemetry.heading,
+    (int)latestTelemetry.battery,
+    (int)latestTelemetry.signal_strength);
+  postJSON(TELEMETRY_URL, String(body));
 }
 
 void pushTelemetryMQTT() {
   if (!mqttConnected) return;
-  int signal = WiFi.RSSI();
-  String payload = "{\"lat\":0.0,\"lng\":0.0,\"altitude\":0.0,\"speed\":0.0,\"heading\":0.0,";
-  payload += "\"battery\":100,\"signal_strength\":" + String(signal) + "}";
-  mqttClient.publish(telemetryTopic.c_str(), payload.c_str());
+  // [OPT] Fixed stack buffer — values now sourced from ESP-NOW latestTelemetry
+  char payload[180];
+  snprintf(payload, sizeof(payload),
+    "{\"lat\":%.6f,\"lng\":%.6f,\"altitude\":%.2f,\"speed\":%.2f,\"heading\":%.2f,"
+    "\"battery\":%d,\"signal_strength\":%d}",
+    (float)latestTelemetry.lat,
+    (float)latestTelemetry.lng,
+    (float)latestTelemetry.altitude,
+    (float)latestTelemetry.speed,
+    (float)latestTelemetry.heading,
+    (int)latestTelemetry.battery,
+    (int)latestTelemetry.signal_strength);
+  mqttClient.publish(topic(SUFFIX_TELEMETRY).c_str(), payload);
 }
 
-void publishState(String state) {
+// [OPT] const char* — zero heap allocation for state name literals like "IDLE"
+void publishState(const char* state) {
   if (!mqttConnected) return;
-  String payload = "{\"state\":\"" + state + "\"}";
-  mqttClient.publish(statusTopic.c_str(), payload.c_str());
+  char payload[32];
+  snprintf(payload, sizeof(payload), "{\"state\":\"%s\"}", state);
+  mqttClient.publish(topic(SUFFIX_STATUS).c_str(), payload);
 }
 
 void fetchSlot(int index) {
-  String body = "{\"drone_id\":" + droneID + ",\"user_id\":" + userID + ",\"slot_index\":" + String(index) + "}";
-  String response = postJSON(SLOT_URL, body);
+  char body[80];
+  snprintf(body, sizeof(body),
+    "{\"drone_id\":%s,\"user_id\":%s,\"slot_index\":%d}",
+    droneID.c_str(), userID.c_str(), index);
+  String response = postJSON(SLOT_URL, String(body));
   JsonDocument doc;
   deserializeJson(doc, response);
   if (doc["success"] == true) {
-    Serial.println("Flight path received for slot " + String(index));
+    Serial.print(F("Flight path received for slot ")); Serial.println(index);
   } else {
-    Serial.println("Slot error: " + doc["message"].as<String>());
+    Serial.print(F("Slot error: ")); Serial.println(doc["message"].as<String>());
   }
 }
 
 // ─────────────────────────────────────────────────────
 // MQTT Callback
 // ─────────────────────────────────────────────────────
-void mqttCallback(char* topic, byte* payload, unsigned int length) {
-  String topicStr = String(topic);
-  String msg = "";
-  for (unsigned int i = 0; i < length; i++) msg += (char)payload[i];
-  Serial.println("MQTT [" + topicStr + "]: " + msg);
+void mqttCallback(char* topic_c, byte* payload, unsigned int length) {
+  String topicStr = String(topic_c);
+  // [OPT] Build message directly from byte buffer — no char-by-char loop
+  String msg((char*)payload, length);
+
+  Serial.print(F("MQTT [")); Serial.print(topicStr); Serial.print(F("]: ")); Serial.println(msg);
+
   JsonDocument doc;
   deserializeJson(doc, msg);
 
-  if (topicStr == commandTopic) {
+  if (topicStr == topic(SUFFIX_COMMAND)) {
     String cmd = doc["command"].as<String>();
     if      (cmd == "ARM")     publishState("ARMED");
     else if (cmd == "DISARM")  publishState("IDLE");
@@ -492,23 +540,26 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     else if (cmd == "LAND")    publishState("LANDING");
     else if (cmd == "RTH")     publishState("RETURNING");
     else if (cmd == "LOITER")  publishState("FLYING");
-    else if (cmd == "ABORT")   { publishState("LANDING"); Serial.println("EMERGENCY ABORT!"); }
+    else if (cmd == "ABORT")   { publishState("LANDING"); Serial.println(F("EMERGENCY ABORT!")); }
     return;
   }
-  if (topicStr == missionTopic) {
+  if (topicStr == topic(SUFFIX_MISSION)) {
     String missionId = doc["mission_id"].as<String>();
-    Serial.println("Mission received via cockpit, ID: " + missionId);
-    String ack = "{\"success\":true,\"message\":\"Mission received\",\"mission_id\":\"" + missionId + "\"}";
-    mqttClient.publish(ackTopic.c_str(), ack.c_str());
+    Serial.print(F("Mission received via cockpit, ID: ")); Serial.println(missionId);
+    char ack[100];
+    snprintf(ack, sizeof(ack),
+      "{\"success\":true,\"message\":\"Mission received\",\"mission_id\":\"%s\"}",
+      missionId.c_str());
+    mqttClient.publish(topic(SUFFIX_ACK).c_str(), ack);
     return;
   }
-  if (topicStr == sdListTopic)          { sendSdList(); return; }
-  if (topicStr == sdSaveMissionTopic)   { saveMissionToSd(msg); return; }
-  if (topicStr == sdDeleteMissionTopic) { deleteMissionFromSd(doc["id"].as<String>()); return; }
-  if (topicStr == sdSaveQueueTopic)     { saveQueueToSd(msg); return; }
-  if (topicStr == sdDeleteQueueTopic)   { deleteQueueFromSd(doc["filename"].as<String>()); return; }
-  if (topicStr == sdExecuteMissionTopic){ executeMissionFromSd(doc["id"].as<String>()); return; }
-  if (topicStr == sdExecuteQueueTopic)  { executeQueueFromSd(doc["filename"].as<String>()); return; }
+  if (topicStr == topic(SUFFIX_SD_LIST))         { sendSdList(); return; }
+  if (topicStr == topic(SUFFIX_SD_SAVE_MISSION)) { saveMissionToSd(msg); return; }
+  if (topicStr == topic(SUFFIX_SD_DEL_MISSION))  { deleteMissionFromSd(doc["id"].as<String>()); return; }
+  if (topicStr == topic(SUFFIX_SD_SAVE_QUEUE))   { saveQueueToSd(msg); return; }
+  if (topicStr == topic(SUFFIX_SD_DEL_QUEUE))    { deleteQueueFromSd(doc["filename"].as<String>()); return; }
+  if (topicStr == topic(SUFFIX_SD_EXEC_MISSION)) { executeMissionFromSd(doc["id"].as<String>()); return; }
+  if (topicStr == topic(SUFFIX_SD_EXEC_QUEUE))   { executeQueueFromSd(doc["filename"].as<String>()); return; }
 }
 
 // ─────────────────────────────────────────────────────
@@ -518,23 +569,24 @@ void connectMQTT() {
   secureClient.setInsecure();
   mqttClient.setServer(MQTT_HOST, MQTT_PORT);
   mqttClient.setCallback(mqttCallback);
-  mqttClient.setBufferSize(16384);
+  mqttClient.setBufferSize(MQTT_BUFFER_SIZE);
+
   String clientId = "esp32_" + droneID;
   if (mqttClient.connect(clientId.c_str(), MQTT_USER, MQTT_PASS)) {
     mqttConnected = true;
-    Serial.println("MQTT connected!");
-    mqttClient.subscribe(commandTopic.c_str());
-    mqttClient.subscribe(missionTopic.c_str());
-    mqttClient.subscribe(sdListTopic.c_str());
-    mqttClient.subscribe(sdSaveMissionTopic.c_str());
-    mqttClient.subscribe(sdDeleteMissionTopic.c_str());
-    mqttClient.subscribe(sdSaveQueueTopic.c_str());
-    mqttClient.subscribe(sdDeleteQueueTopic.c_str());
-    mqttClient.subscribe(sdExecuteMissionTopic.c_str());
-    mqttClient.subscribe(sdExecuteQueueTopic.c_str());
+    Serial.println(F("MQTT connected!"));
+    mqttClient.subscribe(topic(SUFFIX_COMMAND).c_str());
+    mqttClient.subscribe(topic(SUFFIX_MISSION).c_str());
+    mqttClient.subscribe(topic(SUFFIX_SD_LIST).c_str());
+    mqttClient.subscribe(topic(SUFFIX_SD_SAVE_MISSION).c_str());
+    mqttClient.subscribe(topic(SUFFIX_SD_DEL_MISSION).c_str());
+    mqttClient.subscribe(topic(SUFFIX_SD_SAVE_QUEUE).c_str());
+    mqttClient.subscribe(topic(SUFFIX_SD_DEL_QUEUE).c_str());
+    mqttClient.subscribe(topic(SUFFIX_SD_EXEC_MISSION).c_str());
+    mqttClient.subscribe(topic(SUFFIX_SD_EXEC_QUEUE).c_str());
     publishState("IDLE");
   } else {
-    Serial.print("MQTT failed, rc=");
+    Serial.print(F("MQTT failed, rc="));
     Serial.println(mqttClient.state());
   }
 }
@@ -547,37 +599,36 @@ void setup() {
   delay(1000);
   pinMode(BOOT_BUTTON_PIN, INPUT_PULLUP);
 
-  // ── 1. Load saved WiFi credentials from flash ──────
+  // 1. Load saved WiFi credentials from flash
   preferences.begin("wifi", true);
   String savedSSID     = preferences.getString("ssid", "");
   String savedPassword = preferences.getString("password", "");
   preferences.end();
 
-  Serial.println("Saved SSID: '" + savedSSID + "'");
+  Serial.print(F("Saved SSID: '")); Serial.print(savedSSID); Serial.println("'");
 
-  // ── 2. If no credentials saved → BLE setup mode ────
+  // 2. No credentials → BLE setup mode
   if (savedSSID.length() == 0) {
-    Serial.println("No WiFi credentials found. Starting BLE setup...");
-    // Need WiFi off for BLE to work properly
+    Serial.println(F("No WiFi credentials found. Starting BLE setup..."));
     WiFi.mode(WIFI_OFF);
     delay(100);
-    startBLESetup(); // Will restart ESP32 after saving credentials
-    return;          // Never reaches here
+    startBLESetup(); // restarts ESP32 after saving credentials
+    return;
   }
 
-  // ── 3. Connect to WiFi using saved credentials ─────
-  Serial.print("Connecting to WiFi: " + savedSSID + " ...");
+  // 3. Connect WiFi using saved credentials
+  Serial.print(F("Connecting to WiFi: ")); Serial.print(savedSSID); Serial.print(F(" ..."));
   WiFi.begin(savedSSID.c_str(), savedPassword.c_str());
 
   int attempts = 0;
   while (WiFi.status() != WL_CONNECTED && attempts < 20) {
     delay(500);
-    Serial.print(".");
+    Serial.print(F("."));
     attempts++;
   }
 
   if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("\nWiFi failed! Clearing credentials and restarting for BLE setup...");
+    Serial.println(F("\nWiFi failed! Clearing credentials and restarting for BLE setup..."));
     preferences.begin("wifi", false);
     preferences.clear();
     preferences.end();
@@ -586,31 +637,31 @@ void setup() {
     return;
   }
 
-  Serial.println("\nWiFi connected! MAC: " + WiFi.macAddress());
+  Serial.print(F("\nWiFi connected! MAC: ")); Serial.println(WiFi.macAddress());
   delay(1000);
 
-  // ── 4. SD Init ─────────────────────────────────────
-  Serial.println("Initializing SD card...");
+  // 4. SD Init
+  Serial.println(F("Initializing SD card..."));
   SPI.begin();
   delay(100);
   sdReady = false;
-  if (SD.begin()) { sdReady = true; }
-  else if (SD.begin(SD_CS_PIN)) { sdReady = true; }
+  if      (SD.begin())                        { sdReady = true; }
+  else if (SD.begin(SD_CS_PIN))               { sdReady = true; }
   else if (SD.begin(SD_CS_PIN, SPI, 1000000)) { sdReady = true; }
 
   if (sdReady) {
-    Serial.println("SD card ready!");
+    Serial.println(F("SD card ready!"));
     ensureDir("/missions");
     ensureDir("/queues");
   } else {
-    Serial.println("SD card failed — continuing without SD");
+    Serial.println(F("SD card failed — continuing without SD"));
   }
 
-  // ── 5. Boot API ────────────────────────────────────
-  String mac      = WiFi.macAddress();
-  String bootBody = "{\"mac\":\"" + mac + "\"}";
-  String bootResp = postJSON(BOOT_URL, bootBody);
-  Serial.println("Boot response: " + bootResp);
+  // 5. Boot API
+  char bootBody[48];
+  snprintf(bootBody, sizeof(bootBody), "{\"mac\":\"%s\"}", WiFi.macAddress().c_str());
+  String bootResp = postJSON(BOOT_URL, String(bootBody));
+  Serial.print(F("Boot response: ")); Serial.println(bootResp);
 
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, bootResp);
@@ -618,27 +669,25 @@ void setup() {
   if (!error && doc["success"] == true) {
     userID  = doc["user_id"].as<String>();
     droneID = doc["drone_id"].as<String>();
-    Serial.println("Boot OK — UserID: " + userID + " DroneID: " + droneID);
+    Serial.print(F("Boot OK — UserID: ")); Serial.print(userID);
+    Serial.print(F(" DroneID: "));         Serial.println(droneID);
 
-    String base          = "drone/" + droneID;
-    telemetryTopic       = base + "/telemetry";
-    commandTopic         = base + "/command";
-    missionTopic         = base + "/mission";
-    statusTopic          = base + "/status";
-    ackTopic             = base + "/ack";
-    sdListTopic          = base + "/sd/list";
-    sdListResponseTopic  = base + "/sd/list_response";
-    sdSaveMissionTopic   = base + "/sd/save_mission";
-    sdDeleteMissionTopic = base + "/sd/delete_mission";
-    sdSaveQueueTopic     = base + "/sd/save_queue";
-    sdDeleteQueueTopic   = base + "/sd/delete_queue";
-    sdExecuteMissionTopic= base + "/sd/execute_mission";
-    sdExecuteQueueTopic  = base + "/sd/execute_queue";
-    sdAckTopic           = base + "/sd/ack";
+    // [OPT] Build single base string once — all topics derived on the fly
+    mqttBase = "drone/" + droneID;
 
     connectMQTT();
   } else {
-    Serial.println("Boot failed: " + doc["message"].as<String>());
+    Serial.print(F("Boot failed: ")); Serial.println(doc["message"].as<String>());
+  }
+
+  // 6. ESP-NOW init — must come after WiFi is connected (STA mode already set)
+  if (esp_now_init() == ESP_OK) {
+    esp_now_register_recv_cb(OnDataRecv);
+    Serial.println(F("ESP-NOW receiver ready"));
+    Serial.print(F(">>> ESP #1 MAC (give this to ESP #2): "));
+    Serial.println(WiFi.macAddress());
+  } else {
+    Serial.println(F("ESP-NOW init failed — telemetry will stay at defaults"));
   }
 }
 
@@ -653,7 +702,7 @@ void loop() {
   if (mqttConnected) {
     if (!mqttClient.connected()) {
       mqttConnected = false;
-      Serial.println("MQTT lost, reconnecting...");
+      Serial.println(F("MQTT lost, reconnecting..."));
       connectMQTT();
     }
     mqttClient.loop();
@@ -667,29 +716,29 @@ void loop() {
 
   bool buttonPressed = (digitalRead(BOOT_BUTTON_PIN) == LOW);
 
-  // ── Detect press start ────────────────────────────
+  // Detect press start
   if (buttonPressed && !buttonWasPressed) {
     buttonPressStart = now;
     holdTriggered    = false;
   }
 
-  // ── 3-second hold → BLE WiFi reset ───────────────
+  // 3-second hold → BLE WiFi reset
   if (buttonPressed && !holdTriggered && (now - buttonPressStart >= 3000)) {
     holdTriggered = true;
-    Serial.println("3s hold — clearing WiFi credentials, entering BLE setup...");
+    Serial.println(F("3s hold — clearing WiFi credentials, entering BLE setup..."));
     preferences.begin("wifi", false);
     preferences.clear();
     preferences.end();
     delay(500);
-    ESP.restart(); // no SSID saved → setup() enters BLE mode automatically
+    ESP.restart();
   }
 
-  // ── Short click → mission slot (only if not a hold) ──
+  // Short click → mission slot
   if (buttonPressed && !holdTriggered && !buttonWasPressed) {
     clickCount++;
     lastClickTime = now;
     windowOpen    = true;
-    Serial.println("Click! Count: " + String(clickCount));
+    Serial.print(F("Click! Count: ")); Serial.println(clickCount);
   }
   buttonWasPressed = buttonPressed;
 

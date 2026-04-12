@@ -1,0 +1,330 @@
+#include <Arduino.h>
+#include <esp_now.h>
+#include <WiFi.h>
+#include <math.h>
+
+// ─────────────────────────────────────────────────────
+// ESP #1 MAC address
+// ─────────────────────────────────────────────────────
+uint8_t masterMAC[] = {0xE4, 0x65, 0xB8, 0x13, 0x6F, 0x70};
+
+// ── Telemetry Packet ──────────────────────────────────
+typedef struct {
+  float   lat;
+  float   lng;
+  float   altitude;
+  float   speed;
+  float   heading;
+  uint8_t battery;
+  int     signal_strength;
+} TelemetryPacket;
+
+TelemetryPacket pkt;
+
+// ─────────────────────────────────────────────────────
+// Flight Phases
+// ─────────────────────────────────────────────────────
+enum FlightPhase {
+  PHASE_IDLE,
+  PHASE_TAKEOFF,
+  PHASE_CRUISE,
+  PHASE_HOVER,
+  PHASE_RTH,
+  PHASE_LANDING
+};
+
+FlightPhase   phase      = PHASE_IDLE;
+unsigned long phaseStart = 0;
+
+// ── Home position ─────────────────────────────────────
+const double HOME_LAT = 36.806500;
+const double HOME_LNG = 10.181500;
+
+// ── Current drone state ───────────────────────────────
+double droneLat     = HOME_LAT;
+double droneLng     = HOME_LNG;
+double droneAlt     = 0.0;
+double droneSpeed   = 0.0;
+double droneHeading = 0.0;
+float  battery      = 100.0f;
+
+// ── Waypoints (~50m apart) ────────────────────────────
+const int WP_COUNT = 5;
+const double WP_LAT[WP_COUNT] = {
+  HOME_LAT + 0.00045,
+  HOME_LAT + 0.00045,
+  HOME_LAT,
+  HOME_LAT - 0.00045,
+  HOME_LAT
+};
+const double WP_LNG[WP_COUNT] = {
+  HOME_LNG,
+  HOME_LNG + 0.00045,
+  HOME_LNG + 0.00045,
+  HOME_LNG,
+  HOME_LNG - 0.00045
+};
+int currentWP = 0;
+
+// ── Flight parameters ─────────────────────────────────
+const double CRUISE_ALT    = 35.0;   // meters
+const double CRUISE_SPEED  = 7.0;    // m/s
+const double TAKEOFF_SPEED = 2.5;    // m/s vertical
+const double LAND_SPEED    = 1.5;    // m/s vertical
+const double HOVER_SECS    = 4.0;    // seconds at each waypoint
+const double IDLE_SECS     = 5.0;    // seconds on ground before takeoff
+const double WP_RADIUS     = 1.5;    // meters — close enough to count as reached
+
+// ── Wind simulation ───────────────────────────────────
+float windDrift    = 0.0f;
+float windStrength = 0.000003f; // tiny GPS-level drift
+
+// ─────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────
+
+// Haversine distance in meters between two GPS points
+double gpsDistance(double lat1, double lng1, double lat2, double lng2) {
+  const double R = 6371000.0;
+  double dLat = (lat2 - lat1) * DEG_TO_RAD;
+  double dLng = (lng2 - lng1) * DEG_TO_RAD;
+  double a = sin(dLat/2)*sin(dLat/2) +
+             cos(lat1*DEG_TO_RAD)*cos(lat2*DEG_TO_RAD)*
+             sin(dLng/2)*sin(dLng/2);
+  return R * 2.0 * atan2(sqrt(a), sqrt(1.0-a));
+}
+
+// Bearing from point 1 to point 2 in degrees
+double gpsBearing(double lat1, double lng1, double lat2, double lng2) {
+  double dLng = (lng2 - lng1) * DEG_TO_RAD;
+  double y = sin(dLng) * cos(lat2 * DEG_TO_RAD);
+  double x = cos(lat1*DEG_TO_RAD)*sin(lat2*DEG_TO_RAD) -
+             sin(lat1*DEG_TO_RAD)*cos(lat2*DEG_TO_RAD)*cos(dLng);
+  double bearing = atan2(y, x) * RAD_TO_DEG;
+  return fmod(bearing + 360.0, 360.0);
+}
+
+// Move drone toward a GPS target by 'stepMeters'
+void moveToward(double targetLat, double targetLng, double stepMeters) {
+  double bearing = gpsBearing(droneLat, droneLng, targetLat, targetLng);
+  droneHeading   = bearing;
+  double bearingRad = bearing * DEG_TO_RAD;
+  // 1 meter ≈ 0.000009 degrees latitude
+  droneLat += cos(bearingRad) * stepMeters * 0.000009;
+  droneLng += sin(bearingRad) * stepMeters * 0.000009 /
+              cos(droneLat * DEG_TO_RAD);
+}
+
+void setPhase(FlightPhase p) {
+  phase      = p;
+  phaseStart = millis();
+}
+
+// ─────────────────────────────────────────────────────
+// ESP-NOW Send Callback
+// ─────────────────────────────────────────────────────
+void OnDataSent(const wifi_tx_info_t* info, esp_now_send_status_t status) {
+  // Uncomment below for send confirmation debug:
+  // Serial.println(status == ESP_NOW_SEND_SUCCESS ? "SENT OK" : "SENT FAIL");
+}
+
+// ─────────────────────────────────────────────────────
+// Setup
+// ─────────────────────────────────────────────────────
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  Serial.println(F("ESP #2 — Realistic Simulator starting..."));
+
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  delay(100);
+
+  Serial.print(F("ESP #2 MAC: ")); Serial.println(WiFi.macAddress());
+
+  if (esp_now_init() != ESP_OK) {
+    Serial.println(F("ESP-NOW init FAILED — halting"));
+    while (true) delay(1000);
+  }
+
+  esp_now_register_send_cb(OnDataSent);
+
+  esp_now_peer_info_t peer = {};
+  memcpy(peer.peer_addr, masterMAC, 6);
+  peer.channel = 0;
+  peer.encrypt = false;
+
+  if (esp_now_add_peer(&peer) != ESP_OK) {
+    Serial.println(F("Failed to add peer — check MAC"));
+  } else {
+    Serial.println(F("ESP #1 registered as peer — starting simulation"));
+  }
+
+  setPhase(PHASE_IDLE);
+}
+
+// ─────────────────────────────────────────────────────
+// Loop
+// ─────────────────────────────────────────────────────
+void loop() {
+  unsigned long now     = millis();
+  unsigned long elapsed = now - phaseStart;
+  float dt = 0.1f; // 100ms tick
+
+  // ── Battery drain (realistic: ~15min flight = 100% drain) ──
+  // 15min = 900s, 100% / 900s * 0.1s per tick = 0.011% per tick
+  if (phase != PHASE_IDLE) {
+    battery -= 0.011f;
+    if (battery < 0.0f) battery = 0.0f;
+  }
+
+  // ── Wind drift (tiny GPS noise) ───────────────────────
+  windDrift += 0.05f;
+  float windLat = windStrength * sinf(windDrift * 0.7f);
+  float windLng = windStrength * cosf(windDrift * 1.1f);
+
+  // ─────────────────────────────────────────────────────
+  // Phase State Machine
+  // ─────────────────────────────────────────────────────
+  switch (phase) {
+
+    case PHASE_IDLE:
+      droneSpeed   = 0.0;
+      droneHeading = 0.0;
+      // Small motor vibration simulation on ground
+      droneLat = HOME_LAT + (random(-3, 3) * 0.0000001);
+      droneLng = HOME_LNG + (random(-3, 3) * 0.0000001);
+      droneAlt = 0.0;
+
+      if (elapsed >= (unsigned long)(IDLE_SECS * 1000)) {
+        currentWP = 0;
+        setPhase(PHASE_TAKEOFF);
+        Serial.println(F("[PHASE] TAKEOFF"));
+      }
+      break;
+
+    case PHASE_TAKEOFF:
+      droneSpeed = TAKEOFF_SPEED;
+      droneAlt  += TAKEOFF_SPEED * dt;
+      // Slight horizontal drift during climb
+      droneLat  += windLat * 0.3;
+      droneLng  += windLng * 0.3;
+
+      if (droneAlt >= CRUISE_ALT) {
+        droneAlt = CRUISE_ALT;
+        setPhase(PHASE_CRUISE);
+        Serial.printf("[PHASE] CRUISE → WP%d\n", currentWP);
+      }
+      break;
+
+    case PHASE_CRUISE: {
+      double targetLat = WP_LAT[currentWP];
+      double targetLng = WP_LNG[currentWP];
+      double dist      = gpsDistance(droneLat, droneLng, targetLat, targetLng);
+
+      // Realistic speed: slow down when approaching waypoint
+      double approachFactor = constrain(dist / 10.0, 0.3, 1.0);
+      droneSpeed = CRUISE_SPEED * approachFactor;
+
+      // Small altitude variation in cruise (wind bumps)
+      droneAlt += (random(-10, 10) * 0.01);
+      droneAlt  = constrain(droneAlt, CRUISE_ALT - 2.0, CRUISE_ALT + 2.0);
+
+      // Move toward waypoint
+      double step = droneSpeed * dt;
+      if (dist > step) {
+        moveToward(targetLat, targetLng, step);
+        // Add wind drift
+        droneLat += windLat;
+        droneLng += windLng;
+      } else {
+        // Reached waypoint
+        droneLat = targetLat;
+        droneLng = targetLng;
+        setPhase(PHASE_HOVER);
+        Serial.printf("[PHASE] HOVER at WP%d\n", currentWP);
+      }
+      break;
+    }
+
+    case PHASE_HOVER:
+      droneSpeed = 0.0;
+      // Realistic hover: small position oscillation (GPS + wind)
+      droneLat += windLat * 0.5 + (random(-5, 5) * 0.0000001);
+      droneLng += windLng * 0.5 + (random(-5, 5) * 0.0000001);
+      droneAlt += (random(-5, 5) * 0.01);
+      droneAlt  = constrain(droneAlt, CRUISE_ALT - 1.0, CRUISE_ALT + 1.0);
+
+      if (elapsed >= (unsigned long)(HOVER_SECS * 1000)) {
+        currentWP++;
+        if (currentWP >= WP_COUNT) {
+          // All waypoints done → go home
+          setPhase(PHASE_RTH);
+          Serial.println(F("[PHASE] RTH"));
+        } else {
+          setPhase(PHASE_CRUISE);
+          Serial.printf("[PHASE] CRUISE → WP%d\n", currentWP);
+        }
+      }
+      break;
+
+    case PHASE_RTH: {
+      double dist = gpsDistance(droneLat, droneLng, HOME_LAT, HOME_LNG);
+      double approachFactor = constrain(dist / 10.0, 0.3, 1.0);
+      droneSpeed = CRUISE_SPEED * approachFactor;
+      droneAlt  += (random(-5, 5) * 0.01);
+      droneAlt   = constrain(droneAlt, CRUISE_ALT - 2.0, CRUISE_ALT + 2.0);
+
+      double step = droneSpeed * dt;
+      if (dist > WP_RADIUS) {
+        moveToward(HOME_LAT, HOME_LNG, step);
+        droneLat += windLat;
+        droneLng += windLng;
+      } else {
+        droneLat = HOME_LAT;
+        droneLng = HOME_LNG;
+        setPhase(PHASE_LANDING);
+        Serial.println(F("[PHASE] LANDING"));
+      }
+      break;
+    }
+
+    case PHASE_LANDING:
+      droneSpeed = LAND_SPEED;
+      droneAlt  -= LAND_SPEED * dt;
+      // Slight drift during descent
+      droneLat  += windLat * 0.2;
+      droneLng  += windLng * 0.2;
+
+      if (droneAlt <= 0.0) {
+        droneAlt   = 0.0;
+        droneSpeed = 0.0;
+        droneLat   = HOME_LAT;
+        droneLng   = HOME_LNG;
+        battery    = 100.0f; // recharge for demo loop
+        setPhase(PHASE_IDLE);
+        Serial.println(F("[PHASE] IDLE (landed — recharging for next flight)"));
+      }
+      break;
+  }
+
+  // ── Build & send packet ───────────────────────────────
+  pkt.lat              = (float)droneLat;
+  pkt.lng              = (float)droneLng;
+  pkt.altitude         = (float)droneAlt;
+  pkt.speed            = (float)droneSpeed;
+  pkt.heading          = (float)droneHeading;
+  pkt.battery          = (uint8_t)battery;
+  pkt.signal_strength  = -55 - (int)(droneAlt * 0.1); // signal weakens with altitude
+
+  esp_now_send(masterMAC, (uint8_t*)&pkt, sizeof(pkt));
+
+  // ── Serial debug ──────────────────────────────────────
+  const char* phaseNames[] = {"IDLE","TAKEOFF","CRUISE","HOVER","RTH","LANDING"};
+  Serial.printf("[%s] lat=%.6f lng=%.6f alt=%.1fm spd=%.1fm/s hdg=%.0f° bat=%d%%\n",
+    phaseNames[phase],
+    pkt.lat, pkt.lng, pkt.altitude,
+    pkt.speed, pkt.heading, pkt.battery);
+
+  delay(100); // 10Hz simulation tick
+}
