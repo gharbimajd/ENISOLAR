@@ -1,0 +1,21 @@
+┌─────────────────┐    ┌─────────────────┐
+│   MASTER        │  UART   │   SLAVE FC           │
+│   ESP32-WROOM   │────────▶│ ESP32-WROOM   		│
+│                 │◀────────│                 	│
+│ WiFi/MQTT/BLE   │            │ PID/GPS/Baro    	│
+│ SD mission      │            │ Navigation      	│
+│ HTTP/Button     │         │                 		│
+│ Mission logic   │         └─────────────────┘
+│ Photo trigger   │
+└────────┬────────┘
+            │ UART
+            ▼
+┌─────────────────┐
+│   ESP32-CAM     │
+│   OV2640        │
+│                 │
+│ Receives trigger│
+│ Takes photo     │
+│ Saves to SD     │
+│ (onboard slot)  │
+└─────────────────┘

@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ENISOLAR — Avancement Système Drone</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:        #080c10;
+    --surface:   #0d1318;
+    --surface2:  #111820;
+    --border:    #1e2d3d;
+    --accent:    #00d4aa;
+    --accent2:   #0094ff;
+    --warn:      #ffb830;
+    --danger:    #ff4d4d;
+    --text:      #e2eaf3;
+    --text2:     #8ba3bc;
+    --text3:     #4a6478;
+    --done:      #00d4aa;
+    --partial:   #ffb830;
+    --todo:      #ff4d4d;
+    --mono:      'Share Tech Mono', monospace;
+    --sans:      'Syne', sans-serif;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Grid noise texture overlay ── */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0,212,170,0.03) 39px, rgba(0,212,170,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,212,170,0.03) 39px, rgba(0,212,170,0.03) 40px);
+    pointer-events:none; z-index:0;
+  }
+
+  /* ── Glow blobs ── */
+  .blob {
+    position:fixed; border-radius:50%;
+    filter:blur(120px); pointer-events:none; z-index:0; opacity:0.12;
+  }
+  .blob1 { width:600px;height:600px; background:var(--accent);  top:-200px; left:-150px; }
+  .blob2 { width:500px;height:500px; background:var(--accent2); bottom:-150px; right:-100px; }
+
+  /* ── Layout ── */
+  .container {
+    position:relative; z-index:1;
+    max-width:1100px; margin:0 auto;
+    padding:60px 32px 100px;
+  }
+
+  /* ── Header ── */
+  .header {
+    border-bottom:1px solid var(--border);
+    padding-bottom:40px;
+    margin-bottom:60px;
+    display:flex; flex-direction:column; gap:16px;
+  }
+
+  .badge-row {
+    display:flex; align-items:center; gap:12px;
+    font-family:var(--mono); font-size:11px;
+    color:var(--accent); letter-spacing:2px;
+  }
+  .badge-row::before {
+    content:''; display:block;
+    width:32px; height:1px; background:var(--accent);
+  }
+
+  .title {
+    font-size:clamp(36px, 6vw, 64px);
+    font-weight:800; line-height:1.05;
+    letter-spacing:-1px;
+  }
+  .title span { color:var(--accent); }
+
+  .subtitle {
+    font-family:var(--mono); font-size:13px;
+    color:var(--text2); line-height:1.8;
+    max-width:680px;
+  }
+
+  .meta-row {
+    display:flex; flex-wrap:wrap; gap:24px;
+    margin-top:8px;
+  }
+  .meta-item {
+    display:flex; align-items:center; gap:8px;
+    font-family:var(--mono); font-size:11px; color:var(--text3);
+  }
+  .meta-item b { color:var(--text2); }
+
+  /* ── Global progress bar ── */
+  .global-progress {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:28px 32px;
+    margin-bottom:60px;
+    display:flex; align-items:center; gap:32px;
+    flex-wrap:wrap;
+  }
+  .progress-label {
+    font-family:var(--mono); font-size:11px;
+    color:var(--text3); letter-spacing:1.5px;
+    text-transform:uppercase; white-space:nowrap;
+  }
+  .progress-track {
+    flex:1; min-width:200px;
+    height:6px; background:var(--border);
+    border-radius:3px; overflow:hidden;
+    position:relative;
+  }
+  .progress-fill {
+    height:100%; border-radius:3px;
+    background:linear-gradient(90deg, var(--accent), var(--accent2));
+    transition:width 1.2s cubic-bezier(.16,1,.3,1);
+    box-shadow:0 0 12px rgba(0,212,170,0.4);
+  }
+  .progress-pct {
+    font-family:var(--mono); font-size:28px;
+    font-weight:700; color:var(--accent);
+    white-space:nowrap;
+  }
+
+  .legend {
+    display:flex; gap:20px; flex-wrap:wrap;
+  }
+  .leg {
+    display:flex; align-items:center; gap:6px;
+    font-family:var(--mono); font-size:10px; color:var(--text3);
+  }
+  .dot {
+    width:8px; height:8px; border-radius:50%;
+  }
+  .dot.done    { background:var(--done); box-shadow:0 0 6px var(--done); }
+  .dot.partial { background:var(--partial); box-shadow:0 0 6px var(--partial); }
+  .dot.todo    { background:var(--todo); box-shadow:0 0 6px var(--todo); }
+
+  /* ── Section ── */
+  .section { margin-bottom:56px; }
+
+  .section-header {
+    display:flex; align-items:flex-start; gap:20px;
+    margin-bottom:20px;
+  }
+
+  .section-num {
+    font-family:var(--mono); font-size:10px;
+    color:var(--text3); letter-spacing:2px;
+    padding-top:6px; white-space:nowrap;
+  }
+
+  .section-title {
+    font-size:22px; font-weight:800; color:var(--text);
+    letter-spacing:-0.3px;
+    border-bottom:1px solid var(--border);
+    padding-bottom:12px; flex:1;
+  }
+  .section-title span {
+    font-family:var(--mono); font-size:11px;
+    font-weight:400; color:var(--text3);
+    margin-left:12px; letter-spacing:1px;
+  }
+
+  /* ── Cards grid ── */
+  .cards {
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));
+    gap:12px;
+  }
+
+  .card {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:20px 22px;
+    position:relative;
+    overflow:hidden;
+    transition:border-color 0.2s, transform 0.15s;
+  }
+  .card:hover {
+    border-color:rgba(0,212,170,0.25);
+    transform:translateY(-1px);
+  }
+  .card::before {
+    content:''; position:absolute;
+    left:0; top:0; bottom:0; width:3px;
+    border-radius:3px 0 0 3px;
+  }
+  .card.done::before    { background:var(--done); box-shadow:0 0 8px var(--done); }
+  .card.partial::before { background:var(--partial); box-shadow:0 0 8px var(--partial); }
+  .card.todo::before    { background:var(--todo); box-shadow:0 0 8px var(--todo); }
+
+  .card-top {
+    display:flex; align-items:flex-start;
+    justify-content:space-between; gap:12px;
+    margin-bottom:10px;
+  }
+
+  .card-title {
+    font-size:13px; font-weight:700;
+    color:var(--text); line-height:1.4;
+  }
+
+  .tag {
+    font-family:var(--mono); font-size:9px;
+    letter-spacing:1.5px; text-transform:uppercase;
+    padding:3px 8px; border-radius:4px;
+    white-space:nowrap; flex-shrink:0;
+  }
+  .tag.done    { background:rgba(0,212,170,0.12);  color:var(--done);    border:1px solid rgba(0,212,170,0.25); }
+  .tag.partial { background:rgba(255,184,48,0.12); color:var(--partial); border:1px solid rgba(255,184,48,0.25); }
+  .tag.todo    { background:rgba(255,77,77,0.12);  color:var(--todo);    border:1px solid rgba(255,77,77,0.25); }
+
+  .card-desc {
+    font-family:var(--mono); font-size:11px;
+    color:var(--text2); line-height:1.7;
+  }
+
+  .card-note {
+    margin-top:10px;
+    font-family:var(--mono); font-size:10px;
+    color:var(--text3); line-height:1.6;
+    padding:8px 10px;
+    background:var(--surface2);
+    border-radius:6px;
+    border-left:2px solid var(--border);
+  }
+  .card-note.warn  { border-color:var(--partial); color:var(--partial); }
+  .card-note.info  { border-color:var(--accent2); color:var(--accent2); }
+
+  /* ── File list ── */
+  .file-list {
+    display:flex; flex-direction:column; gap:8px;
+    margin-bottom:24px;
+  }
+
+  .file-row {
+    display:flex; align-items:center; gap:12px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 16px;
+    font-family:var(--mono); font-size:11px;
+  }
+  .file-row .fname { color:var(--accent); flex:1; }
+  .file-row .ftype { color:var(--text3); font-size:10px; }
+  .file-row .fsize { color:var(--text3); font-size:10px; }
+
+  /* ── UART table ── */
+  .uart-table {
+    width:100%; border-collapse:collapse;
+    font-family:var(--mono); font-size:11px;
+    margin-top:8px;
+  }
+  .uart-table th {
+    text-align:left; padding:8px 12px;
+    color:var(--text3); font-size:10px;
+    letter-spacing:1.5px; text-transform:uppercase;
+    border-bottom:1px solid var(--border);
+  }
+  .uart-table td {
+    padding:9px 12px;
+    border-bottom:1px solid rgba(30,45,61,0.5);
+    color:var(--text2);
+    vertical-align:top;
+  }
+  .uart-table tr:last-child td { border-bottom:none; }
+  .uart-table td:first-child { color:var(--accent); font-weight:700; }
+  .uart-table td.dir-in  { color:var(--accent2); }
+  .uart-table td.dir-out { color:var(--accent); }
+
+  .mono-inline {
+    font-family:var(--mono); font-size:10px;
+    background:var(--surface2); border:1px solid var(--border);
+    padding:1px 5px; border-radius:3px; color:var(--accent);
+  }
+
+  /* ── Next steps ── */
+  .next-steps {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:28px 32px;
+    margin-top:48px;
+  }
+  .next-title {
+    font-family:var(--mono); font-size:11px;
+    color:var(--text3); letter-spacing:2px;
+    text-transform:uppercase; margin-bottom:20px;
+  }
+  .step-row {
+    display:flex; align-items:flex-start; gap:16px;
+    padding:12px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .step-row:last-child { border-bottom:none; }
+  .step-n {
+    font-family:var(--mono); font-size:10px;
+    color:var(--text3); padding-top:2px;
+    min-width:28px;
+  }
+  .step-text {
+    font-size:13px; font-weight:700;
+    color:var(--text); line-height:1.4;
+  }
+  .step-sub {
+    font-family:var(--mono); font-size:10px;
+    color:var(--text2); margin-top:3px; line-height:1.6;
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(20px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .section { animation: fadeUp 0.5s ease both; }
+  .section:nth-child(1) { animation-delay:0.05s; }
+  .section:nth-child(2) { animation-delay:0.10s; }
+  .section:nth-child(3) { animation-delay:0.15s; }
+  .section:nth-child(4) { animation-delay:0.20s; }
+  .section:nth-child(5) { animation-delay:0.25s; }
+  .section:nth-child(6) { animation-delay:0.30s; }
+  .section:nth-child(7) { animation-delay:0.35s; }
+
+  /* ── Scanline footer ── */
+  .footer {
+    font-family:var(--mono); font-size:10px;
+    color:var(--text3); text-align:center;
+    letter-spacing:2px; padding-top:40px;
+    border-top:1px solid var(--border);
+    margin-top:60px;
+  }
+</style>
+</head>
+<body>
+
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+
+<div class="container">
+
+  <!-- ── Header ── -->
+  <header class="header">
+    <div class="badge-row">ENISOLAR DRONE SYSTEM &nbsp;·&nbsp; SESSION LOG</div>
+    <h1 class="title">Avancement<br/><span>Architecture PDF</span></h1>
+    <p class="subtitle">
+      Rapport de session — Implémentation du système drone 3 nœuds<br/>
+      Master ESP32-WROOM · Slave FC ESP32-WROOM · ESP32-CAM (différé)
+    </p>
+    <div class="meta-row">
+      <div class="meta-item">📅 <b>Session</b> Avril 2026</div>
+      <div class="meta-item">📄 <b>Réf.</b> Drone_System_Architecture.pdf</div>
+      <div class="meta-item">🔧 <b>Cible</b> ESP32-WROOM-32</div>
+      <div class="meta-item">📡 <b>Proto</b> UART · ESP-NOW · MQTT TLS · BLE</div>
+    </div>
+  </header>
+
+  <!-- ── Global progress ── -->
+  <div class="global-progress">
+    <div>
+      <div class="progress-label">Avancement global</div>
+      <div style="margin-top:8px" class="legend">
+        <div class="leg"><div class="dot done"></div>Implémenté</div>
+        <div class="leg"><div class="dot partial"></div>Partiel</div>
+        <div class="leg"><div class="dot todo"></div>À faire</div>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" style="width:72%"></div>
+    </div>
+    <div class="progress-pct">72%</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 1 — FICHIERS LIVRÉS
+  ══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">01 /07</div>
+      <h2 class="section-title">Fichiers produits cette session</h2>
+    </div>
+    <div class="file-list">
+      <div class="file-row">
+        <span class="fname">espmaster_v2.ino</span>
+        <span class="ftype">Arduino C++</span>
+        <span class="fsize">Master ESP32 — version complète</span>
+      </div>
+      <div class="file-row">
+        <span class="fname">slave_simulator.ino</span>
+        <span class="ftype">Arduino C++</span>
+        <span class="fsize">Slave FC simulateur réaliste</span>
+      </div>
+      <div class="file-row">
+        <span class="fname">wifi-setup.page.ts / .html / .scss</span>
+        <span class="ftype">Ionic/Angular</span>
+        <span class="fsize">App — provisioning WiFi via BLE (existant, conservé)</span>
+      </div>
+      <div class="file-row">
+        <span class="fname">sd-manager.page.ts / .html / .scss</span>
+        <span class="ftype">Ionic/Angular</span>
+        <span class="fsize">App — gestion SD missions/queues (existant, conservé)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 2 — MASTER ESP32
+  ══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">02 /07</div>
+      <h2 class="section-title">Master ESP32-WROOM <span>espmaster_v2.ino</span></h2>
+    </div>
+    <div class="cards">
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">Boot & Identité</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          NVS → WiFi. Si absent → BLE setup (ENISOLAR-XXXXXX).<br/>
+          HTTP POST boot URL avec MAC → reçoit userID + droneID.<br/>
+          BLE fully deinit après credentials → libère ~60KB RAM.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">WiFi Provisioning BLE</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          Scan WiFi chunké en paquets BLE 180 bytes.<br/>
+          Test credentials avant sauvegarde NVS.<br/>
+          Mise à jour credentials : bouton 3s → clear NVS → restart → BLE.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">MQTT TLS (port 8883)</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          Connexion HiveMQ TLS. Buffer 16KB pour payloads mission.<br/>
+          Topics PROGMEM — zéro allocation heap par topic.<br/>
+          Reconnexion automatique si connexion perdue.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">Architecture 5 Buffers</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          Buffer 1 — Point cible courant (lat/lng/alt)<br/>
+          Buffer 2 — Home point (set ONCE, jamais écrasé)<br/>
+          Buffer 3 — Mission state (type/index/total/status)<br/>
+          Buffer 4 — Télémétrie slave (via ESP-NOW)<br/>
+          Buffer 5 — Camera state (skippé, pas de caméra)
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">SD Card — Gestion fichiers</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          Save/delete missions et queues via MQTT.<br/>
+          sendSdList() lit /missions + /queues avec filtre JSON.<br/>
+          remountSd() — remontage sécurisé entre missions queue.<br/>
+          Stream-parse pour éviter chargement heap complet.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">Mission Execution Engine</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          Charge flight_path JSON → RAM array[100 waypoints].<br/>
+          SD.end() avant premier waypoint → zéro activité SD en vol.<br/>
+          Sert les points à la demande via NEXT_REQUEST slave.<br/>
+          Tracks current_index, total_points, mission_type.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">Queue Execution Engine</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          Charge mission[0] → unmount SD → vol → last WP.<br/>
+          Remonte SD → charge mission[1] → unmount → vol.<br/>
+          Répète jusqu'à dernière mission de la queue.<br/>
+          Max 20 missions par queue.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">UART TX — Master → Slave</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          Paquet 12 bytes fixe : 0xAA | CMD | lat(4) | lng(4) | alt(1) | XOR checksum.<br/>
+          GPIO17 TX / GPIO16 RX — UART2 à 115200 baud.<br/>
+          CMD : 0x01 waypoint · 0x02 RTH · 0x03 LAND · 0x04 ABORT.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">UART RX — Slave → Master</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          0x06 NEXT_REQUEST → sert waypoint suivant.<br/>
+          0x07 HOME_POINT → collecte 9 bytes → Buffer 2 (once).<br/>
+          0x08 ARRIVED_HOME → envoie CMD_LAND home coords alt=0.<br/>
+          0x09 LANDED → status IDLE · clear mission RAM.<br/>
+          0x15 NACK → log uniquement.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">Commandes MQTT Temps Réel</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          RTH → flag → agit sur prochain NEXT_REQUEST.<br/>
+          LAND → Buffer1 lat/lng, alt=0 → UART CMD_LAND.<br/>
+          ABORT → triggerAbort() → land in place immédiat.<br/>
+          LOITER → pause point serving · drone hover.<br/>
+          STOP → clear mission RAM + CMD_ABORT slave.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">ESP-NOW — Télémétrie RX</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          Reçoit TelemetryPacket du slave toutes les 3s.<br/>
+          Push MQTT + HTTP uniquement si telemetryReady = true.<br/>
+          Zéro simulation — données réelles slave seulement.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">Bouton Boot GPIO0</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          1-5 clicks dans fenêtre 2s → fetchSlot(n) HTTP.<br/>
+          Hold 3s → clear NVS credentials → restart BLE mode.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">Status MQTT — State Changes</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          publishMissionStatus() sur chaque changement d'état.<br/>
+          Payload : state + current_index + total_points + mission_type.<br/>
+          App voit progression en temps réel sans polling.
+        </div>
+      </div>
+
+      <div class="card todo">
+        <div class="card-top">
+          <div class="card-title">Camera — Master → ESP32-CAM</div>
+          <div class="tag todo">✗ SKIPPÉ</div>
+        </div>
+        <div class="card-desc">
+          Buffer 5 camera state défini mais non utilisé.<br/>
+          Commandes UART caméra (0xA1–0xA4) non implémentées.<br/>
+          mission_type sauvegardé dans Buffer 3 pour usage futur.
+        </div>
+        <div class="card-note warn">Skippé volontairement — pas de caméra sur ce build.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 3 — SLAVE SIMULATOR
+  ══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">03 /07</div>
+      <h2 class="section-title">Slave FC Simulator <span>slave_simulator.ino</span></h2>
+    </div>
+    <div class="cards">
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">Parser UART 12-bytes</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          Sync sur byte 0xAA. Collecte 12 bytes.<br/>
+          Vérifie checksum XOR bytes 1–10.<br/>
+          NACK si checksum invalide. Parse lat/lng float32 LE.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">State Machine Vol</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          IDLE → FLYING → (RTH | LANDING | ABORTED).<br/>
+          Timers : 6s/waypoint · 8s RTH · 4s landing.<br/>
+          NEXT_REQUEST envoyé automatiquement à l'arrivée.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">GPS Simulé (updateGPS)</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          Interpolation lisse vers waypoint cible (12%/update).<br/>
+          Bruit GPS ±0.000002° (~±0.2m) par update.<br/>
+          Snap exact à l'arrivée au waypoint.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">Altitude Simulée (updateAltitude)</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          Montée : ~2m/s · Descente : ~1.5m/s.<br/>
+          Smooth vers targetAlt reçu du master.<br/>
+          Landing : targetAlt=0 → touchdown.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">Vitesse Simulée (updateSpeed)</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          Rampe vers 5m/s en vol, 4m/s en RTH, 1m/s landing.<br/>
+          Lissage 30%/update — pas de changement brutal.<br/>
+          Variation aléatoire ±0.5m/s pour réalisme.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">Cap Simulé (updateHeading)</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          Calcul bearing atan2 vers waypoint cible.<br/>
+          Rotation max 10°/update — virage réaliste.<br/>
+          Wobble ±0.5° par update.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">Batterie & Signal (updateBattery/Signal)</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          Batterie drain 5% chance/update en vol → dégradation naturelle.<br/>
+          Signal random walk entre -90 et -40 dBm.<br/>
+          Drain par waypoint : 1% fixe à l'arrivée.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">Home Point au démarrage</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          Simule 3s de lock GPS au boot.<br/>
+          Envoie 0x07 HOME_POINT (10 bytes) au master.<br/>
+          Coords de départ sauvegardées → utilisées pour RTH.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">ESP-NOW TX → Master</div>
+          <div class="tag done">✓ FAIT</div>
+        </div>
+        <div class="card-desc">
+          TelemetryPacket envoyé toutes les 3s au master MAC.<br/>
+          Struct identique au master (même layout mémoire).<br/>
+          Callback send pour détecter échec livraison.
+        </div>
+        <div class="card-note warn">⚠ Remplacer MASTER_MAC[] dans le code avant flash.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 4 — PROTOCOLE UART
+  ══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">04 /07</div>
+      <h2 class="section-title">Protocole UART Implémenté</h2>
+    </div>
+
+    <table class="uart-table">
+      <thead>
+        <tr>
+          <th>Byte</th>
+          <th>Direction</th>
+          <th>Nom</th>
+          <th>Format</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>0x01</td>
+          <td class="dir-out">M → S</td>
+          <td>WAYPOINT</td>
+          <td>12 bytes : 0xAA|CMD|lat(4)|lng(4)|alt|XOR</td>
+          <td>Slave vole vers ce point</td>
+        </tr>
+        <tr>
+          <td>0x02</td>
+          <td class="dir-out">M → S</td>
+          <td>RTH</td>
+          <td>12 bytes (même format)</td>
+          <td>Slave retourne à home (géré comme waypoint)</td>
+        </tr>
+        <tr>
+          <td>0x03</td>
+          <td class="dir-out">M → S</td>
+          <td>LAND</td>
+          <td>12 bytes, alt=0</td>
+          <td>Slave descend à 0m en place</td>
+        </tr>
+        <tr>
+          <td>0x04</td>
+          <td class="dir-out">M → S</td>
+          <td>ABORT</td>
+          <td>12 bytes</td>
+          <td>Stop immédiat</td>
+        </tr>
+        <tr>
+          <td>0x06</td>
+          <td class="dir-in">S → M</td>
+          <td>NEXT_REQUEST</td>
+          <td>1 byte</td>
+          <td>Waypoint atteint → master sert le suivant</td>
+        </tr>
+        <tr>
+          <td>0x07</td>
+          <td class="dir-in">S → M</td>
+          <td>HOME_POINT</td>
+          <td>10 bytes : 0x07|lat(4)|lng(4)|alt(1)</td>
+          <td>Premier fix GPS → Buffer 2 master (once)</td>
+        </tr>
+        <tr>
+          <td>0x08</td>
+          <td class="dir-in">S → M</td>
+          <td>ARRIVED_HOME</td>
+          <td>1 byte</td>
+          <td>RTH terminé → master envoie LAND home</td>
+        </tr>
+        <tr>
+          <td>0x09</td>
+          <td class="dir-in">S → M</td>
+          <td>LANDED</td>
+          <td>1 byte</td>
+          <td>Touchdown → master status IDLE</td>
+        </tr>
+        <tr>
+          <td>0x15</td>
+          <td class="dir-in">S → M</td>
+          <td>NACK</td>
+          <td>1 byte</td>
+          <td>Slave a rejeté le dernier CMD (log only)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:16px">
+      <div class="card-note info" style="display:inline-block">
+        Câblage : Master GPIO17(TX) → Slave GPIO16(RX) &nbsp;|&nbsp; Master GPIO16(RX) ← Slave GPIO17(TX) &nbsp;|&nbsp; GND commun obligatoire
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 5 — APP IONIC
+  ══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">05 /07</div>
+      <h2 class="section-title">Application Ionic/Angular</h2>
+    </div>
+    <div class="cards">
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">WiFi Setup Page (BLE)</div>
+          <div class="tag done">✓ CONSERVÉ</div>
+        </div>
+        <div class="card-desc">
+          Scan BLE → connect ENISOLAR-XXXXXX.<br/>
+          Mode scan WiFi ou saisie manuelle.<br/>
+          Chunks BLE reassemblés · OK/ERROR géré.<br/>
+          Steps : scan → choose → scanning/pick/manual → password → sending → done.
+        </div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <div class="card-title">SD Manager Page (MQTT)</div>
+          <div class="tag done">✓ CONSERVÉ</div>
+        </div>
+        <div class="card-desc">
+          Tabs missions / queues. Vues : main/preview/edit/add_from_db.<br/>
+          Send mission DB → SD via MQTT publish.<br/>
+          Execute mission / queue / stop.<br/>
+          Création queue avec drag&drop reorder.
+        </div>
+      </div>
+
+      <div class="card partial">
+        <div class="card-top">
+          <div class="card-title">Cockpit / Télémétrie Live</div>
+          <div class="tag partial">~ PARTIEL</div>
+        </div>
+        <div class="card-desc">
+          MQTT telemetry topic reçu par app (infrastructure OK).<br/>
+          Affichage live dépend des pages cockpit existantes.
+        </div>
+        <div class="card-note warn">Non examiné dans cette session — pages cockpit non uploadées.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 6 — CE QUI RESTE (PDF)
+  ══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">06 /07</div>
+      <h2 class="section-title">Ce qui reste selon le PDF</h2>
+    </div>
+    <div class="cards">
+
+      <div class="card todo">
+        <div class="card-top">
+          <div class="card-title">Slave FC — Code Production</div>
+          <div class="tag todo">À FAIRE</div>
+        </div>
+        <div class="card-desc">
+          PID loop Core 1 @ 1kHz (MPU-6050 gyro/accel I2C).<br/>
+          Navigation loop Core 0 @ 10Hz (GPS Nano 6M UART2).<br/>
+          BMP280 barometer altitude hold (I2C).<br/>
+          4x ESC MCPWM PWM — moteurs 2822 1200KV.<br/>
+          ESP-NOW TX struct → master.
+        </div>
+        <div class="card-note warn">Le simulator remplace ce code pour les tests master.</div>
+      </div>
+
+      <div class="card todo">
+        <div class="card-top">
+          <div class="card-title">ESP32-CAM — Camera Node</div>
+          <div class="tag todo">À FAIRE</div>
+        </div>
+        <div class="card-desc">
+          UART RX ← master (trigger commands 0xA1–0xA4).<br/>
+          OV2640 8-bit parallel interface.<br/>
+          Matrix mode : shoot sur chaque NEXT_REQUEST.<br/>
+          Polygon mode : shoot sur interval timer.<br/>
+          ACK 0x06 / NACK 0x15.
+        </div>
+      </div>
+
+      <div class="card todo">
+        <div class="card-top">
+          <div class="card-title">Master — Camera UART Commands</div>
+          <div class="tag todo">À FAIRE</div>
+        </div>
+        <div class="card-desc">
+          sendUartCamera(0xA1 SHOOT) sur chaque NEXT_REQUEST (matrix).<br/>
+          FreeRTOS timer interval pour polygon mode.<br/>
+          SET_MODE 0xA2 au début de mission selon mission_type.<br/>
+          Buffer 5 camera state à populer.
+        </div>
+      </div>
+
+      <div class="card partial">
+        <div class="card-top">
+          <div class="card-title">NACK — Retry Logic</div>
+          <div class="tag partial">~ PARTIEL</div>
+        </div>
+        <div class="card-desc">
+          NACK reçu → log seulement pour l'instant.<br/>
+          Aucun retry automatique implémenté.
+        </div>
+        <div class="card-note warn">Décision : retry ou alarm app à définir selon comportement terrain.</div>
+      </div>
+
+      <div class="card partial">
+        <div class="card-top">
+          <div class="card-title">Slot Missions (bouton)</div>
+          <div class="tag partial">~ PARTIEL</div>
+        </div>
+        <div class="card-desc">
+          fetchSlot(n) HTTP GET → reçoit réponse JSON.<br/>
+          Réponse parsée mais mission non chargée/exécutée automatiquement.
+        </div>
+        <div class="card-note warn">À connecter : loadMissionIntoRam() puis startMissionFlight().</div>
+      </div>
+
+      <div class="card todo">
+        <div class="card-top">
+          <div class="card-title">LOITER — Hover physique</div>
+          <div class="tag todo">À FAIRE</div>
+        </div>
+        <div class="card-desc">
+          LOITER pause le point-serving côté master ✓.<br/>
+          Slave doit hover à position courante (PID maintain).<br/>
+          Commande hover explicite slave à définir dans protocole.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 7 — PROCHAINES ÉTAPES
+  ══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">07 /07</div>
+      <h2 class="section-title">Prochaines étapes de test</h2>
+    </div>
+    <div class="next-steps">
+      <div class="next-title">// ORDRE DE TEST RECOMMANDÉ</div>
+
+      <div class="step-row">
+        <div class="step-n">01</div>
+        <div>
+          <div class="step-text">Flash master → test app sans câble</div>
+          <div class="step-sub">Boot · MQTT connect · SD manager · envoyer mission · vérifier ACK · liste SD</div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-n">02</div>
+        <div>
+          <div class="step-text">Remplacer MASTER_MAC dans slave_simulator.ino</div>
+          <div class="step-sub">Lire MAC dans Serial monitor master : [ESP-NOW] Master MAC: XX:XX:XX:XX:XX:XX</div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-n">03</div>
+        <div>
+          <div class="step-text">Câbler les 3 fils UART + flash slave simulator</div>
+          <div class="step-sub">GPIO17(M)→GPIO16(S) · GPIO16(M)←GPIO17(S) · GND commun</div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-n">04</div>
+        <div>
+          <div class="step-text">Observer boot sequence complète</div>
+          <div class="step-sub">Slave envoie HOME_POINT → master Buffer 2 set · Telemetry ESP-NOW reçu par master</div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-n">05</div>
+        <div>
+          <div class="step-text">Exécuter une mission depuis l'app</div>
+          <div class="step-sub">App → execute mission → master sert WP[0] → slave attend 6s → NEXT_REQ → WP[1] → ... → LANDED</div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-n">06</div>
+        <div>
+          <div class="step-text">Tester RTH et ABORT depuis l'app</div>
+          <div class="step-sub">RTH → slave ARRIVED_HOME → master LAND home · ABORT → slave LANDED → master IDLE</div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-n">07</div>
+        <div>
+          <div class="step-text">Exécuter une queue multi-missions</div>
+          <div class="step-sub">Vérifier remount SD entre missions · mission_type changement · statuts app en temps réel</div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-n">08</div>
+        <div>
+          <div class="step-text">Remplacer slave simulator par vrai slave FC</div>
+          <div class="step-sub">PID loop · GPS · BMP280 · ESC · même protocole UART exact</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer">
+    ENISOLAR DRONE SYSTEM &nbsp;·&nbsp; SESSION LOG &nbsp;·&nbsp; MASTER v2 + SLAVE SIMULATOR &nbsp;·&nbsp; 2026
+  </div>
+
+</div>
+
+<script>
+  // Animate progress bar on load
+  window.addEventListener('load', () => {
+    const fill = document.querySelector('.progress-fill');
+    fill.style.width = '0%';
+    setTimeout(() => { fill.style.width = '72%'; }, 300);
+  });
+</script>
+
+</body>
+</html>

@@ -204,6 +204,7 @@ export class SdManagerPage implements OnInit, OnDestroy {
         if (!full) { this.sendingMissionId = null; this.showToast('Mission not found', 'danger'); return; }
         this.mqttService.publish(`drone/${this.drone.id}/sd/save_mission`, {
           id:             full.id,
+          mission_type:   full.missionType,
           name:           full.name,
           waypoint_count: full.waypointCount,
           estimated_time: full.estimatedTime,

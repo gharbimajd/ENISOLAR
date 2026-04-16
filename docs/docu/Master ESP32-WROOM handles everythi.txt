@@ -1,0 +1,35 @@
+Master ESP32-WROOM handles everything communication-related — WiFi, MQTT over TLS, HTTP boot and telemetry, BLE only during initial setup then killed, SPI to SD card, UART to slave FC, UART to ESP32-CAM, button clicks and hold, ESP-NOW receiver for telemetry. It is the brain that makes all decisions.
+Slave ESP32-WROOM is purely a flight controller — PID loop on Core 1, navigation on Core 0, reads gyro and baro over I2C, GPS over UART2, drives 4 ESCs via MCPWM PWM. It is completely dumb about mission logic — it only knows its current target point. On boot its first valid GPS fix becomes home, sent to master via UART once and never again.
+ESP32-CAM is a passive shooter — listens on UART for trigger commands from master, takes photo with OV2640, saves to its own SD card, sends ACK back. Nothing else.
+
+5 buffers — master owns all, others get clones
+Buffer 1 — current target point (lat, lng, alt) — cloned to slave
+Buffer 2 — home point (lat, lng, alt) — master only, set once from slave first GPS fix
+Buffer 3 — mission state (mission_type, current_index, total_points, status) — cloned to slave and camera
+Buffer 4 — slave telemetry (lat, lng, alt, speed, heading, battery, signal) — master only, pushed to MQTT and HTTP
+Buffer 5 — camera state (buffer_mode, trigger_flag, interval_ms, last_shot_index) — cloned to camera
+
+
+UART master → slave packet
+START(0xAA) + CMD(1 byte) + lat(4) + lng(4) + alt(1) + CHECKSUM(1) = 12 bytes
+CMD values: 0x01 waypoint, 0x02 RTH, 0x03 LAND, 0x04 ABORT
+UART slave → master responses
+0x06 NEXT_REQUEST — arrived, send next point
+0x07 HOME_POINT — first fix, payload lat+lng+alt follows
+0x08 ARRIVED_HOME — RTH complete
+0x09 LANDED — emergency land complete
+0x15 NACK — could not execute
+UART master → camera
+0xA1 SHOOT — take one photo
+0xA2 SET_MODE — next byte is buffer mode 1/2/3
+0xA3 START_INTERVAL — polygon mode, next byte is seconds
+0xA4 STOP_INTERVAL — end of leg
+
+
+Mission flow
+Boot → HTTP → userID + droneID → MQTT connect → SD mount → slave boots → first GPS fix → home sent to master via UART → master stores in Buffer 2.
+Mission arrives via MQTT → saved to SD. Execute command arrives → master loads all waypoints from SD into RAM array → SD unmounts → SPI bus released for entire flight. mission_type read → camera buffer mode set. Point 0 served to slave. Slave arrives → sends NEXT_REQUEST → master serves next point. Camera triggers based on mission_type — matrix shoots on each NEXT_REQUEST, polygon fires interval timer between points.
+Queue — on last point of mission, SD remounts, next mission loaded into RAM, SD unmounts again, continues.
+RTH — app clicks → master serves Buffer 2 (home lat/lng/alt) as next waypoint over UART — slave treats it like any normal point.
+Emergency land — master takes Buffer 1 current target, sets alt=0, sends it — slave descends to ground at current XY.
+

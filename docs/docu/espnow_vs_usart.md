@@ -1,6 +1,6 @@
 
 
-||||
+||espnow|uart/usart |
 |-|-|-|
 |TX current|\~170mA burst (radio on)|\~5mA|
 |Idle current|\~20mA (WiFi radio on)|1mA|
