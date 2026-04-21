@@ -1,86 +1,41 @@
 // ═══════════════════════════════════════════════════════════════════
 //  ENISOLAR — Slave FC  |  ESP32-WROOM
 //
-//  PURPOSE: Real flight controller node. Reads live GPS from a
-//           NEO-6M module, processes flight commands from master,
-//           and streams telemetry back over UART2.
-//
 //  ┌─────────────────────────────────────────────────────────────┐
-//  │  WIRING DIAGRAM                                             │
+//  │  WIRING                                                     │
 //  │                                                             │
-//  │  ── NEO-6M GPS  (UART0 / Serial) ──────────────────────── │
-//  │     NEO-6M TX   →  ESP32 RX0  (GPIO 3)   ← data IN        │
-//  │     NEO-6M RX   →  ESP32 TX0  (GPIO 1)   → config OUT      │
-//  │     NEO-6M VCC  →  ESP32 3V3                               │
-//  │     NEO-6M GND  →  ESP32 GND                               │
+//  │  ── NEO-6M GPS  (UART1 / gpsSerial) ───────────────────── │
+//  │     NEO-6M TX  →  ESP32 GPIO 26  (RX)                      │
+//  │     NEO-6M RX  →  ESP32 GPIO 27  (TX, optional)            │
+//  │     NEO-6M VCC →  ESP32 3V3                                │
+//  │     NEO-6M GND →  ESP32 GND                                │
 //  │                                                             │
 //  │  ── MASTER ↔ SLAVE  (UART2 / Serial2, crossed) ─────────── │
 //  │     Slave  GPIO 16 (RX2)  ←  Master GPIO 17 (TX2)          │
 //  │     Slave  GPIO 17 (TX2)  →  Master GPIO 16 (RX2)          │
-//  │     GND ──────────────────────── GND                       │
-//  │                                                             │
-//  │  !! IMPORTANT — NO USB DEBUG on this device !!              │
-//  │  GPIO1 and GPIO3 are shared with the USB-to-Serial chip.    │
-//  │  Once the NEO-6M occupies those pins the USB port can no    │
-//  │  longer be used for debug printing.                          │
-//  │                                                             │
-//  │  Debug output is sent over Serial2 (GPIO16/17) using the   │
-//  │  DBG() macros. The master parser ignores any byte that is   │
-//  │  not 0xAA (UART_START), so ASCII debug text on that line    │
-//  │  does NOT corrupt the binary protocol.                       │
-//  │                                                             │
-//  │  To read debug on a PC: connect a USB-UART adapter to       │
-//  │  GPIO16 (slave TX2) and open it at 115200 baud in parallel  │
-//  │  with the master. The master ignores non-0xAA bytes.        │
+//  │     GND ─────────────────────── GND                        │
 //  └─────────────────────────────────────────────────────────────┘
 //
-//  UART PERIPHERAL MAP:
-//    UART0 (Serial)  — NEO-6M GPS @ 9600 baud  (GPIO3 RX, GPIO1 TX)
-//    UART2 (Serial2) — Master comms @ 115200    (GPIO16 RX, GPIO17 TX)
-//                      also carries debug text via DBG macros
-//
-//  BUG FIXES APPLIED:
-//  [1] Checksum unified with master formula (explicit XOR per field)
-//  [2] TELEMETRY_PAYLOAD_LEN = 24 (was incorrectly 23)
-//  [3] All debug output uses DBG macros → goes to Serial2, never
-//      to Serial (UART0) which is now reserved for GPS NMEA data
-//  [4] Home point always refreshed from live GPS on every boot
+//  UART MAP:
+//    Serial  (UART0) — USB debug @ 115200  (GPIO3/GPIO1)
+//    UART1   (gpsSerial) — NEO-6M GPS @ 9600  (GPIO26 RX, GPIO27 TX)
+//    Serial2 (UART2) — Master comms @ 115200  (GPIO16 RX, GPIO17 TX)
 //
 // ═══════════════════════════════════════════════════════════════════
 
 #include <math.h>
 #include <HardwareSerial.h>
 
-// ═══════════════════════════════════════════════════════════════════
-//  DEBUG MACRO
-//  Routes all debug text through Serial2 (UART2 / master wire).
-//  The master's UART parser only reacts to bytes starting with 0xAA,
-//  so plain ASCII from DBG() passes through transparently.
-//  Set DEBUG_ENABLED 0 for a silent production build.
-// ═══════════════════════════════════════════════════════════════════
-
-#define DEBUG_ENABLED 1
-
-#if DEBUG_ENABLED
-  #define DBG(x)       Serial2.print(x)
-  #define DBGLN(x)     Serial2.println(x)
-  #define DBGF(...)    Serial2.printf(__VA_ARGS__)
-#else
-  #define DBG(x)
-  #define DBGLN(x)
-  #define DBGF(...)
-#endif
-
-// ── UART0 — NEO-6M GPS ───────────────────────────────────────────
-// Uses the hardware UART0 pins: GPIO3 = RX0, GPIO1 = TX0.
-// Call Serial.begin() — no pin remapping needed or possible here.
-// USB-to-Serial chip also sits on these pins: USB debug unavailable.
-#define GPS_BAUD  9600    // NEO-6M factory default
+// ── UART1 — NEO-6M GPS ───────────────────────────────────────────
+#define GPS_RX_PIN  26
+#define GPS_TX_PIN  27
+#define GPS_BAUD    9600
+HardwareSerial gpsSerial(1);   // UART1 remapped to GPIO26/27
 
 // ── UART2 — Master comms ─────────────────────────────────────────
-#define MASTER_RX_PIN   16
-#define MASTER_TX_PIN   17
-#define MASTER_BAUD     115200
+#define MASTER_RX_PIN  16
+#define MASTER_TX_PIN  17
+#define MASTER_BAUD    115200
 
 // ── Packet bytes (Master → Slave) ────────────────────────────────
 #define UART_START    0xAA
@@ -90,24 +45,22 @@
 #define CMD_ABORT     0x04
 
 // ── Response bytes (Slave → Master) ──────────────────────────────
-// Sizes include the leading opcode byte:
-//   HOME_POINT : 0x07 + lat(4) + lng(4) + alt(1)              = 10 bytes
+//   HOME_POINT : 0x07 + lat(4) + lng(4) + alt(1)         = 10 bytes
 //   TELEMETRY  : 0x0A + lat(4)+lng(4)+alt(4)+spd(4)+hdg(4)
-//                     + bat(1) + sig(2)                         = 24 bytes
-#define RESP_NEXT_REQ     0x06
-#define RESP_HOME_POINT   0x07
-#define RESP_ARRIVED_HOME 0x08
-#define RESP_LANDED       0x09
-#define RESP_TELEMETRY    0x0A
-#define RESP_NACK         0x15
-#define TELEMETRY_PAYLOAD_LEN  24   // FIX #2: correct value (was 23)
+//                     + bat(1) + sig(2)                    = 24 bytes
+#define RESP_NEXT_REQ      0x06
+#define RESP_HOME_POINT    0x07
+#define RESP_ARRIVED_HOME  0x08
+#define RESP_LANDED        0x09
+#define RESP_TELEMETRY     0x0A
+#define RESP_NACK          0x15
+#define TELEMETRY_PAYLOAD_LEN  24
 
 // ── Timing ────────────────────────────────────────────────────────
 #define WAYPOINT_TRAVEL_MS     6000
 #define LANDING_DURATION_MS    4000
 #define RTH_TRAVEL_MS          8000
 #define TELEMETRY_INTERVAL_MS  3000
-
 #define BATTERY_DRAIN_PER_WP   1
 
 // ═══════════════════════════════════════════════════════════════════
@@ -118,24 +71,19 @@ enum SlaveState { SIM_IDLE, SIM_FLYING, SIM_LANDING, SIM_RTH, SIM_ABORTED };
 SlaveState simState = SIM_IDLE;
 
 // ═══════════════════════════════════════════════════════════════════
-//  LIVE GPS — NEO-6M NMEA on UART0 (Serial, GPIO3/GPIO1)
-//
-//  Parses $GPGGA / $GNGGA sentences.
-//  Field map (comma-separated, after sentence ID):
-//    [1] lat ddmm.mmmm  [2] N/S
-//    [3] lon dddmm.mmmm [4] E/W
-//    [5] fix quality (0=none 1=GPS 2=DGPS)
-//    [6] num satellites
-//    [7] HDOP
-//    [8] altitude MSL metres
-//    [9] 'M'
+//  LIVE GPS — NEO-6M NMEA on UART1 (GPIO26/27)
+//  Parser taken from confirmed-working test code:
+//  - strstr("GGA") to match any GGA variant ($GPGGA, $GNGGA, etc.)
+//  - Hand-built comma splitter that handles empty fields (,,)
+//  - field[0]=$GPGGA [1]=time [2]=lat [3]=N/S [4]=lng [5]=E/W
+//    [6]=quality [7]=sats [8]=HDOP [9]=alt [10]=M
 // ═══════════════════════════════════════════════════════════════════
 
 float   gpsLat   = 0.0f;
 float   gpsLng   = 0.0f;
 float   gpsAlt   = 0.0f;
-bool    gpsFixed = false;
 uint8_t gpsSats  = 0;
+bool    gpsFixed = false;
 
 char    nmeaBuf[128];
 uint8_t nmeaPos     = 0;
@@ -150,40 +98,44 @@ float nmeaToDecimal(float raw, char hemi) {
 }
 
 void parseNMEA(const char* sentence) {
-  if (strncmp(sentence, "$GPGGA", 6) != 0 &&
-      strncmp(sentence, "$GNGGA", 6) != 0) return;
+  if (strstr(sentence, "GGA") == nullptr) return;
 
   char buf[128];
   strncpy(buf, sentence, sizeof(buf) - 1);
   buf[sizeof(buf) - 1] = '\0';
 
-  char*   fields[16];
-  uint8_t fc  = 0;
-  char*   tok = strtok(buf, ",");
-  while (tok && fc < 16) { fields[fc++] = tok; tok = strtok(nullptr, ",*"); }
-  if (fc < 10) return;
-
-  uint8_t quality = (uint8_t)atoi(fields[6]);
-  if (quality == 0) {
-    gpsFixed = false;
-    DBGLN(F("[GPS] No fix"));
-    return;
+  // Hand-built splitter — handles empty fields (,,) unlike strtok
+  char*  fields[16];
+  int    fc = 0;
+  char*  p  = buf;
+  while (fc < 16) {
+    fields[fc++] = p;
+    p = strchr(p, ',');
+    if (!p) break;
+    *p++ = '\0';
   }
 
-  gpsLat  = nmeaToDecimal(atof(fields[1]), fields[2][0]);
-  gpsLng  = nmeaToDecimal(atof(fields[3]), fields[4][0]);
-  gpsAlt  = atof(fields[8]);
-  gpsSats = (uint8_t)atoi(fields[7]);
-  gpsFixed = true;
+  if (fc < 10) return;
 
-  DBGF("[GPS] Fix: %.6f, %.6f, %.1fm  sats=%d\n", gpsLat, gpsLng, gpsAlt, gpsSats);
+  // fields[6] = fix quality (0 = no fix)
+  uint8_t quality = (uint8_t)atoi(fields[6]);
+  if (quality > 0) {
+    gpsLat  = nmeaToDecimal(atof(fields[2]), fields[3][0]);
+    gpsLng  = nmeaToDecimal(atof(fields[4]), fields[5][0]);
+    gpsSats = (uint8_t)atoi(fields[7]);
+    gpsAlt  = atof(fields[9]);
+    gpsFixed = true;
+    Serial.printf("[GPS] Fix: %.6f, %.6f, %.1fm  sats=%d\n",
+                  gpsLat, gpsLng, gpsAlt, gpsSats);
+  } else {
+    gpsFixed = false;
+    Serial.println(F("[GPS] No fix"));
+  }
 }
 
-// Non-blocking — call every loop iteration
-// Reads from Serial (UART0 = GPS port, GPIO3)
 void readGPS() {
-  while (Serial.available()) {
-    char c = (char)Serial.read();
+  while (gpsSerial.available()) {
+    char c = (char)gpsSerial.read();
     if (c == '$') { nmeaInFrame = true; nmeaPos = 0; }
     if (nmeaInFrame) {
       if (c == '\n' || c == '\r') {
@@ -201,6 +153,8 @@ void readGPS() {
 
 // ═══════════════════════════════════════════════════════════════════
 //  DERIVED SENSOR VALUES
+//  Speed & heading derived from GPS positions.
+//  Battery & signal simulated until real hardware wired.
 // ═══════════════════════════════════════════════════════════════════
 
 float   simSpeed   = 0.0f;
@@ -257,7 +211,7 @@ float   targetAlt = 0.0f;
 float   homeLat   = 0.0f;
 float   homeLng   = 0.0f;
 uint8_t homeAlt   = 0;
-bool    homeSet   = false;  // FIX #4: false on every boot, set only after GPS fix
+bool    homeSet   = false;
 
 // ═══════════════════════════════════════════════════════════════════
 //  UART2 RX STATE — 12-byte packets from master
@@ -278,12 +232,12 @@ unsigned long lastTelemetryTime = 0;
 unsigned long lastMetricUpdate  = 0;
 
 // ═══════════════════════════════════════════════════════════════════
-//  TX — Responses to Master over Serial2 (UART2)
+//  TX — Responses to Master over Serial2
 // ═══════════════════════════════════════════════════════════════════
 
 void sendNextRequest() {
   Serial2.write(RESP_NEXT_REQ);
-  DBGLN(F("[TX] 0x06 NEXT_REQUEST"));
+  Serial.println(F("[TX] 0x06 NEXT_REQUEST"));
 }
 
 void sendHomePoint() {
@@ -293,28 +247,27 @@ void sendHomePoint() {
   memcpy(&pkt[5], &homeLng, 4);
   pkt[9] = homeAlt;
   Serial2.write(pkt, 10);
-  DBGF("[TX] 0x07 HOME_POINT (%.6f, %.6f, %dm)\n", homeLat, homeLng, homeAlt);
+  Serial.printf("[TX] 0x07 HOME_POINT (%.6f, %.6f, %dm)\n",
+                homeLat, homeLng, homeAlt);
 }
 
 void sendArrivedHome() {
   Serial2.write(RESP_ARRIVED_HOME);
-  DBGLN(F("[TX] 0x08 ARRIVED_HOME"));
+  Serial.println(F("[TX] 0x08 ARRIVED_HOME"));
 }
 
 void sendLanded() {
   Serial2.write(RESP_LANDED);
-  DBGLN(F("[TX] 0x09 LANDED"));
+  Serial.println(F("[TX] 0x09 LANDED"));
 }
 
 void sendNack() {
   Serial2.write(RESP_NACK);
-  DBGLN(F("[TX] 0x15 NACK"));
+  Serial.println(F("[TX] 0x15 NACK"));
 }
 
-// 0x0A TELEMETRY — 24 bytes total
-// 0x0A(1) + lat(4)+lng(4)+alt(4)+spd(4)+hdg(4)+bat(1)+sig(2) = 24
 void sendTelemetry() {
-  if (!gpsFixed) { DBGLN(F("[TELEM] No fix — skip")); return; }
+  if (!gpsFixed) { Serial.println(F("[TELEM] No fix — skip")); return; }
 
   uint8_t pkt[TELEMETRY_PAYLOAD_LEN];
   uint8_t* p = pkt;
@@ -328,21 +281,23 @@ void sendTelemetry() {
   memcpy(p, &simSignal,  2);
 
   Serial2.write(pkt, TELEMETRY_PAYLOAD_LEN);
-  DBGF("[TX] 0x0A TELEM lat=%.6f lng=%.6f alt=%.1f spd=%.1f hdg=%.0f bat=%d sig=%d\n",
-       gpsLat, gpsLng, gpsAlt, simSpeed, simHeading, simBattery, simSignal);
+  Serial.printf("[TX] 0x0A TELEM lat=%.6f lng=%.6f alt=%.1f "
+                "spd=%.1f hdg=%.0f bat=%d sig=%d\n",
+                gpsLat, gpsLng, gpsAlt,
+                simSpeed, simHeading, simBattery, simSignal);
 }
 
 // ═══════════════════════════════════════════════════════════════════
-//  CHECKSUM — FIX #1
-//  Mirrors master's calcChecksum(cmd, lat, lng, alt) exactly:
-//    cs = cmd ^ lat_byte[0..3] ^ lng_byte[0..3] ^ alt
+//  CHECKSUM
+//  Mirrors master's calcChecksum(cmd, lat, lng, alt):
+//  cs = cmd ^ lat_bytes[0..3] ^ lng_bytes[0..3] ^ alt
 //  Packet: [0]=0xAA [1]=cmd [2..5]=lat [6..9]=lng [10]=alt [11]=cs
 // ═══════════════════════════════════════════════════════════════════
 
 uint8_t calcChecksum(uint8_t* pkt) {
   uint8_t cs = pkt[1];
-  for (int i = 2; i <= 5; i++) cs ^= pkt[i];
-  for (int i = 6; i <= 9; i++) cs ^= pkt[i];
+  for (int i = 2; i <= 5;  i++) cs ^= pkt[i];
+  for (int i = 6; i <= 9;  i++) cs ^= pkt[i];
   cs ^= pkt[10];
   return cs;
 }
@@ -359,12 +314,14 @@ void handleMasterPacket(uint8_t* pkt) {
 
   uint8_t expected = calcChecksum(pkt);
   if (expected != checksum) {
-    DBGF("[RX] BAD CS exp=0x%02X got=0x%02X — NACK\n", expected, checksum);
+    Serial.printf("[RX] BAD CS exp=0x%02X got=0x%02X — NACK\n",
+                  expected, checksum);
     sendNack();
     return;
   }
 
-  DBGF("[RX] CMD=0x%02X lat=%.6f lng=%.6f alt=%d OK\n", cmd, lat, lng, alt);
+  Serial.printf("[RX] CMD=0x%02X lat=%.6f lng=%.6f alt=%d OK\n",
+                cmd, lat, lng, alt);
 
   switch (cmd) {
     case CMD_WAYPOINT:
@@ -372,7 +329,7 @@ void handleMasterPacket(uint8_t* pkt) {
       simState  = SIM_FLYING;
       waypointStartTime = millis(); waypointTimerActive = true;
       landingActive = false; rthActive = false;
-      DBGF("[FC] Fly to: %.6f, %.6f, %dm\n", lat, lng, alt);
+      Serial.printf("[FC] Fly to: %.6f, %.6f, %dm\n", lat, lng, alt);
       break;
 
     case CMD_RTH:
@@ -380,7 +337,7 @@ void handleMasterPacket(uint8_t* pkt) {
       simState  = SIM_RTH;
       rthStartTime = millis(); rthActive = true;
       waypointTimerActive = false; landingActive = false;
-      DBGLN(F("[FC] RTH"));
+      Serial.println(F("[FC] RTH"));
       break;
 
     case CMD_LAND:
@@ -390,18 +347,18 @@ void handleMasterPacket(uint8_t* pkt) {
       simState  = SIM_LANDING;
       landingStartTime = millis(); landingActive = true;
       waypointTimerActive = false; rthActive = false;
-      DBGLN(F("[FC] LAND"));
+      Serial.println(F("[FC] LAND"));
       break;
 
     case CMD_ABORT:
       simState = SIM_ABORTED;
       waypointTimerActive = false; rthActive = false; landingActive = false;
       simSpeed = 0.0f; targetAlt = 0.0f;
-      DBGLN(F("[FC] ABORT"));
+      Serial.println(F("[FC] ABORT"));
       break;
 
     default:
-      DBGF("[RX] Unknown CMD 0x%02X — NACK\n", cmd);
+      Serial.printf("[RX] Unknown CMD 0x%02X — NACK\n", cmd);
       sendNack();
       break;
   }
@@ -418,7 +375,10 @@ void readMasterUart() {
       if (b == UART_START) { rxBuf[0] = b; rxPos = 1; rxSynced = true; }
     } else {
       rxBuf[rxPos++] = b;
-      if (rxPos == 12) { rxSynced = false; rxPos = 0; handleMasterPacket(rxBuf); }
+      if (rxPos == 12) {
+        rxSynced = false; rxPos = 0;
+        handleMasterPacket(rxBuf);
+      }
     }
   }
 }
@@ -434,14 +394,14 @@ void simulationTick() {
       now - waypointStartTime >= WAYPOINT_TRAVEL_MS) {
     waypointTimerActive = false;
     if (simBattery >= BATTERY_DRAIN_PER_WP) simBattery -= BATTERY_DRAIN_PER_WP;
-    DBGLN(F("[FC] Arrived → NEXT_REQUEST"));
+    Serial.println(F("[FC] Arrived → NEXT_REQUEST"));
     sendNextRequest();
   }
 
   if (simState == SIM_RTH && rthActive &&
       now - rthStartTime >= RTH_TRAVEL_MS) {
     rthActive = false;
-    DBGLN(F("[FC] At home → ARRIVED_HOME"));
+    Serial.println(F("[FC] At home → ARRIVED_HOME"));
     sendArrivedHome();
   }
 
@@ -450,7 +410,7 @@ void simulationTick() {
     landingActive = false;
     simSpeed = 0.0f;
     simState = SIM_IDLE;
-    DBGLN(F("[FC] Touchdown → LANDED"));
+    Serial.println(F("[FC] Touchdown → LANDED"));
     sendLanded();
   }
 }
@@ -460,31 +420,30 @@ void simulationTick() {
 // ═══════════════════════════════════════════════════════════════════
 
 void setup() {
-  // UART0 — NEO-6M GPS (GPIO3=RX0, GPIO1=TX0, no remapping possible)
-  // USB-Serial chip shares these pins: USB debug NOT available here.
-  Serial.begin(GPS_BAUD);
-  delay(100);
+  // UART0 — USB debug (GPIO3/GPIO1, USB available since GPS moved to GPIO26/27)
+  Serial.begin(115200);
+  delay(500);
 
-  // UART2 — Master comms + debug output (GPIO16=RX2, GPIO17=TX2)
+  // UART1 — NEO-6M GPS (GPIO26 RX, GPIO27 TX)
+  gpsSerial.begin(GPS_BAUD, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
+
+  // UART2 — Master comms (GPIO16 RX, GPIO17 TX)
   Serial2.begin(MASTER_BAUD, SERIAL_8N1, MASTER_RX_PIN, MASTER_TX_PIN);
-  delay(100);
 
-  randomSeed(analogRead(34));  // GPIO34: input-only, good noise source
+  randomSeed(analogRead(34));
 
-  DBGLN(F(""));
-  DBGLN(F("╔════════════════════════════════════════════════╗"));
-  DBGLN(F("║  ENISOLAR Slave FC — NEO-6M GPS (UART0 mode)  ║"));
-  DBGLN(F("╚════════════════════════════════════════════════╝"));
-  DBGLN(F("[INFO] GPS=UART0(RX0/TX0)  Master=UART2(GPIO16/17)"));
-  DBGLN(F("[INFO] USB debug unavailable — debug on Serial2 line"));
+  Serial.println(F(""));
+  Serial.println(F("╔════════════════════════════════════════════════╗"));
+  Serial.println(F("║  ENISOLAR Slave FC — NEO-6M GPS (GPIO26/27)   ║"));
+  Serial.println(F("╚════════════════════════════════════════════════╝"));
+  Serial.println(F("[INFO] GPS=UART1(GPIO26/27)  Master=UART2(GPIO16/17)"));
 
-  // FIX #4: homeSet starts false every boot — must get a real GPS fix
-  DBGLN(F("[GPS] Waiting for first fix (30-90s cold start)..."));
+  Serial.println(F("[GPS] Waiting for first fix (30-90s cold start)..."));
   unsigned long gpsWait = millis();
   while (!gpsFixed) {
     readGPS();
     if (millis() - gpsWait >= 120000UL) {
-      DBGLN(F("[GPS] WARNING: No fix after 120s — continuing"));
+      Serial.println(F("[GPS] WARNING: No fix after 120s — continuing"));
       break;
     }
     delay(10);
@@ -498,9 +457,10 @@ void setup() {
     prevLat = gpsLat; prevLng = gpsLng;
     prevMetricTime = millis();
     sendHomePoint();
-    DBGF("[FC] Home locked: %.6f, %.6f, %dm\n", homeLat, homeLng, homeAlt);
+    Serial.printf("[FC] Home locked: %.6f, %.6f, %dm\n",
+                  homeLat, homeLng, homeAlt);
   } else {
-    DBGLN(F("[FC] No GPS — home NOT sent. Master will block RTH."));
+    Serial.println(F("[FC] No GPS fix — home NOT sent. Master will block RTH."));
   }
 }
 
@@ -511,7 +471,7 @@ void setup() {
 void loop() {
   unsigned long now = millis();
 
-  // 1. Drain NMEA from NEO-6M on Serial (UART0, GPIO3)
+  // 1. Read NMEA from NEO-6M on UART1 (GPIO26)
   readGPS();
 
   // 2. First fix after boot — lock home, notify master
@@ -522,8 +482,8 @@ void loop() {
     prevLat = gpsLat; prevLng = gpsLng;
     prevMetricTime = now;
     sendHomePoint();
-    DBGF("[FC] Late fix — home locked: %.6f, %.6f, %dm\n",
-         homeLat, homeLng, homeAlt);
+    Serial.printf("[FC] Late fix — home locked: %.6f, %.6f, %dm\n",
+                  homeLat, homeLng, homeAlt);
   }
 
   // 3. Process master commands from UART2

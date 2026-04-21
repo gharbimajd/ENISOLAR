@@ -12,7 +12,7 @@ import { map } from 'rxjs/operators';
 import { addIcons } from 'ionicons';
 import {
   hardwareChipOutline, folderOutline, addOutline,
-  trashOutline, playOutline,playSkipForwardOutline,
+  trashOutline, playOutline, playSkipForwardOutline,
   stopOutline, cloudUploadOutline, checkmarkCircleOutline,
   reorderThreeOutline, searchOutline, refreshOutline,
   documentOutline, listOutline, closeCircleOutline,
@@ -98,8 +98,19 @@ export class SdManagerPage implements OnInit, OnDestroy {
       chevronForwardOutline, chevronBackOutline, rocketOutline,
       timeOutline, navigateOutline, createOutline
     });
+
+    // ── Drone persistence fix ─────────────────────────
+    // Router state is lost on refresh — fall back to sessionStorage
     const nav = this.router.currentNavigation();
-    this.drone = nav?.extras?.state?.['drone'];
+    const fromNav = nav?.extras?.state?.['drone'];
+
+    if (fromNav) {
+      this.drone = fromNav;
+      sessionStorage.setItem('sd_drone', JSON.stringify(fromNav));
+    } else {
+      const cached = sessionStorage.getItem('sd_drone');
+      this.drone = cached ? JSON.parse(cached) : null;
+    }
   }
 
   ngOnInit() {
@@ -110,6 +121,7 @@ export class SdManagerPage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subs.forEach(s => s.unsubscribe());
+    sessionStorage.removeItem('sd_drone');
   }
 
   // ── MQTT ──────────────────────────────────────────────
@@ -320,6 +332,13 @@ export class SdManagerPage implements OnInit, OnDestroy {
     if (this.currentView === 'queue_preview') this.goBack();
   }
 
+  // ── Cockpit shortcut ──────────────────────────────────
+  openCockpit() {
+    this.router.navigateByUrl('/cockpit', {
+      state: { drone: this.drone }
+    });
+  }
+
   // ── View navigation ───────────────────────────────────
   openMissionPreview(mission: SdMission) {
     this.selectedMission = mission;
@@ -361,8 +380,9 @@ export class SdManagerPage implements OnInit, OnDestroy {
     const toast = await this.toastCtrl.create({ message, duration: 2500, color, position: 'bottom' });
     toast.present();
   }
+
   isMissionInQueue(missionId: string): boolean {
-  if (!this.editingQueue) return false;
-  return this.editingQueue.missions.some(m => m.id === missionId);
-}
+    if (!this.editingQueue) return false;
+    return this.editingQueue.missions.some(m => m.id === missionId);
+  }
 }

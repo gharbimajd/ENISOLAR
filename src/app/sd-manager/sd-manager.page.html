@@ -48,6 +48,10 @@
       <ion-icon name="hardware-chip-outline"></ion-icon>
       <span>{{ drone?.name }}</span>
       <span class="sd-status" [class.online]="isConnected">{{ isConnected ? 'Connected' : 'Offline' }}</span>
+      <button class="cockpit-shortcut-btn" (click)="openCockpit()">
+        <ion-icon name="navigate-outline"></ion-icon>
+        Cockpit
+      </button>
     </div>
 
     <!-- Stop execution button (always visible when executing) -->

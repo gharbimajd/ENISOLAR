@@ -61,6 +61,26 @@
   }
 }
 
+// ── Cockpit shortcut ──────────────────────────────────
+.cockpit-shortcut-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(var(--ion-color-primary-rgb), 0.12);
+  color: var(--ion-color-primary);
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.25);
+  border-radius: 10px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  white-space: nowrap;
+
+  ion-icon { font-size: 15px; }
+  &:active { background: rgba(var(--ion-color-primary-rgb), 0.22); }
+}
+
 // ── Stop button ───────────────────────────────────────
 .stop-btn {
   width: 100%;
