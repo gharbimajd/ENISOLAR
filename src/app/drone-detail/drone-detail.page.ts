@@ -242,4 +242,13 @@ export class DroneDetailPage implements OnInit {
     this.router.navigateByUrl('/wifi-setup', {
       state: { drone: this.drone }
     });
-}}
+    
+}
+openadmincockpit(){
+  if (!this.drone) return;
+    this.router.navigateByUrl('admin-cockpit', {
+      state: { drone: this.drone }
+    });
+} 
+
+}

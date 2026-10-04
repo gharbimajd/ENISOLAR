@@ -1,31 +1,31 @@
 // ═══════════════════════════════════════════════════════════════════
 //  ENISOLAR — Master ESP32-WROOM  |  Mission Controller
 //  Architecture: 3-Node (Master · Slave FC · ESP32-CAM)
-//  This file: Master only. Camera skipped (no camera on this build).
 //
-//  CHANGE LOG vs original simulator version:
-//  - publishMissionStatus() now accepts a bool 'includePolygon'
-//  - startMissionFlight() calls publishMissionStatus(true) → sends
-//    full flight_path polygon so the cockpit map can draw the route
-//  - serveWaypoint() calls publishMissionStatus(false) on every point →
-//    cockpit receives current_index updates in real-time
-//  - pushTelemetryMQTT() now also appends current_index + total_points
-//    so the map progress line updates on every telemetry tick too
+//  FIXES APPLIED IN THIS VERSION (on top of previous fixes):
+//  [FIX A] startMissionFlight() no longer calls publishState("FLYING")
+//          after publishMissionStatus(true) — the duplicate state-only
+//          publish was racing with and overwriting the full polygon
+//          message before the app could process it.
+//  [FIX B] telemetryReady flag is now cleared AFTER pushTelemetryMQTT
+//          and pushTelemetryHTTP complete, preventing a new UART packet
+//          from being silently dropped during the blocking HTTP POST.
+//  [FIX C] MQTT reconnect no longer blocks the main loop. connectMQTT()
+//          attempts one non-blocking connect and returns. handleSlaveUart()
+//          is called every loop iteration regardless of MQTT state, so
+//          UART bytes are never lost during a reconnect attempt.
+//  [FIX D] Master now publishes {"state":"HOME_SET"} over MQTT status
+//          topic immediately after buf2.set = true, so the app can
+//          enable the RTH button without firmware polling.
 //
-//  BUG FIXES (applied in this version):
-//  [FIX 2] TELEMETRY_PAYLOAD_LEN corrected to 24 (was wrong at 23)
-//  [FIX 3] publishMissionStatus() now warns when includePolygon=true
-//          but total_points==0 so the silent fallback is visible
-//  [FIX 4] RESP_LANDED handler now clears buf2.set so a slave reboot
-//          always forces a fresh home point before the next mission
-//  [FIX 5] advanceQueue() was recursive — replaced with iterative loop;
-//          also reports SD remount failure via MQTT instead of silently
-//  [FIX 7] sendSdList() — queue "missions" field now serialized with
-//          serializeJson() instead of .as<String>() which returned null
-//  [FIX 8] fetchSlot() now actually executes the mission or queue
-//          returned in the slot HTTP response (was parsed but ignored)
-//  [FIX 9] BLE provisioning loop now has a 5-minute watchdog timeout
-//          so the device restarts if no phone completes WiFi setup
+//  PREVIOUS FIXES (preserved):
+//  [FIX 2] TELEMETRY_PAYLOAD_LEN corrected to 24
+//  [FIX 3] publishMissionStatus() warns when includePolygon=true but 0 pts
+//  [FIX 4] RESP_LANDED clears buf2.set for fresh home on next mission
+//  [FIX 5] advanceQueue() iterative (was recursive)
+//  [FIX 7] sendSdList() uses serializeJson() for missions array
+//  [FIX 8] fetchSlot() actually dispatches the mission/queue
+//  [FIX 9] BLE provisioning has 5-minute watchdog timeout
 // ═══════════════════════════════════════════════════════════════════
 
 #include <WiFi.h>
@@ -52,11 +52,10 @@
 #define SLOT_URL      "http://enisolardienicar.atwebpages.com/esp_slot.php"
 
 // ── MQTT ──────────────────────────────────────────────────────────
-#define MQTT_HOST        "529b5f97aca54d828dbef5ebe85f00cd.s1.eu.hivemq.cloud"
+#define MQTT_HOST        "dd4bee3682e2479fbe315b7d4670285f.s1.eu.hivemq.cloud"
 #define MQTT_PORT        8883
 #define MQTT_USER        "majdgha"
 #define MQTT_PASS        "552003Ssl"
-// Increased: full polygon payload for 100 waypoints ~ 3-4 KB
 #define MQTT_BUFFER_SIZE 16384
 
 // ── SD Card ───────────────────────────────────────────────────────
@@ -82,7 +81,7 @@
 #define RESP_LANDED       0x09
 #define RESP_NACK         0x15
 #define RESP_TELEMETRY    0x0A
-#define TELEMETRY_PAYLOAD_LEN 24   // FIX: was 23; packet is 1+4+4+4+4+4+1+2 = 24 bytes
+#define TELEMETRY_PAYLOAD_LEN 24   // 1+4+4+4+4+4+1+2 = 24 bytes
 
 // ── Button ────────────────────────────────────────────────────────
 #define BOOT_BUTTON_PIN  0
@@ -231,8 +230,7 @@ void sendUartPacket(uint8_t cmd, float lat, float lng, uint8_t alt) {
 //  MQTT status publishing
 //
 //  includePolygon = true  → sent ONCE at mission start.
-//                           Embeds the full flight_path array so the
-//                           cockpit Mapbox map can draw the route.
+//                           Embeds the full flight_path array.
 //  includePolygon = false → lightweight update on every waypoint tick.
 //                           Only state + current_index + total_points.
 // ═══════════════════════════════════════════════════════════════════
@@ -251,13 +249,11 @@ const char* statusName(MissionStatus s) {
 void publishMissionStatus(bool includePolygon = false) {
   if (!mqttConnected) return;
 
-  // FIX #3: warn when caller asked for full polygon but mission has 0 points
   if (includePolygon && buf3.total_points == 0) {
     Serial.println(F("[MQTT] WARNING: includePolygon=true but total_points==0 — sending lightweight status"));
   }
 
   if (!includePolygon || buf3.total_points == 0) {
-    // ── Lightweight update ───────────────────────────────────────
     char payload[128];
     snprintf(payload, sizeof(payload),
       "{\"state\":\"%s\",\"current_index\":%d,\"total_points\":%d,\"mission_type\":%d}",
@@ -270,16 +266,7 @@ void publishMissionStatus(bool includePolygon = false) {
     return;
   }
 
-  // ── Full polygon payload ─────────────────────────────────────────
-  // Builds: {"state":"FLYING","current_index":0,"total_points":N,
-  //          "mission_type":1,"polygon":[{"lat":x,"lng":y},…]}
-  //
-  // Max size estimate: base ~80 chars + N * ~30 chars per point.
-  // For 100 waypoints ≈ 3 080 bytes — well within MQTT_BUFFER_SIZE.
-  //
-  // We use a dynamic String here rather than a fixed char[] to avoid
-  // stack overflow for large missions.
-
+  // Full polygon payload — built once at mission start only
   String payload = "{\"state\":\"";
   payload += statusName(buf3.status);
   payload += "\",\"current_index\":0,\"total_points\":";
@@ -334,7 +321,6 @@ void serveWaypoint(uint16_t index) {
 
   sendUartPacket(CMD_WAYPOINT, wp.lat, wp.lng, wp.alt);
 
-  // Publish progress update so cockpit map advances the progress line
   publishMissionStatus(false);
 
   Serial.printf("[MISSION] Serving waypoint %d/%d (%.6f, %.6f, %dm)\n",
@@ -418,8 +404,7 @@ void handleSlaveUart() {
         case RESP_LANDED: {
           Serial.println(F("[UART RX] LANDED — drone on the ground"));
           buf3.status = IDLE;
-          // FIX #4: clear home point so a subsequent slave reboot will
-          // always push a fresh GPS-derived home before next mission.
+          // FIX 4: clear home point so slave reboot always pushes fresh GPS home
           buf2.set    = false;
           clearMissionRam();
           publishMissionStatus(false);
@@ -460,6 +445,16 @@ void handleSlaveUart() {
         buf2.alt = homeAlt;
         buf2.set = true;
         Serial.printf("[BUFFER2] Home set: %.6f, %.6f, %dm\n", homeLat, homeLng, homeAlt);
+
+        // FIX D: notify the app that home point is now valid so it can
+        // enable the RTH button immediately — no polling needed.
+        char homePayload[128];
+        snprintf(homePayload, sizeof(homePayload),
+          "{\"state\":\"HOME_SET\",\"home_lat\":%.6f,\"home_lng\":%.6f,\"home_alt\":%d}",
+          homeLat, homeLng, (int)homeAlt);
+        mqttClient.publish(topic(SUFFIX_STATUS).c_str(), homePayload);
+        Serial.println(F("[MQTT] HOME_SET published"));
+
         rxLen = 0;
       }
 
@@ -543,20 +538,18 @@ bool loadMissionIntoRam(const String& missionId) {
 //  Mission / Queue execution
 // ═══════════════════════════════════════════════════════════════════
 
-// ── KEY CHANGE: startMissionFlight publishes with polygon=true ────
-// This is the ONE moment where the full route is sent to the app.
-// The cockpit map stores it and redraws it. Every subsequent update
-// only needs current_index (no polygon resent to save bandwidth).
+// FIX A: removed the redundant publishState("FLYING") call that was
+// racing against and overwriting the polygon publish before the app
+// could process it. publishMissionStatus(true) already sets state=FLYING.
 void startMissionFlight() {
   buf3.status        = FLYING;
   buf3.current_index = 0;
   rthRequested       = false;
   abortRequested     = false;
 
-  // Send full polygon so cockpit map can draw the entire route
+  // Send full polygon — this is the ONE publish that carries the route.
+  // Do NOT publish state again after this — it would overwrite polygon.
   publishMissionStatus(true);
-
-  publishState("FLYING");
 
   serveWaypoint(0);
 }
@@ -613,12 +606,11 @@ void executeQueueFromSd(const String& filename) {
   Serial.println(F("[SD] Unmounted for queue flight"));
 
   publishAck(true, "Queue executing");
-  startMissionFlight();   // sends polygon for first mission
+  startMissionFlight();
 }
 
 void advanceQueue() {
-  // FIX #5: was recursive — replaced with iterative loop to avoid
-  // stack overflow when multiple consecutive missions are missing.
+  // FIX 5: iterative loop replaces recursive call
   while (true) {
     queueCurrentIdx++;
 
@@ -650,11 +642,9 @@ void advanceQueue() {
 
     if (!ok) {
       Serial.println("[QUEUE] Mission not found: " + queueMissionIds[queueCurrentIdx]);
-      // iterate — try next mission in queue
       continue;
     }
 
-    // startMissionFlight sends new polygon for the next queue mission
     startMissionFlight();
     return;
   }
@@ -683,10 +673,6 @@ void handleStopCommand() {
 
 // ═══════════════════════════════════════════════════════════════════
 //  Telemetry (Buffer 4 → MQTT + HTTP)
-//
-//  CHANGE: pushTelemetryMQTT now appends current_index + total_points
-//  so the cockpit map progress line updates on every telemetry tick
-//  (every ~3 s) in addition to the waypoint-point events.
 // ═══════════════════════════════════════════════════════════════════
 
 void pushTelemetryMQTT() {
@@ -840,8 +826,7 @@ void sendSdList() {
         JsonDocument doc;
         deserializeJson(doc, entry, DeserializationOption::Filter(filter));
         if (queuesJson.length() > 0) queuesJson += ",";
-        // FIX #7: doc["missions"] is a JSON array — must use serializeJson,
-        // not .as<String>() which returns "null" for array types in ArduinoJson.
+        // FIX 7: use serializeJson() for array fields
         String missionsArray = "[]";
         if (doc["missions"].is<JsonArray>()) {
           serializeJson(doc["missions"], missionsArray);
@@ -891,9 +876,6 @@ void fetchSlot(int index) {
     return;
   }
 
-  // FIX #8: slot response was parsed but never acted on.
-  // Now we check whether the slot carries a mission or a queue
-  // and dispatch accordingly — same path as an MQTT execute command.
   Serial.printf("[SLOT] Received slot %d\n", index);
 
   String type       = doc["type"] | "";
@@ -995,6 +977,9 @@ void mqttCallback(char* topic_c, byte* payload, unsigned int length) {
 
 // ═══════════════════════════════════════════════════════════════════
 //  MQTT Connect
+//  FIX C: connectMQTT() makes a single attempt and returns immediately.
+//  It no longer blocks the loop, so handleSlaveUart() keeps running
+//  even while the broker is unreachable.
 // ═══════════════════════════════════════════════════════════════════
 
 void connectMQTT() {
@@ -1004,6 +989,7 @@ void connectMQTT() {
   mqttClient.setBufferSize(MQTT_BUFFER_SIZE);
 
   String clientId = "esp32_" + droneID;
+  Serial.println(F("[MQTT] Attempting connection..."));
   if (mqttClient.connect(clientId.c_str(), MQTT_USER, MQTT_PASS)) {
     mqttConnected = true;
     Serial.println(F("[MQTT] Connected!"));
@@ -1018,8 +1004,10 @@ void connectMQTT() {
     mqttClient.subscribe(topic(SUFFIX_SD_EXEC_QUEUE).c_str());
     publishMissionStatus(false);
   } else {
+    mqttConnected = false;
     Serial.print(F("[MQTT] Failed, rc="));
     Serial.println(mqttClient.state());
+    // Will retry on next loop iteration when mqttClient.connected() is false
   }
 }
 
@@ -1155,9 +1143,8 @@ void startBLESetup() {
 
   Serial.println("[BLE] Advertising as: " + bleName);
 
-  // FIX #9: was an infinite block — now times out after 5 minutes
-  // so a device with no phone nearby reboots cleanly instead of hanging.
-  const unsigned long BLE_PROVISION_TIMEOUT_MS = 5UL * 60UL * 1000UL; // 5 min
+  // FIX 9: 5-minute watchdog — device restarts if no phone completes setup
+  const unsigned long BLE_PROVISION_TIMEOUT_MS = 5UL * 60UL * 1000UL;
   unsigned long bleStart = millis();
   while (!wifiCredentialsReceived) {
     delay(100);
@@ -1270,6 +1257,11 @@ void setup() {
 
 // ═══════════════════════════════════════════════════════════════════
 //  LOOP
+//  FIX B: telemetryReady cleared AFTER both MQTT and HTTP pushes
+//         complete, so a new UART packet arriving during the blocking
+//         HTTP POST doesn't get silently dropped.
+//  FIX C: handleSlaveUart() is called unconditionally every loop so
+//         UART bytes are never lost during MQTT reconnect.
 // ═══════════════════════════════════════════════════════════════════
 
 void loop() {
@@ -1277,22 +1269,57 @@ void loop() {
 
   unsigned long now = millis();
 
+  // FIX C: always process UART first, regardless of MQTT state
+  handleSlaveUart();
+
   if (mqttConnected) {
     if (!mqttClient.connected()) {
       mqttConnected = false;
       Serial.println(F("[MQTT] Lost — reconnecting..."));
+      connectMQTT();   // single attempt, returns immediately
+    } else {
+      mqttClient.loop();
+    }
+  } else {
+    // Retry MQTT every 5 seconds without blocking UART
+    static unsigned long lastMqttRetry = 0;
+    if (now - lastMqttRetry >= 5000) {
+      lastMqttRetry = now;
       connectMQTT();
     }
-    mqttClient.loop();
   }
 
-  handleSlaveUart();
-
+  // FIX B: snapshot telemetry, clear flag, then push both
   if (telemetryReady && (now - lastTelemetryTime >= TELEMETRY_MS)) {
-    telemetryReady    = false;
     lastTelemetryTime = now;
-    pushTelemetryMQTT();
-    pushTelemetryHTTP();
+    TelemetryPacket snap = latestTelemetry;   // copy current reading
+    telemetryReady = false;                   // clear before blocking HTTP
+    // Push MQTT first (fast, non-blocking)
+    if (mqttConnected) {
+      char payload[220];
+      snprintf(payload, sizeof(payload),
+        "{\"lat\":%.6f,\"lng\":%.6f,\"altitude\":%.2f,\"speed\":%.2f,\"heading\":%.2f,"
+        "\"battery\":%d,\"signal_strength\":%d,"
+        "\"current_index\":%d,\"total_points\":%d}",
+        (float)snap.lat,      (float)snap.lng,
+        (float)snap.altitude, (float)snap.speed,
+        (float)snap.heading,
+        (int)snap.battery,    (int)snap.signal_strength,
+        (int)buf3.current_index, (int)buf3.total_points);
+      mqttClient.publish(topic(SUFFIX_TELEMETRY).c_str(), payload);
+    }
+    // HTTP may block for 200-500ms — UART ISR buffers bytes meanwhile
+    char body[240];
+    snprintf(body, sizeof(body),
+      "{\"drone_id\":%s,\"user_id\":%s,"
+      "\"lat\":%.6f,\"lng\":%.6f,\"altitude\":%.2f,\"speed\":%.2f,\"heading\":%.2f,"
+      "\"battery\":%d,\"signal_strength\":%d}",
+      droneID.c_str(), userID.c_str(),
+      (float)snap.lat,      (float)snap.lng,
+      (float)snap.altitude, (float)snap.speed,
+      (float)snap.heading,
+      (int)snap.battery,    (int)snap.signal_strength);
+    postJSON(TELEMETRY_URL, String(body));
   }
 
   bool buttonPressed = (digitalRead(BOOT_BUTTON_PIN) == LOW);

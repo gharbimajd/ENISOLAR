@@ -1,6 +1,51 @@
 # Specifies intentionally untracked files to ignore when using Git
 # http://git-scm.com/docs/gitignore
 
+# -------------------------------------------------------------
+# Security & Credentials
+# -------------------------------------------------------------
+# Environment variable files
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# Database & Backend credentials
+db_config.php
+config.php
+config.local.php
+!db_config.example.php
+
+# Secrets, API tokens, and local config files
+*.secret
+*.credentials
+credentials.h
+!credentials.example.h
+secrets/
+
+# SSL / TLS Private Keys & Certificates
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+
+# Mobile Android Keystores & Cloud Services
+*.keystore
+*.jks
+google-services.json
+GoogleService-Info.plist
+
+# Local Angular environment overrides
+src/environments/environment.local.ts
+
+# -------------------------------------------------------------
+# Temporary & Backup files
+# -------------------------------------------------------------
 *~
 *.sw[mnpcod]
 .tmp
@@ -9,32 +54,61 @@
 UserInterfaceState.xcuserstate
 $RECYCLE.BIN/
 
+# -------------------------------------------------------------
+# Logs
+# -------------------------------------------------------------
 *.log
 log.txt
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+/libpeerconnection.log
+testem.log
 
-
-/.sourcemaps
-/.versions
-/coverage
-
-# Ionic
+# -------------------------------------------------------------
+# Ionic & Capacitor
+# -------------------------------------------------------------
 /.ionic
 /www
 /platforms
 /plugins
 
-# Compiled output
+# Android build artifacts
+android/.gradle/
+android/build/
+android/app/build/
+android/.idea/
+android/*.iml
+android/app/*.iml
+android/local.properties
+android/.cxx/
+
+# -------------------------------------------------------------
+# Compiled output & Caches
+# -------------------------------------------------------------
 /dist
 /tmp
 /out-tsc
 /bazel-out
+/.sourcemaps
+/.versions
+/coverage
+/.angular
+/.angular/cache
+.sass-cache/
+/.nx
+/.nx/cache
+/connect.lock
+/typings
 
-# Node
+# -------------------------------------------------------------
+# Dependency Directories
+# -------------------------------------------------------------
 /node_modules
-npm-debug.log
-yarn-error.log
 
-# IDEs and editors
+# -------------------------------------------------------------
+# IDEs and Editors
+# -------------------------------------------------------------
 .idea/
 .project
 .classpath
@@ -52,21 +126,11 @@ yarn-error.log
 !.vscode/extensions.json
 .history/*
 
-
-# Miscellaneous
-/.angular
-/.angular/cache
-.sass-cache/
-/.nx
-/.nx/cache
-/connect.lock
-/coverage
-/libpeerconnection.log
-testem.log
-/typings
-
-# System files
+# -------------------------------------------------------------
+# Operating System Files
+# -------------------------------------------------------------
 .DS_Store
 Thumbs.db
+desktop.ini
 
 resources/android/**/*

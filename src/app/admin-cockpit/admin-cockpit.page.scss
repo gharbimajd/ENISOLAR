@@ -1,0 +1,658 @@
+// ════════════════════════════════════════════════════════
+//  ADMIN COCKPIT PAGE — Fullscreen map + compact tabbed HUD
+// ════════════════════════════════════════════════════════
+
+// ── Header ───────────────────────────────────────────────
+.cockpit-header ion-toolbar {
+  --background: rgba(var(--ion-background-color-rgb, 255,255,255), 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--ion-color-step-100, #e6e6e6);
+}
+
+// ── Content ──────────────────────────────────────────────
+.cockpit-content {
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+  position: relative;
+}
+
+// ── Fullscreen map ────────────────────────────────────────
+.cockpit-map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+// ── No GPS overlay ────────────────────────────────────────
+.map-no-gps {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 600;
+  pointer-events: none;
+  z-index: 5;
+  ion-icon { font-size: 36px; }
+}
+
+// ── Connection indicator ─────────────────────────────────
+.conn-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ion-color-danger);
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(var(--ion-color-danger-rgb), 0.1);
+
+  &.connected {
+    color: var(--ion-color-success);
+    background: rgba(var(--ion-color-success-rgb), 0.1);
+  }
+  ion-icon { font-size: 14px; }
+}
+
+// ── TOP HUD ───────────────────────────────────────────────
+.hud-top {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  & > * { pointer-events: auto; }
+}
+
+.hud-chip {
+  background: rgba(var(--ion-background-color-rgb, 255,255,255), 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
+  padding: 4px 10px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+  .hud-chip-label {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--ion-color-step-600);
+  }
+  .hud-chip-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ion-text-color);
+    line-height: 1.1;
+  }
+  &.hud-chip-right { align-items: flex-end; }
+}
+
+.hud-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+
+  .state-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 4px 14px;
+    border-radius: 30px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+}
+
+// ── Map controls ─────────────────────────────────────────
+.map-controls {
+  position: absolute;
+  right: 12px;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 10;
+}
+
+.map-ctrl-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0,0,0,0.05);
+  color: var(--ion-color-dark);
+  font-size: 18px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &.active {
+    background: var(--ion-color-primary);
+    color: white;
+  }
+}
+
+// ── BOTTOM PANEL ─────────────────────────────────────────
+.hud-bottom {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 10;
+  background: rgba(var(--ion-background-color-rgb, 255,255,255), 0.68);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+// ── Tab bar ───────────────────────────────────────────────
+.panel-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--ion-color-step-100, rgba(0,0,0,0.08));
+  padding: 0 4px;
+}
+
+.panel-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ion-color-medium);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+
+  ion-icon { font-size: 15px; }
+
+  &.active {
+    color: var(--ion-color-primary);
+    border-bottom-color: var(--ion-color-primary);
+  }
+
+  .cam-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ion-color-danger);
+    animation: blink 1s ease-in-out infinite;
+    position: absolute;
+    top: 8px;
+    right: calc(50% - 22px);
+  }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+// ── Tab content ───────────────────────────────────────────
+.tab-content {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// ── Telemetry strip ───────────────────────────────────────
+.telem-strip {
+  display: flex;
+  align-items: center;
+  background: var(--ion-color-step-50, rgba(0,0,0,0.03));
+  border: 1px solid var(--ion-color-step-100, #e6e6e6);
+  border-radius: 12px;
+  padding: 7px 10px;
+  gap: 4px;
+}
+
+.telem-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: 1px;
+}
+
+.telem-value {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ion-text-color);
+  line-height: 1.1;
+
+  &.bat-success { color: var(--ion-color-success); }
+  &.bat-warning { color: var(--ion-color-warning-shade); }
+  &.bat-danger  { color: var(--ion-color-danger); }
+  &.heading     { color: var(--ion-color-primary); }
+  &.signal      { color: var(--ion-color-medium); }
+}
+
+.telem-label {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ion-color-medium);
+}
+
+.battery-bar {
+  width: 100%;
+  height: 2px;
+  background: var(--ion-color-step-150, #c8c7cc);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 2px;
+
+  .battery-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+    &.success { background: var(--ion-color-success); }
+    &.warning { background: var(--ion-color-warning); }
+    &.danger  { background: var(--ion-color-danger); }
+  }
+}
+
+.telem-sep {
+  width: 1px;
+  height: 24px;
+  background: var(--ion-color-step-150, #c8c7cc);
+  flex-shrink: 0;
+}
+
+// ── Info row (GPS + online) ───────────────────────────────
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gps-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--ion-color-step-50, rgba(0,0,0,0.03));
+  border: 1px solid var(--ion-color-step-100, #e6e6e6);
+  border-radius: 20px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ion-color-medium);
+  min-width: 0;
+
+  ion-icon { font-size: 12px; flex-shrink: 0; }
+  span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  &.gps-active {
+    border-color: rgba(var(--ion-color-primary-rgb), 0.3);
+    color: var(--ion-color-primary);
+    background: rgba(var(--ion-color-primary-rgb), 0.05);
+  }
+  .no-fix { font-style: italic; color: var(--ion-color-medium); }
+}
+
+.online-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  &.online {
+    color: var(--ion-color-success);
+    background: rgba(var(--ion-color-success-rgb), 0.1);
+    .online-dot { background: var(--ion-color-success); animation: pulse-dot 2s infinite; }
+  }
+  &.offline {
+    color: var(--ion-color-medium);
+    background: rgba(var(--ion-color-medium-rgb), 0.1);
+    .online-dot { background: var(--ion-color-medium); }
+  }
+
+  .online-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .last-seen { font-weight: 400; opacity: 0.7; }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+// ── RTH warning ───────────────────────────────────────────
+.rth-warning {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(var(--ion-color-warning-rgb), 0.1);
+  border: 1px solid rgba(var(--ion-color-warning-rgb), 0.3);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ion-color-warning-shade);
+
+  ion-icon { font-size: 14px; flex-shrink: 0; }
+}
+
+// ── Actions row (commands + emergency) ───────────────────
+.actions-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.commands-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  flex: 1;
+}
+
+.cmd-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border-radius: 12px;
+  padding: 8px 4px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  transition: transform 0.1s ease, background 0.15s ease;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ion-text-color);
+
+  &:active { transform: scale(0.93); }
+  ion-icon { font-size: 18px; }
+
+  &.takeoff {
+    background: rgba(var(--ion-color-primary-rgb), 0.12);
+    color: var(--ion-color-primary);
+    border-color: rgba(var(--ion-color-primary-rgb), 0.25);
+  }
+  &.land {
+    background: rgba(var(--ion-color-success-rgb), 0.1);
+    color: var(--ion-color-success);
+    border-color: rgba(var(--ion-color-success-rgb), 0.2);
+  }
+  &.rth {
+    background: rgba(var(--ion-color-warning-rgb), 0.1);
+    color: var(--ion-color-warning-shade);
+    border-color: rgba(var(--ion-color-warning-rgb), 0.2);
+  }
+  &.loiter {
+    background: rgba(var(--ion-color-step-100, 0,0,0), 0.06);
+    color: var(--ion-color-medium);
+    border-color: var(--ion-color-step-100, #e6e6e6);
+  }
+
+  &.cmd-disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    &:active { transform: none; }
+  }
+}
+
+// Emergency as a tall side button
+.emergency-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 52px;
+  flex-shrink: 0;
+  background: rgba(var(--ion-color-danger-rgb), 0.1);
+  color: var(--ion-color-danger);
+  border: 1.5px solid rgba(var(--ion-color-danger-rgb), 0.35);
+  border-radius: 12px;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+
+  ion-icon { font-size: 20px; }
+  &:active {
+    transform: scale(0.95);
+    background: rgba(var(--ion-color-danger-rgb), 0.22);
+  }
+}
+
+// ── Footer ────────────────────────────────────────────────
+.hud-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 2px;
+
+  ion-icon { font-size: 13px; color: var(--ion-color-primary); }
+  .drone-name {
+    font-size: 11px; font-weight: 700;
+    color: var(--ion-text-color); flex: 1;
+  }
+  .mission-wp-footer {
+    font-size: 10px; font-weight: 700;
+    color: var(--ion-color-primary);
+    background: rgba(var(--ion-color-primary-rgb), 0.1);
+    padding: 2px 8px; border-radius: 20px;
+  }
+}
+
+// ── CAMERA TAB ────────────────────────────────────────────
+.cam-tab {
+  padding: 8px 10px 10px;
+}
+
+.stream-viewer {
+  width: 100%;
+  height: 160px;
+  border-radius: 14px;
+  background: #0a0a0f;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.08);
+
+  &.has-frame { background: #000; }
+}
+
+.stream-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.stream-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: rgba(255,255,255,0.3);
+  font-size: 12px;
+  font-weight: 600;
+
+  ion-icon { font-size: 32px; }
+}
+
+.live-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(220, 30, 30, 0.85);
+  color: white;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+
+  .live-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: white;
+    animation: blink 1s infinite;
+  }
+}
+
+.fps-counter {
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  background: rgba(0,0,0,0.4);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.cam-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cam-ctrl-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  border: 1.5px solid rgba(var(--ion-color-primary-rgb), 0.4);
+  background: rgba(var(--ion-color-primary-rgb), 0.1);
+  color: var(--ion-color-primary);
+  transition: all 0.15s ease;
+
+  ion-icon { font-size: 16px; }
+
+  &.streaming {
+    background: rgba(var(--ion-color-danger-rgb), 0.1);
+    border-color: rgba(var(--ion-color-danger-rgb), 0.4);
+    color: var(--ion-color-danger);
+  }
+
+  &:active { transform: scale(0.96); }
+}
+
+.cam-status-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(var(--ion-color-medium-rgb), 0.08);
+  border: 1px solid var(--ion-color-step-100, #e6e6e6);
+  color: var(--ion-color-medium);
+
+  ion-icon { font-size: 14px; }
+
+  &.active {
+    background: rgba(var(--ion-color-success-rgb), 0.08);
+    border-color: rgba(var(--ion-color-success-rgb), 0.25);
+    color: var(--ion-color-success);
+  }
+}
+
+// ── Drone marker (Mapbox DOM) ─────────────────────────────
+::ng-deep {
+  .drone-map-marker {
+    position: relative;
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .drone-icon {
+    position: relative;
+    width: 32px; height: 32px;
+    background: #3880ff;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.45);
+    transition: transform 0.3s ease;
+
+    svg { width: 20px; height: 20px; fill: white !important; display: block; }
+  }
+
+  .drone-pulse {
+    position: absolute;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(var(--ion-color-primary-rgb, 56,128,255), 0.25);
+    animation: drone-ping 1.6s ease-out infinite;
+  }
+
+  @keyframes drone-ping {
+    0%   { transform: scale(0.8); opacity: 0.8; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+}
+
+// ── Status badge helpers ──────────────────────────────────
+.badge {
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 6px; text-transform: uppercase;
+
+  &.ready   { background: rgba(var(--ion-color-success-rgb), 0.15); color: var(--ion-color-success); }
+  &.pending { background: rgba(var(--ion-color-warning-rgb), 0.15); color: var(--ion-color-warning-shade); }
+  &.draft   { background: rgba(var(--ion-color-medium-rgb),  0.15); color: var(--ion-color-medium); }
+  &.done    { background: rgba(var(--ion-color-primary-rgb), 0.15); color: var(--ion-color-primary); }
+}

@@ -1,0 +1,200 @@
+<ion-header class="ion-no-border cockpit-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/drone-manager" (click)="onBackNav()"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Admin Cockpit</ion-title>
+    <ion-buttons slot="end">
+      <div class="conn-indicator" [class.connected]="isConnected">
+        <ion-icon name="wifi-outline"></ion-icon>
+        <span>{{ isConnected ? 'Broker' : 'Offline' }}</span>
+      </div>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [scrollY]="false" class="cockpit-content">
+
+  <!-- ── FULLSCREEN MAP ─────────────────────────────────── -->
+  <div id="admin-cockpit-map" class="cockpit-map"></div>
+
+  <!-- No GPS overlay -->
+  <div class="map-no-gps" *ngIf="!gpsFixed">
+    <ion-icon name="location-outline"></ion-icon>
+    <span>Waiting for GPS fix…</span>
+  </div>
+
+  <!-- ── TOP HUD ────────────────────────────────────────── -->
+  <div class="hud-top">
+    <div class="hud-chip" *ngIf="missionPolygon.length >= 3">
+      <span class="hud-chip-label">WP</span>
+      <span class="hud-chip-value">{{ currentWaypointIndex + 1 }}/{{ totalWaypoints }}</span>
+    </div>
+    <div class="hud-center">
+      <ion-badge [color]="flightStateColor" class="state-badge">{{ flightState }}</ion-badge>
+    </div>
+    <div class="hud-chip hud-chip-right">
+      <span class="hud-chip-label">Alt</span>
+      <span class="hud-chip-value">{{ telemetry.altitude | number:'1.1-1' }}m</span>
+    </div>
+  </div>
+
+  <!-- ── MAP CONTROLS ───────────────────────────────────── -->
+  <div class="map-controls">
+    <button class="map-ctrl-btn" (click)="centerMapOnDrone()" title="Center on drone">
+      <ion-icon name="locate-outline"></ion-icon>
+    </button>
+    <button class="map-ctrl-btn" (click)="fitAll()" title="Fit drone + mission"
+            *ngIf="gpsFixed && missionPolygon.length >= 2">
+      <ion-icon name="expand-outline"></ion-icon>
+    </button>
+    <button class="map-ctrl-btn" [class.active]="map3D" (click)="toggleMap3D()" title="3D terrain">
+      <ion-icon name="cube-outline"></ion-icon>
+    </button>
+  </div>
+
+  <!-- ── BOTTOM PANEL ───────────────────────────────────── -->
+  <div class="hud-bottom">
+
+    <!-- Tab bar -->
+    <div class="panel-tabs">
+      <button class="panel-tab" [class.active]="activeTab === 'flight'" (click)="setTab('flight')">
+        <ion-icon name="navigate-outline"></ion-icon>
+        <span>Flight</span>
+      </button>
+      <button class="panel-tab" [class.active]="activeTab === 'camera'" (click)="setTab('camera')">
+        <ion-icon name="camera-outline"></ion-icon>
+        <span>Camera</span>
+        <span class="cam-live-dot" *ngIf="streamActive"></span>
+      </button>
+    </div>
+
+    <!-- ── FLIGHT TAB ─────────────────────────────────── -->
+    <div class="tab-content" *ngIf="activeTab === 'flight'">
+
+      <!-- Compact telemetry row -->
+      <div class="telem-strip">
+        <div class="telem-item">
+          <span class="telem-value" [class]="'bat-' + batteryColor">{{ telemetry.battery }}%</span>
+          <span class="telem-label">Bat</span>
+          <div class="battery-bar">
+            <div class="battery-fill" [style.width.%]="telemetry.battery" [class]="batteryColor"></div>
+          </div>
+        </div>
+        <div class="telem-sep"></div>
+        <div class="telem-item">
+          <span class="telem-value">{{ telemetry.speed | number:'1.1-1' }}m/s</span>
+          <span class="telem-label">Speed</span>
+        </div>
+        <div class="telem-sep"></div>
+        <div class="telem-item">
+          <span class="telem-value heading">{{ telemetry.heading | number:'1.0-0' }}°&nbsp;{{ headingLabel }}</span>
+          <span class="telem-label">Hdg</span>
+        </div>
+        <div class="telem-sep"></div>
+        <div class="telem-item">
+          <span class="telem-value signal">{{ telemetry.signal_strength }}dBm</span>
+          <span class="telem-label">Signal</span>
+        </div>
+      </div>
+
+      <!-- GPS + online row -->
+      <div class="info-row">
+        <div class="gps-pill" [class.gps-active]="gpsFixed">
+          <ion-icon name="location-outline"></ion-icon>
+          <span *ngIf="gpsFixed">{{ telemetry.lat | number:'1.4-4' }}, {{ telemetry.lng | number:'1.4-4' }}</span>
+          <span *ngIf="!gpsFixed" class="no-fix">No fix</span>
+        </div>
+        <div class="online-pill" [class.online]="droneOnline" [class.offline]="!droneOnline">
+          <span class="online-dot"></span>
+          {{ droneOnline ? 'Online' : 'Offline' }}
+          <span class="last-seen" *ngIf="lastSeen && droneOnline">· {{ lastSeen }}</span>
+        </div>
+      </div>
+
+      <!-- RTH warning -->
+      <div class="rth-warning" *ngIf="!homePointSet && flightState !== 'IDLE'">
+        <ion-icon name="warning-outline"></ion-icon>
+        <span>RTH unavailable — no home point</span>
+      </div>
+
+      <!-- Commands + emergency row -->
+      <div class="actions-row">
+        <div class="commands-grid">
+          <button class="cmd-btn takeoff" (click)="sendCommand('TAKEOFF')">
+            <ion-icon name="arrow-up-outline"></ion-icon>
+            <span>Takeoff</span>
+          </button>
+          <button class="cmd-btn land" (click)="sendCommand('LAND')">
+            <ion-icon name="arrow-down-outline"></ion-icon>
+            <span>Land</span>
+          </button>
+          <button class="cmd-btn rth" (click)="sendCommand('RTH')"
+                  [class.cmd-disabled]="!homePointSet" [disabled]="!homePointSet">
+            <ion-icon name="home-outline"></ion-icon>
+            <span>RTH</span>
+          </button>
+          <button class="cmd-btn loiter" (click)="sendCommand('LOITER')">
+            <ion-icon name="pause-outline"></ion-icon>
+            <span>Hold</span>
+          </button>
+        </div>
+        <button class="emergency-btn" (click)="emergencyStop()">
+          <ion-icon name="stop-circle-outline"></ion-icon>
+          <span>STOP</span>
+        </button>
+      </div>
+
+      <!-- Footer -->
+      <div class="hud-footer">
+        <ion-icon name="hardware-chip-outline"></ion-icon>
+        <span class="drone-name">{{ drone?.name }}</span>
+        <span class="mission-wp-footer" *ngIf="missionPolygon.length >= 3">
+          WP {{ currentWaypointIndex + 1 }}/{{ totalWaypoints }}
+        </span>
+      </div>
+
+    </div>
+
+    <!-- ── CAMERA TAB ─────────────────────────────────── -->
+    <div class="tab-content cam-tab" *ngIf="activeTab === 'camera'">
+
+      <!-- Stream viewer -->
+      <div class="stream-viewer" [class.has-frame]="streamActive">
+        <!-- MJPEG stream: browser natively handles multipart/x-mixed-replace -->
+        <img *ngIf="streamActive && streamImgUrl"
+             [src]="streamImgUrl"
+             class="stream-img"
+             (load)="onFrameLoad()"
+             alt="Live feed" />
+        <div class="stream-placeholder" *ngIf="!streamActive">
+          <ion-icon name="camera-outline"></ion-icon>
+          <span *ngIf="!camOnline">Camera offline</span>
+          <span *ngIf="camOnline">Press START to view live feed</span>
+        </div>
+        <!-- Live badge -->
+        <div class="live-badge" *ngIf="streamActive">
+          <span class="live-dot"></span>
+          LIVE
+        </div>
+        <!-- FPS counter -->
+        <div class="fps-counter" *ngIf="streamActive">{{ currentFps }} fps</div>
+      </div>
+
+      <!-- Camera controls -->
+      <div class="cam-controls">
+        <button class="cam-ctrl-btn" [class.streaming]="streamActive" (click)="toggleStream()">
+          <ion-icon [name]="streamActive ? 'stop-outline' : 'play-outline'"></ion-icon>
+          <span>{{ streamActive ? 'STOP' : 'START' }}</span>
+        </button>
+        <div class="cam-status-pill" [class.active]="camOnline">
+          <ion-icon name="camera-outline"></ion-icon>
+          <span>{{ camOnline ? 'CAM Ready' : 'CAM Offline' }}</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</ion-content>

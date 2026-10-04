@@ -3,15 +3,17 @@ import { IMqttMessage, MqttService as NgxMqttService, IMqttServiceOptions } from
 import { Observable, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { environment } from '../../environments/environment';
+
 export const MQTT_CONFIG: IMqttServiceOptions = {
-  hostname: '529b5f97aca54d828dbef5ebe85f00cd.s1.eu.hivemq.cloud',
-  port: 8884,
-  path: '/mqtt',
-  protocol: 'wss',
-  username: 'majdgha',
-  password: '552003Ssl',
-  keepalive: 60,
-  connectOnCreate: false,
+  hostname: environment.mqtt?.hostname || 'dd4bee3682e2479fbe315b7d4670285f.s1.eu.hivemq.cloud',
+  port: environment.mqtt?.port || 8884,
+  path: environment.mqtt?.path || '/mqtt',
+  protocol: (environment.mqtt?.protocol as 'wss' | 'ws') || 'wss',
+  username: environment.mqtt?.username || 'majdgha',
+  password: environment.mqtt?.password || '552003Ssl',
+  keepalive: environment.mqtt?.keepalive || 60,
+  connectOnCreate: environment.mqtt?.connectOnCreate || false,
   clientId: 'ionic_' + Math.random().toString(16).slice(2)
 };
 

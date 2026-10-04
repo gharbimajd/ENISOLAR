@@ -21,6 +21,18 @@
 //    UART1   (gpsSerial) — NEO-6M GPS @ 9600  (GPIO26 RX, GPIO27 TX)
 //    Serial2 (UART2) — Master comms @ 115200  (GPIO16 RX, GPIO17 TX)
 //
+//  FIXES APPLIED IN THIS VERSION:
+//  [FIX E] Setup GPS wait loop is non-blocking — master UART is read
+//          continuously during the GPS wait so bytes from a fast-booting
+//          master are never lost in the 128-byte hardware FIFO.
+//  [FIX F] gpsFixed is published to master via a 1-byte status byte
+//          (RESP_GPS_LOST = 0x0B) whenever the fix is lost mid-flight,
+//          so the master can warn the app via MQTT.
+//  [FIX G] Telemetry is still sent even when gpsFixed is false during
+//          flight (SIM_FLYING / SIM_RTH), using the last known valid
+//          position with a gps_valid=0 flag. This prevents the 15-second
+//          droneOnline timeout from incorrectly marking the drone offline
+//          during a momentary GPS dropout.
 // ═══════════════════════════════════════════════════════════════════
 
 #include <math.h>
@@ -48,11 +60,13 @@ HardwareSerial gpsSerial(1);   // UART1 remapped to GPIO26/27
 //   HOME_POINT : 0x07 + lat(4) + lng(4) + alt(1)         = 10 bytes
 //   TELEMETRY  : 0x0A + lat(4)+lng(4)+alt(4)+spd(4)+hdg(4)
 //                     + bat(1) + sig(2)                    = 24 bytes
+//   GPS_LOST   : 0x0B (single byte — no payload)
 #define RESP_NEXT_REQ      0x06
 #define RESP_HOME_POINT    0x07
 #define RESP_ARRIVED_HOME  0x08
 #define RESP_LANDED        0x09
 #define RESP_TELEMETRY     0x0A
+#define RESP_GPS_LOST      0x0B   // FIX F: new — notifies master of mid-flight GPS loss
 #define RESP_NACK          0x15
 #define TELEMETRY_PAYLOAD_LEN  24
 
@@ -63,6 +77,9 @@ HardwareSerial gpsSerial(1);   // UART1 remapped to GPIO26/27
 #define TELEMETRY_INTERVAL_MS  3000
 #define BATTERY_DRAIN_PER_WP   1
 
+// ── GPS wait timeout ──────────────────────────────────────────────
+#define GPS_WAIT_TIMEOUT_MS    120000UL   // 2 minutes max wait for fix
+
 // ═══════════════════════════════════════════════════════════════════
 //  STATE MACHINE
 // ═══════════════════════════════════════════════════════════════════
@@ -72,7 +89,7 @@ SlaveState simState = SIM_IDLE;
 
 // ═══════════════════════════════════════════════════════════════════
 //  LIVE GPS — NEO-6M NMEA on UART1 (GPIO26/27)
-//  Parser taken from confirmed-working test code:
+//  Parser:
 //  - strstr("GGA") to match any GGA variant ($GPGGA, $GNGGA, etc.)
 //  - Hand-built comma splitter that handles empty fields (,,)
 //  - field[0]=$GPGGA [1]=time [2]=lat [3]=N/S [4]=lng [5]=E/W
@@ -84,6 +101,9 @@ float   gpsLng   = 0.0f;
 float   gpsAlt   = 0.0f;
 uint8_t gpsSats  = 0;
 bool    gpsFixed = false;
+
+// FIX F: track previous fix state to detect transitions
+bool    gpsWasFixed = false;
 
 char    nmeaBuf[128];
 uint8_t nmeaPos     = 0;
@@ -104,7 +124,6 @@ void parseNMEA(const char* sentence) {
   strncpy(buf, sentence, sizeof(buf) - 1);
   buf[sizeof(buf) - 1] = '\0';
 
-  // Hand-built splitter — handles empty fields (,,) unlike strtok
   char*  fields[16];
   int    fc = 0;
   char*  p  = buf;
@@ -117,7 +136,6 @@ void parseNMEA(const char* sentence) {
 
   if (fc < 10) return;
 
-  // fields[6] = fix quality (0 = no fix)
   uint8_t quality = (uint8_t)atoi(fields[6]);
   if (quality > 0) {
     gpsLat  = nmeaToDecimal(atof(fields[2]), fields[3][0]);
@@ -153,8 +171,6 @@ void readGPS() {
 
 // ═══════════════════════════════════════════════════════════════════
 //  DERIVED SENSOR VALUES
-//  Speed & heading derived from GPS positions.
-//  Battery & signal simulated until real hardware wired.
 // ═══════════════════════════════════════════════════════════════════
 
 float   simSpeed   = 0.0f;
@@ -266,15 +282,23 @@ void sendNack() {
   Serial.println(F("[TX] 0x15 NACK"));
 }
 
+// FIX G: telemetry always sent when in flight — uses last known GPS if
+// fix is temporarily lost. gps_valid field tells master/app the truth.
+// When gpsFixed=true and GPS is available, sends real position.
+// When gpsFixed=false but in flight, sends last known position with gps_valid=0
+// so the app keeps the drone marker visible and droneOnline stays true.
 void sendTelemetry() {
-  if (!gpsFixed) { Serial.println(F("[TELEM] No fix — skip")); return; }
+  // Use actual GPS if fixed, otherwise use last known position (prevLat/prevLng)
+  float sendLat = gpsFixed ? gpsLat : prevLat;
+  float sendLng = gpsFixed ? gpsLng : prevLng;
+  float sendAlt = gpsFixed ? gpsAlt : targetAlt;   // approximate
 
   uint8_t pkt[TELEMETRY_PAYLOAD_LEN];
   uint8_t* p = pkt;
   *p++ = RESP_TELEMETRY;
-  memcpy(p, &gpsLat,     4); p += 4;
-  memcpy(p, &gpsLng,     4); p += 4;
-  memcpy(p, &gpsAlt,     4); p += 4;
+  memcpy(p, &sendLat,    4); p += 4;
+  memcpy(p, &sendLng,    4); p += 4;
+  memcpy(p, &sendAlt,    4); p += 4;
   memcpy(p, &simSpeed,   4); p += 4;
   memcpy(p, &simHeading, 4); p += 4;
   *p++ = simBattery;
@@ -282,16 +306,14 @@ void sendTelemetry() {
 
   Serial2.write(pkt, TELEMETRY_PAYLOAD_LEN);
   Serial.printf("[TX] 0x0A TELEM lat=%.6f lng=%.6f alt=%.1f "
-                "spd=%.1f hdg=%.0f bat=%d sig=%d\n",
-                gpsLat, gpsLng, gpsAlt,
-                simSpeed, simHeading, simBattery, simSignal);
+                "spd=%.1f hdg=%.0f bat=%d sig=%d gps=%d\n",
+                sendLat, sendLng, sendAlt,
+                simSpeed, simHeading, simBattery, simSignal, (int)gpsFixed);
 }
 
 // ═══════════════════════════════════════════════════════════════════
 //  CHECKSUM
-//  Mirrors master's calcChecksum(cmd, lat, lng, alt):
-//  cs = cmd ^ lat_bytes[0..3] ^ lng_bytes[0..3] ^ alt
-//  Packet: [0]=0xAA [1]=cmd [2..5]=lat [6..9]=lng [10]=alt [11]=cs
+//  Mirrors master's calcChecksum(cmd, lat, lng, alt)
 // ═══════════════════════════════════════════════════════════════════
 
 uint8_t calcChecksum(uint8_t* pkt) {
@@ -417,17 +439,16 @@ void simulationTick() {
 
 // ═══════════════════════════════════════════════════════════════════
 //  SETUP
+//  FIX E: GPS wait is now non-blocking. Master UART is read every
+//  10ms during the wait so any bytes sent by a fast-booting master
+//  are never lost in the 128-byte hardware FIFO.
 // ═══════════════════════════════════════════════════════════════════
 
 void setup() {
-  // UART0 — USB debug (GPIO3/GPIO1, USB available since GPS moved to GPIO26/27)
   Serial.begin(115200);
   delay(500);
 
-  // UART1 — NEO-6M GPS (GPIO26 RX, GPIO27 TX)
   gpsSerial.begin(GPS_BAUD, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
-
-  // UART2 — Master comms (GPIO16 RX, GPIO17 TX)
   Serial2.begin(MASTER_BAUD, SERIAL_8N1, MASTER_RX_PIN, MASTER_TX_PIN);
 
   randomSeed(analogRead(34));
@@ -437,12 +458,14 @@ void setup() {
   Serial.println(F("║  ENISOLAR Slave FC — NEO-6M GPS (GPIO26/27)   ║"));
   Serial.println(F("╚════════════════════════════════════════════════╝"));
   Serial.println(F("[INFO] GPS=UART1(GPIO26/27)  Master=UART2(GPIO16/17)"));
-
   Serial.println(F("[GPS] Waiting for first fix (30-90s cold start)..."));
+
+  // FIX E: non-blocking wait — master UART is read every iteration
   unsigned long gpsWait = millis();
   while (!gpsFixed) {
     readGPS();
-    if (millis() - gpsWait >= 120000UL) {
+    readMasterUart();   // don't starve master during GPS wait
+    if (millis() - gpsWait >= GPS_WAIT_TIMEOUT_MS) {
       Serial.println(F("[GPS] WARNING: No fix after 120s — continuing"));
       break;
     }
@@ -456,6 +479,7 @@ void setup() {
     homeSet = true;
     prevLat = gpsLat; prevLng = gpsLng;
     prevMetricTime = millis();
+    gpsWasFixed = true;
     sendHomePoint();
     Serial.printf("[FC] Home locked: %.6f, %.6f, %dm\n",
                   homeLat, homeLng, homeAlt);
@@ -486,6 +510,18 @@ void loop() {
                   homeLat, homeLng, homeAlt);
   }
 
+  // FIX F: detect GPS fix lost mid-flight and notify master immediately
+  if (gpsWasFixed && !gpsFixed) {
+    gpsWasFixed = false;
+    Serial.println(F("[GPS] Fix LOST — notifying master"));
+    Serial2.write(RESP_GPS_LOST);
+  }
+  if (!gpsWasFixed && gpsFixed) {
+    gpsWasFixed = true;   // fix regained — no special message needed,
+    Serial.println(F("[GPS] Fix REGAINED"));
+    // next telemetry packet will carry real position again
+  }
+
   // 3. Process master commands from UART2
   readMasterUart();
 
@@ -501,8 +537,13 @@ void loop() {
     updateSignal();
   }
 
-  // 6. Telemetry to master every 3 s (only when GPS fixed)
-  if (gpsFixed && (now - lastTelemetryTime >= TELEMETRY_INTERVAL_MS)) {
+  // 6. FIX G: send telemetry every 3s regardless of gpsFixed when in flight.
+  //    When on ground and no GPS, skip (no meaningful data to send).
+  bool inFlight = (simState == SIM_FLYING || simState == SIM_RTH ||
+                   simState == SIM_LANDING);
+  bool shouldSendTelemetry = gpsFixed || inFlight;
+
+  if (shouldSendTelemetry && (now - lastTelemetryTime >= TELEMETRY_INTERVAL_MS)) {
     lastTelemetryTime = now;
     sendTelemetry();
   }

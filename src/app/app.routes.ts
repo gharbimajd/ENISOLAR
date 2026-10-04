@@ -136,6 +136,10 @@ export const routes: Routes = [
   {
     path: 'wifi-setup',
     loadComponent: () => import('./wifi-setup/wifi-setup.page').then( m => m.WifiSetupPage)
+  },
+  {
+    path: 'admin-cockpit',
+    loadComponent: () => import('./admin-cockpit/admin-cockpit.page').then( m => m.AdminCockpitPage)
   }
 ];
 

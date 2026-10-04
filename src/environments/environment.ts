@@ -4,13 +4,15 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'http://enisolardienicar.atwebpages.com/'
+  apiUrl: 'http://enisolardienicar.atwebpages.com/',
+  mqtt: {
+    hostname: 'dd4bee3682e2479fbe315b7d4670285f.s1.eu.hivemq.cloud',
+    port: 8884,
+    path: '/mqtt',
+    protocol: 'wss' as const,
+    username: 'majdgha',
+    password: '552003Ssl',
+    keepalive: 60,
+    connectOnCreate: false
+  }
 };
-/*
- * For easier debugging in development mode, you can import the following file
- * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
- *
- * This import should be commented out in production mode because it will have a negative impact
- * on performance if an error is thrown.
- */
-// import 'zone.js/plugins/zone-error';  // Included with Angular CLI.

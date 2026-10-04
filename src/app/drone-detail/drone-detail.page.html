@@ -184,6 +184,18 @@
     Open SD Manager
   </ion-button>
 </div>
+<div class="section-card live-control-card">
+  <div class="section-header">
+    <ion-icon name="construct-outline"></ion-icon>
+    <span>Admin Cockpit</span>
+  </div>
+  <p class="live-desc">Hardware diagnostics and real-time telemetry debugging</p>
+  
+  <ion-button expand="block" class="live-btn" (click)="openadmincockpit()">
+    <ion-icon name="construct-outline" slot="start"></ion-icon>
+    Open Admin Cockpit
+  </ion-button>
+</div>
 
     <div class="disconnect-card" *ngIf="!showDisconnectConfirm">
       <ion-button expand="block" class="disconnect-btn" (click)="startDisconnect()">
